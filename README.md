@@ -51,13 +51,15 @@ and `paper/make_assets.py`. No number in the paper is typed by hand except those
 | `Measurements/data/*.csv` | Certificate sizes, compression, real TLS handshake flights, application objects |
 | `Simulation/results/*.csv` (generated) | Model output for the full wired grid |
 
-## Legacy inputs
+## Legacy inputs (not validated, not used by the paper)
 
-`Simulation/radio_results/`, `Simulation/sens/radio_*`, `Simulation/mitigations.csv`, `Simulation/loss_results.csv` and
-`Simulation/radio_factor_ci.csv` come from earlier simulations of radio links, mitigations and packet loss, which use the
-idealised closed form (`--stack v4`) and have not been re-validated. They are included only because `paper/make_assets.py`
-also builds tables that this paper does not use, and one supplementary figure (packet loss) shows them with that caveat.
-They are not part of the conclusions.
+`Simulation/loss_sim.py`, `Simulation/radio_sim.py`, `Simulation/mitigations.py` and their outputs
+(`Simulation/radio_results/`, `Simulation/sens/radio_*`, `Simulation/mitigations.csv`, `Simulation/loss_results.csv`,
+`Simulation/radio_factor_ci.csv`) come from earlier simulations of radio links, mitigations and packet loss. They use the
+idealised closed form (`--stack v4`), have **not** been re-validated against the testbed, and none of their results appears in the
+paper or its Supplementary Material. They are kept because `paper/make_assets.py` still builds tables and a packet-loss figure
+from them (`figures/fig_loss.pdf` and others) that the paper does not include, and for the later papers on these topics.
+Do not cite them as validated results.
 
 ## Known limits
 

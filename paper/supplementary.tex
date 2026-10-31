@@ -19,6 +19,8 @@
 \maketitle
 All values are generated from the released simulation results by \texttt{make\_assets.py}. Unless stated otherwise: 100\,Mbps, 30\,ms RTT, MTU 1500\,B, no transport penalty ($\pi=0$; threshold 4 segments), cold connection, baseline ECDSA-P256 with X25519.
 
+\paragraph{How to read the tables.} \emph{Measured:} Tables S11--S16, S19, S20, S21 and Figure S2 come from measurements (CPU benchmarks, real TLS handshakes and signed objects, testbed transactions); Table S22 is a status table. \emph{Model with measured inputs, validated on the testbed for the stack described in the paper:} Tables S1--S10, Figure S1 and Table S17. \emph{Assumption-based:} Table S18 (assumed input distributions) and every row that sweeps a parameter that no standard or measurement fixes (the middlebox penalty, the CPU scale above the measured value, the initial window beyond those measured). Nothing in this document comes from the earlier idealised closed form except where a column is labelled as such; the earlier packet-loss simulation, which used it and was never validated on the testbed, is not included.
+
 \section*{S1. Model inputs}
 \begin{table}[h]\centering\small
 \caption{Financial protocol profiles. $^{a}$Algorithm-independent bytes summed over all exchanges. $d_\text{ref}$: reference chain depth.}
@@ -161,24 +163,21 @@ Transport penalty $\pi$ / threshold $\theta$ & 0--24 ms, reference 0 / 4 segment
 \resizebox{\textwidth}{!}{\input{tables/tab_variants}}
 \end{table}
 
-\begin{table}[h]\centering\small
-\caption{Standardisation status of the schemes in the study on 31 October 2026, read from csrc.nist.gov and datatracker.ietf.org on that date. ``Exercised'' means that the scheme was run through a real TLS~1.3 handshake on the testbed. Status is not the same as readiness: the table says nothing about library or hardware-security-module support (vendors have announced algorithm validations for ML-DSA, ML-KEM and SLH-DSA; an algorithm validation is not a validation of a module configuration, and we did not assess any HSM).}
-\begin{tabular}{@{}p{0.17\textwidth}p{0.20\textwidth}p{0.20\textwidth}p{0.27\textwidth}p{0.09\textwidth}@{}}
+\begin{table}[h]\centering\footnotesize
+\caption{Standardisation status of the schemes in the study on 31 October 2026, read from csrc.nist.gov and datatracker.ietf.org on that date, and what was measured for each. ``TLS'' = run through a real TLS~1.3 handshake on the testbed; ``CPU'' = per-operation cost measured (Tables S11 and S19); ``Sizes'' = certificate and signature sizes from real generated or published objects. Anything not measured is modelled. Status is not readiness: the table says nothing about library or hardware-security-module support (vendors have announced algorithm validations for ML-DSA, ML-KEM and SLH-DSA; an algorithm validation is not a validation of a module configuration, and we did not assess any HSM).}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}p{0.15\textwidth}p{0.17\textwidth}p{0.17\textwidth}p{0.22\textwidth}p{0.05\textwidth}p{0.05\textwidth}p{0.06\textwidth}@{}}
 \toprule
-Scheme & NIST standard & X.509 profile (IETF) & TLS~1.3 & Exercised \\
+Scheme & NIST standard & X.509 profile (IETF) & TLS~1.3 specification & TLS & CPU & Sizes \\
 \midrule
-RSA-2048, ECDSA-P256 & FIPS 186-5 & RFC 5280 & RFC 9846 & yes \\
-ML-KEM-768/1024; X25519MLKEM768 & FIPS 203 (13 Aug 2024) & -- & X25519MLKEM768: RFC 10024 (Aug 2026); pure ML-KEM groups not assessed & yes \\
-ML-DSA-44/65/87 & FIPS 204 (13 Aug 2024) & RFC 9881 (Oct 2025) & draft-ietf-tls-mldsa-06, RFC Editor queue, Informational & yes \\
-SLH-DSA-128s/128f & FIPS 205 (13 Aug 2024) & RFC 9909 (Dec 2025) & no code points in OpenSSL~3.5 & no \\
-Falcon-512 (FN-DSA) & FIPS 206 in development (round-3 parameters used here) & draft-ietf-lamps-fn-dsa-certificates-00 (May 2026) & none & no \\
-Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Editor queue & none & no \\
+RSA-2048, ECDSA-P256 & FIPS 186-5 & RFC 5280 & RFC 9846 & yes & yes & yes \\
+ML-KEM-768/1024; X25519MLKEM768 & FIPS 203 (13 Aug 2024) & -- & X25519MLKEM768: RFC 10024 (Aug 2026); pure ML-KEM groups: not assessed & yes & yes & yes \\
+ML-DSA-44/65/87 & FIPS 204 (13 Aug 2024) & RFC 9881 (Oct 2025) & draft-ietf-tls-mldsa-06, RFC Editor queue, Informational & yes & yes & yes \\
+SLH-DSA-128s/128f & FIPS 205 (13 Aug 2024) & RFC 9909 (Dec 2025) & no code points in OpenSSL~3.5 & no & yes & yes (certificates) \\
+Falcon-512 (FN-DSA) & FIPS 206 in development (round-3 parameters used here) & draft-ietf-lamps-fn-dsa-certificates-00 (May 2026) & none & no & yes (liboqs) & sizes of the specification \\
+Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Editor queue & none & no & sum of the two schemes & sizes of the sum \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
-\begin{figure}[h]\centering
-\includegraphics[width=\textwidth]{figures/fig_loss}
-\caption{Wired-path packet loss: mean and 95th-percentile latency of a cold FAPI~2.0 transaction against the segment loss rate. Simulated with the idealised closed form (ideal segmentation, window $+n$ after every flight) and a 6\,ms penalty; not re-validated on the testbed.}
-\end{figure}
+
 \end{document}
