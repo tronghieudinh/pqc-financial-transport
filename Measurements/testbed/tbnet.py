@@ -27,10 +27,11 @@ PROBE_PORT = "4433"
 
 
 class Testbed:
-    def __init__(self, topology: str = "direct", dry_run: bool = False, verbose: bool = False):
+    def __init__(self, topology: str = "direct", dry_run: bool = False, verbose: bool = False, timestamps: bool = False):
         assert topology in ("direct", "proxy")
         self.topology = topology
         self.dry = dry_run
+        self.timestamps = timestamps         # TCP timestamps on: 12 option bytes per segment, MSS = MTU - 72
         self.verbose = verbose or dry_run
         self.ns = [NS_C, NS_S] if topology == "direct" else [NS_C, NS_P, NS_S]
 
@@ -69,7 +70,7 @@ class Testbed:
             self.run(["ip", "link", "set", "lo", "up"], ns=ns)
             for k, v in (("net.ipv6.conf.all.disable_ipv6", "0"), ("net.ipv6.conf.default.disable_ipv6", "0"),
                          ("net.ipv6.conf.all.accept_dad", "0"), ("net.ipv6.conf.default.accept_dad", "0"),
-                         ("net.ipv4.tcp_timestamps", "0"),          # MSS = MTU - 60 (model: 40 + 20 header bytes)
+                         ("net.ipv4.tcp_timestamps", "1" if self.timestamps else "0"),   # off: MSS = MTU - 60 (model: 40 + 20 header bytes)
                          ("net.ipv4.tcp_no_metrics_save", "1")):
                 self.run(["sysctl", "-q", "-w", f"{k}={v}"], ns=ns)
         if self.topology == "direct":

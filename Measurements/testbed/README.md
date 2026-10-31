@@ -79,3 +79,13 @@ adds latency (`proxy_delta.csv`), which is the empirical estimate of `pi` and `t
 * `tbnet.py` and the proxy mode could not be run on the development machine (no root there). The probe, the
   orchestrator and the analysis were tested on loopback. If `check_env.sh` or the smoke run reports a problem
   with the namespace setup, fix `tbnet.py` first (every command it runs is shown by `python3 tbnet.py up --dry-run`).
+
+## Extra TCP settings (revision of paper 1)
+
+`run_variants.sh` repeats part of the grid with other kernel settings: CUBIC on a wider grid (`cubic2`), delayed ACKs (`delack`),
+TCP timestamps (`ts`, MSS = MTU - 72) and both (`delack_ts`), optionally BBR (`BBR=1`, exploratory). `analyze_variants.py` compares each
+variant with the stack model and, configuration by configuration, with the Reno / quick-ACK / no-timestamps measurements.
+
+    sudo ./host_tune.sh on            # as before the other runs; "sudo ./host_tune.sh off" afterwards
+    sudo bash run_variants.sh         # about 2 hours; resumable
+    python3 analyze_variants.py       # no root; writes results/variants_summary.csv and the LaTeX table/numbers

@@ -12,7 +12,7 @@ Reads the same raw runs as paper_assets.py (direct path, Reno, no loss) and writ
 
 Calibration and validation. The model has no parameter fitted to these measurements: the two stack behaviours (window validation,
 write pattern) were identified on the "core" grid (rate 100 Mbit/s, initial window 10) and are structural; the middlebox penalty
-is zero. The configurations that vary the rate, the MTU above 1500 or the initial window were measured after the model was fixed
+is zero. The configurations that vary the rate, the MTU above 1500 or the initial window come from a later measurement campaign (see the supplementary table)
 and are reported separately as "away from the calibration point".
 """
 from __future__ import annotations
@@ -101,7 +101,7 @@ def main():
                 resWorstDepth=str(int(wt["depth"])), resWorstMtu=str(int(wt["mtu"])), resWorstIcw=str(int(wt["icw"])))
     # fraction of configurations with |error| under 5 % of the excess latency
     nums["resUnderFive"] = str(sum(abs(t["err"]) <= 0.05 * t["excess_ms"] for t in table))
-    P.write_numbers(os.path.join(a.latex, "numbers_residuals.tex"), nums)
+    P.write_numbers(os.path.join(a.latex, "numbers_residuals.tex"), nums, "residual_analysis.py")
     tex = ["\\begin{tabular}{@{}llrrrrr@{}}", "\\toprule",
            "Group & Value & $n$ & MAE (ms) & RMSE (ms) & MAE / mean excess (\\%) & MAE 95\\% interval (ms) \\\\", "\\midrule"]
     last = None

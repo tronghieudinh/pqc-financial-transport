@@ -11,6 +11,7 @@
 \input{numbers}
 \input{numbers_testbed}
 \input{numbers_residuals}
+\input{numbers_variants}
 \newcommand{\MLDSA}{ML-DSA-65\xspace}
 \title{Supplementary Material\\[2mm]\large Beyond Message Size: How the Behaviour of Linux TCP and OpenSSL Turns\\ Post-Quantum Signatures into Round Trips in Financial Messaging}
 \date{}
@@ -146,7 +147,7 @@ Transport penalty $\pi$ / threshold $\theta$ & 0--24 ms, reference 0 / 4 segment
 \end{table}
 
 \begin{table}[h]\centering\small
-\caption{Error of the stack model against the testbed (model minus measured excess latency) by group of configurations: mean absolute error (MAE), root-mean-square error (RMSE), MAE as a percentage of the mean measured excess latency, and 95\% bootstrap interval of the MAE (2\,000 resamples of the configurations). The core grid is the set on which the two stack behaviours were identified (100\,Mbit/s, initial window 10); the rest was measured after the model was fixed. Reno, no loss, mutual TLS, direct path (\texttt{residual\_analysis.py}).}
+\caption{Error of the stack model against the testbed (model minus measured excess latency) by group of configurations: mean absolute error (MAE), root-mean-square error (RMSE), MAE as a percentage of the mean measured excess latency, and 95\% bootstrap interval of the MAE (2\,000 resamples of the configurations). The core grid is the set on which the two stack behaviours were identified (100\,Mbit/s, initial window 10); the rest comes from a later campaign (UTC time stamps in the raw data: core grid 07:51--08:35, off-grid 09:07--09:17 on the same day), and no model parameter was fitted to it. Reno, no loss, mutual TLS, direct path (\texttt{residual\_analysis.py}).}
 \resizebox{\textwidth}{!}{\input{tables/tab_residuals}}
 \end{table}
 
@@ -154,6 +155,27 @@ Transport penalty $\pi$ / threshold $\theta$ & 0--24 ms, reference 0 / 4 segment
 \includegraphics[width=\textwidth]{figures/fig_residuals}
 \caption{Residuals of the stack model (model minus measurement) of the \resCoreN\ core-grid and \resAwayN\ off-grid testbed configurations against the round-trip time, by suite (left), and against the measured excess latency (right).}
 \end{figure}
+
+\begin{table}[h]\centering\small
+\caption{Stack model under other TCP settings (testbed, 100\,Mbit/s). Mean absolute error (MAE) of the stack model and of the idealised closed form against the measured excess latency; bias and maximum error of the stack model; configurations whose stack-model error exceeds 0.4 RTT / the same for the idealised form; and the measured excess latency against the Reno, quick-acknowledgement, no-timestamps run of the identical configuration (pairs, median and maximum absolute difference $\Delta$). CUBIC covers 5, 30 and 100\,ms RTT, MTU 1280, 1500, 9\,000 and initial windows 10 and 32; the other rows use MTU 1280 and 1500, initial window 10 and three suites (\texttt{analyze\_variants.py}). BBR is not modelled and is shown to mark the limit of the model.}
+\resizebox{\textwidth}{!}{\input{tables/tab_variants}}
+\end{table}
+
+\begin{table}[h]\centering\small
+\caption{Standardisation status of the schemes in the study on 31 October 2026, read from csrc.nist.gov and datatracker.ietf.org on that date. ``Exercised'' means that the scheme was run through a real TLS~1.3 handshake on the testbed. Status is not the same as readiness: the table says nothing about library or hardware-security-module support (vendors have announced algorithm validations for ML-DSA, ML-KEM and SLH-DSA; an algorithm validation is not a validation of a module configuration, and we did not assess any HSM).}
+\begin{tabular}{@{}p{0.17\textwidth}p{0.20\textwidth}p{0.20\textwidth}p{0.27\textwidth}p{0.09\textwidth}@{}}
+\toprule
+Scheme & NIST standard & X.509 profile (IETF) & TLS~1.3 & Exercised \\
+\midrule
+RSA-2048, ECDSA-P256 & FIPS 186-5 & RFC 5280 & RFC 9846 & yes \\
+ML-KEM-768/1024; X25519MLKEM768 & FIPS 203 (13 Aug 2024) & -- & X25519MLKEM768: RFC 10024 (Aug 2026); pure ML-KEM groups not assessed & yes \\
+ML-DSA-44/65/87 & FIPS 204 (13 Aug 2024) & RFC 9881 (Oct 2025) & draft-ietf-tls-mldsa-06, RFC Editor queue, Informational & yes \\
+SLH-DSA-128s/128f & FIPS 205 (13 Aug 2024) & RFC 9909 (Dec 2025) & no code points in OpenSSL~3.5 & no \\
+Falcon-512 (FN-DSA) & FIPS 206 in development (round-3 parameters used here) & draft-ietf-lamps-fn-dsa-certificates-00 (May 2026) & none & no \\
+Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Editor queue & none & no \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[h]\centering
 \includegraphics[width=\textwidth]{figures/fig_loss}

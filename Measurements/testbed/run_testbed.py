@@ -57,7 +57,7 @@ PROFILES = {
 }
 
 COLS = ["cfg_id", "topology", "suite", "cert_alg", "group", "depth", "mtls", "req", "resp", "rtt_ms", "rate_mbps",
-        "loss_pct", "mtu", "icw", "cc", "net_id", "iter", "t_tcp_ms", "t_hs_ms", "t_total_ms", "bytes_w", "bytes_r",
+        "loss_pct", "mtu", "icw", "cc", "tcp_ts", "quickack", "net_id", "iter", "t_tcp_ms", "t_hs_ms", "t_total_ms", "bytes_w", "bytes_r",
         "snd_mss", "snd_cwnd0", "retrans", "rtt_us", "data_segs_out", "data_segs_in", "err", "ts_utc"]
 
 
@@ -218,6 +218,7 @@ def build_configs(a, p):
     shaped = []
     for su, d, m in itertools.product(suites, depths, mtls):
         common = dict(topology=a.topology, suite=su, depth=d, mtls=m, req=a.req, resp=a.resp, cc=a.cc, n=n,
+                      tcp_ts=int(a.timestamps), quickack=int(not a.delack),
                       warmup=a.warmup)
         base.append(dict(common, rtt_ms=0, rate_mbps=0, loss_pct=0, mtu=1500, icw=10, net_id="base"))
         for rtt, rate, mtu, loss, icw in itertools.product(rtts, rates, mtus, losses, icws):
@@ -240,6 +241,8 @@ def main():
     ap.add_argument("--req", type=int, default=302, help="request bytes (default = ISO 8583 0200)")
     ap.add_argument("--resp", type=int, default=222, help="response bytes (default = ISO 8583 0210)")
     ap.add_argument("--cc", default="reno")
+    ap.add_argument("--delack", action="store_true", help="no quickack on the routes: Linux delayed acknowledgements (default: quickack)")
+    ap.add_argument("--timestamps", action="store_true", help="TCP timestamps on (12 option bytes, MSS = MTU - 72); default off")
     ap.add_argument("--seed", type=int, default=1)
     for k in ("suites", "depths", "mtls", "rtts", "rates", "mtus", "losses", "icws"):
         ap.add_argument(f"--{k}", default="", help="comma list overriding the profile")
@@ -291,7 +294,7 @@ def main():
     if new_file and w:
         w.writeheader()
 
-    tb = tbnet.Testbed(topo, dry_run=a.dry_run) if not loopback else None
+    tb = tbnet.Testbed(topo, dry_run=a.dry_run, timestamps=a.timestamps) if not loopback else None
     proxy = None
     if tb:
         tb.up()
@@ -314,7 +317,7 @@ def main():
                   f"rate={c['rate_mbps']:g} mtu={c['mtu']} loss={c['loss_pct']:g} icw={c['icw']}", flush=True)
             try:
                 if tb:
-                    tb.shape(c["rtt_ms"], c["rate_mbps"], c["loss_pct"], c["mtu"], c["icw"], c["cc"])
+                    tb.shape(c["rtt_ms"], c["rate_mbps"], c["loss_pct"], c["mtu"], c["icw"], c["cc"], quickack=bool(c["quickack"]))
                 rows, info, errs = run_config(c, tb, probe, cpus, work, loopback)
             except subprocess.CalledProcessError as e:
                 sys.exit(f"command failed: {' '.join(map(str, e.cmd))} (exit {e.returncode}); "
@@ -353,7 +356,7 @@ def main():
                 continue
             fails = 0
             mss, cw0 = int(ok[0]["snd_mss"]), int(ok[0]["snd_cwnd0"])
-            want_mss = c["mtu"] - 60
+            want_mss = c["mtu"] - 60 - (12 if c["tcp_ts"] else 0)
             if not loopback and (mss != want_mss or cw0 != c["icw"]) and c["net_id"] == "shaped":
                 print(f"   WARNING: client mss={mss} (want {want_mss}), cwnd0={cw0} (want {c['icw']})", flush=True)
             ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
