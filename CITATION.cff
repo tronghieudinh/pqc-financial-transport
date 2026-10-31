@@ -10,4 +10,4 @@ authors:
 repository-code: "https://github.com/tronghieudinh/pqc-financial-transport"
 license: MIT
 keywords: [post-quantum cryptography, TLS 1.3, financial messaging, TCP congestion window, X.509, ML-DSA]
-doi: "10.5281/zenodo.23839450"
+doi: "10.5281/zenodo.23839449"
