@@ -2,7 +2,7 @@
 
 Simulator, measurements and paper assets for
 
-> **Round Trips, Not Computation: A Testbed-Validated Transport Model of Post-Quantum Authentication in Financial Messaging over TLS 1.3**
+> **Beyond Message Size: How the Behaviour of Linux TCP and OpenSSL Turns Post-Quantum Signatures into Round Trips in Financial Messaging**
 > Trong-Hieu Dinh (Banking Academy of Vietnam), <hieudt@hvnh.edu.vn>. Submitted to *Computers & Security*.
 
 The study quantifies how the larger keys and signatures of post-quantum cryptography propagate through TLS 1.3, DER X.509

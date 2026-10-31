@@ -617,7 +617,7 @@ write("tab_radio_profiles.tex", "\n".join(lines) + "\n")
 
 # Master table (v2): one row per suite, one column group per research question
 lines = [r"\begin{tabular}{@{}lrrrr@{}}", r"\toprule",
-         r"Suite & RQ1: size, KB & RQ2: $\Delta T_{d1\to d4}$ & RQ3: $O>T_\text{cpu}$ & RQ4: cert.\ bytes \\",
+         r"Suite & RQ2: size, KB & RQ3: $\Delta T_{d1\to d4}$ & RQ4: $O>T_\text{cpu}$ & RQ5: cert.\ bytes \\",
          r" & (factor) & (ms) & (\% of configs) & compressed (\%) \\", r"\midrule"]
 for su in ALL:
     size = f"{l7(su, 'SWIFT_MX') / 1024:.1f} ({l7(su, 'SWIFT_MX') / l7(BASE, 'SWIFT_MX'):.1f}$\\times$)"
