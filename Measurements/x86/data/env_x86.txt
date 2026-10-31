@@ -1,0 +1,15 @@
+date: 2026-10-31T17:39:20+07:00
+host: Linux 7.0.0-42-generic x86_64
+Model name:                              Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz
+Thread(s) per core:                      2
+Core(s) per socket:                      2
+CPU max MHz:                             2500.0000
+CPU min MHz:                             500.0000
+Flags: (avx present)
+isa: adx aes avx2 bmi2 
+openssl: OpenSSL 3.5.4 30 Sep 2025 (Library: OpenSSL 3.5.4 30 Sep 2025)
+liboqs: 0.14.0 (x86, runtime CPU dispatch)
+pinned cpu: 2
+governor: performance  no_turbo: 1
+load before: 0.44 0.45 0.46
+load after: 1.05 0.73 0.57

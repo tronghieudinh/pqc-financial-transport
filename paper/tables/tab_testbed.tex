@@ -1,0 +1,14 @@
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.30\textwidth}rrrr@{}}
+\toprule
+\shortstack[l]{Signature /\\key exchange} & \shortstack[r]{Config-\\urations} & \shortstack[r]{MAE ideal\\(ms)} & \shortstack[r]{MAE stack\\(ms)} & \shortstack[r]{Within\\1\,ms} \\
+\midrule
+RSA-2048 / ECDHE & 12 & 0.95 & 0.95 & 6 of 12 \\
+ECDSA-P256 / X25519 & 63 & 1.96 & 1.48 & 36 of 63 \\
+ECDSA-P256 / X25519MLKEM768 & 15 & 2.59 & 0.64 & 15 of 15 \\
+ML-DSA-44 / ML-KEM-768 & 12 & 0.66 & 0.72 & 9 of 12 \\
+ML-DSA-65 / ML-KEM-768 & 62 & 7.02 & 1.89 & 23 of 62 \\
+ML-DSA-87 / ML-KEM-1024 & 62 & 7.18 & 2.14 & 21 of 62 \\
+\midrule
+All & 226 & 4.70 & 1.65 & 110 of 226 \\
+\bottomrule
+\end{tabular}

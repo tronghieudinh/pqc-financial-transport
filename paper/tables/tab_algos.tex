@@ -1,0 +1,26 @@
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Signature & Family & PK & SPKI & Sig. & Sign & Verify & Pair \\
+ & & (B) & (B) & (B) & (ms) & (ms) & KEM \\
+\midrule
+RSA-2048 & classical & 270 & 294 & 256 & 0.491 & 0.0147 & ECDHE-P256 \\
+RSA-3072 & classical & 398 & 422 & 384 & 1.451 & 0.0293 & ECDHE-P256 \\
+ECDSA-P256 & classical & 65 & 91 & 72 & 0.01446 & 0.04112 & X25519 / hybrid \\
+ML-DSA-44 & lattice & 1{,}312 & 1{,}334 & 2{,}420 & 0.3594 & 0.06804 & ML-KEM-768 \\
+ML-DSA-65 & lattice & 1{,}952 & 1{,}974 & 3{,}309 & 0.586 & 0.103 & ML-KEM-768 \\
+ML-DSA-87 & lattice & 2{,}592 & 2{,}614 & 4{,}627 & 0.6691 & 0.1589 & ML-KEM-1024 \\
+Falcon-512 & lattice & 897 & 919 & 666 & 0.1045 & 0.01755 & ML-KEM-768 \\
+Falcon-1024 & lattice & 1{,}793 & 1{,}815 & 1{,}280 & 0.2114 & 0.03098 & ML-KEM-1024 \\
+SLH-DSA-128s & hash & 32 & 54 & 7{,}856 & 170.8 & 0.1614 & ML-KEM-768 \\
+SLH-DSA-128f & hash & 32 & 54 & 17{,}088 & 8.2 & 0.5058 & ML-KEM-768 \\
+ML-DSA-44+ECDSA-P256 & composite & 1{,}377 & 1{,}399 & 2{,}492 & 0.37386 & 0.10916 & X25519MLKEM768 \\
+ML-DSA-65+ECDSA-P256 & composite & 2{,}017 & 2{,}039 & 3{,}381 & 0.60046 & 0.14412 & X25519MLKEM768 \\
+\midrule
+\multicolumn{8}{l}{\textit{Key establishment: key-share bytes; last two columns = client / server computation (ms)}} \\
+\quad ECDHE-P256 & classical & \multicolumn{2}{r}{client 65} & \multicolumn{2}{r}{server 65} & 0.04251 & 0.04251 \\
+\quad X25519 & classical & \multicolumn{2}{r}{client 32} & \multicolumn{2}{r}{server 32} & 0.03596 & 0.03596 \\
+\quad X25519MLKEM768 & hybrid & \multicolumn{2}{r}{client 1{,}216} & \multicolumn{2}{r}{server 1{,}120} & 0.06844 & 0.04516 \\
+\quad ML-KEM-768 & post-quantum & \multicolumn{2}{r}{client 1{,}184} & \multicolumn{2}{r}{server 1{,}088} & 0.03248 & 0.009197 \\
+\quad ML-KEM-1024 & post-quantum & \multicolumn{2}{r}{client 1{,}568} & \multicolumn{2}{r}{server 1{,}568} & 0.04562 & 0.01183 \\
+\bottomrule
+\end{tabular}

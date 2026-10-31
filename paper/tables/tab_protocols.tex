@@ -1,0 +1,12 @@
+\begin{tabular}{@{}lllrrrr@{}}
+\toprule
+Profile & Message types & Security objects (signer) & Exch. & Req./resp. (B)$^{a}$ & mTLS & $d_\text{ref}$ \\
+\midrule
+ISO 8583 & 0200/0210 & none (symmetric MAC) & 1 & 302/222 & yes & 2 \\
+ISO 20022 & pacs.008 / pacs.002 & XMLDSig on BAH (client{,} server) & 1 & 4{,}200/1{,}900 & yes & 2 \\
+SWIFT MX & cross-border pacs.008 & XMLDSig / LAU (client{,} server) & 1 & 9{,}950/3{,}100 & yes & 3 \\
+OAuth 2.0 & RFC 6749 token + RFC 6750 call & client assertion{,} access token{,} Bearer & 2 & 1{,}200/1{,}320 & no & 2 \\
+OIDC & token{,} JWKS{,} userinfo & client assertion{,} ID/access token{,} JWK & 3 & 1{,}500/1{,}220 & no & 2 \\
+FAPI 2.0 & PAR{,} token{,} resource & JAR{,} DPoP$\times$2{,} tokens{,} signed response & 3 & 2{,}000/1{,}750 & yes & 2 \\
+\bottomrule
+\end{tabular}

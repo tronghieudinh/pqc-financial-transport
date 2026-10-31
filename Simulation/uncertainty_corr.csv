@@ -1,0 +1,5 @@
+metric,leaf_meta,cpu_scale,penalty,threshold,init_cwnd
+ml_ms,0.026,0.339,0.43,-0.208,-0.645
+ml_factor,-0.01,0.537,0.468,0.14,-0.373
+falcon_factor,0.067,0.19,0.299,-0.086,0.11
+ml_percert_ms,-0.008,0.186,0.169,0.322,-0.752

@@ -1,0 +1,15 @@
+configurations compared: 4 (direct, loss 0: 4)
+[all] bias (model - measured) +0.66 ms, MAE 0.79 ms, median |rel. error| 0.4 %, Spearman 1.000, mean size ratio 1.004
+[direct, loss 0] bias (model - measured) +0.66 ms, MAE 0.79 ms, median |rel. error| 0.4 %, Spearman 1.000, mean size ratio 1.004
+
+per suite (direct, loss 0): n, bias ms, MAE ms, median |rel err| %
+  ECDSA-P256|X25519                   2    -0.13    0.13     0.1
+  ML-DSA-65|ML-KEM-768                2    +1.45    1.45     1.1
+
+largest deviations (direct, loss 0):
+  ML-DSA-65|ML-KEM-768         d3 rtt=30 rate=100 mtu=1500 icw=10: measured 149.1, model 151.6 ms, max flight 16 segments
+  ML-DSA-65|ML-KEM-768         d1 rtt=30 rate=100 mtu=1500 icw=10: measured 91.4, model 91.9 ms, max flight 8 segments
+  ECDSA-P256|X25519            d1 rtt=30 rate=100 mtu=1500 icw=10: measured 90.5, model 90.3 ms, max flight 2 segments
+  ECDSA-P256|X25519            d3 rtt=30 rate=100 mtu=1500 icw=10: measured 90.6, model 90.6 ms, max flight 3 segments
+
+configurations whose TCP MSS / initial cwnd differ from the request: 0

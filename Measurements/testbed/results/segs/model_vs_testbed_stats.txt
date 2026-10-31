@@ -1,0 +1,23 @@
+configurations compared: 16 (direct, loss 0: 16)
+[all] bias (model - measured) -8.75 ms, MAE 8.88 ms, median |rel. error| 0.8 %, Spearman 0.985, mean size ratio 0.994
+[direct, loss 0] bias (model - measured) -8.75 ms, MAE 8.88 ms, median |rel. error| 0.8 %, Spearman 0.985, mean size ratio 0.994
+
+per suite (direct, loss 0): n, bias ms, MAE ms, median |rel err| %
+  ECDSA-P256|X25519                   4    -0.68    0.68     0.8
+  ECDSA-P256|X25519MLKEM768           4    -0.69    0.69     0.8
+  ML-DSA-65|ML-KEM-768                4   -20.84   20.88     9.3
+  ML-DSA-87|ML-KEM-1024               4   -12.79   13.28     9.0
+
+largest deviations (direct, loss 0):
+  ML-DSA-65|ML-KEM-768         d1 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 147.5, model 91.9 ms, max flight 9 segments
+  ML-DSA-65|ML-KEM-768         d2 rtt=30.0 rate=100.0 mtu=1500 icw=10: measured 149.2, model 121.8 ms, max flight 12 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 148.0, model 121.6 ms, max flight 13 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30.0 rate=100.0 mtu=1500 icw=10: measured 147.2, model 121.4 ms, max flight 11 segments
+  ECDSA-P256|X25519MLKEM768    d2 rtt=30.0 rate=100.0 mtu=1500 icw=10: measured 91.4, model 90.6 ms, max flight 3 segments
+  ECDSA-P256|X25519            d2 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 91.2, model 90.4 ms, max flight 2 segments
+  ECDSA-P256|X25519            d2 rtt=30.0 rate=100.0 mtu=1500 icw=10: measured 91.1, model 90.4 ms, max flight 2 segments
+  ECDSA-P256|X25519MLKEM768    d1 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 91.2, model 90.5 ms, max flight 3 segments
+
+configurations whose TCP MSS / initial cwnd differ from the request: 0
+
+middlebox penalty fit on the direct path (no middlebox present): RMSE with pi=0 is 18.05 ms; best theta=8 gives pi=9.614 ms, RMSE 12.807 ms. A fitted pi near 0 means the lower bound pi=0 is supported by the kernel path.

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software or data, please cite it as below."
+title: "pqc-financial-transport: simulator, measurements and paper assets for 'Round Trips, Not Computation: A Testbed-Validated Transport Model of Post-Quantum Authentication in Financial Messaging over TLS 1.3'"
+type: software
+authors:
+  - family-names: "Dinh"
+    given-names: "Trong-Hieu"
+    email: "hieudt@hvnh.edu.vn"
+    affiliation: "Banking Academy of Vietnam, Hanoi, Vietnam"
+repository-code: "https://github.com/tronghieudinh/pqc-financial-transport"
+license: MIT
+keywords: [post-quantum cryptography, TLS 1.3, financial messaging, TCP congestion window, X.509, ML-DSA]
+# doi: "[Zenodo DOI - TODO after the first release]"

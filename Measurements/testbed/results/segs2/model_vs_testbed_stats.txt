@@ -1,0 +1,23 @@
+configurations compared: 4 (direct, loss 0: 4)
+[v4 rule: cwnd += every flight] bias -26.63 ms, MAE 26.63 ms, max |error| 55.6 ms, configurations off by more than 0.4 RTT: 3
+[Linux rule: cwnd grows only if the flight used > half of it] bias -19.36 ms, MAE 21.10 ms, max |error| 55.6 ms, configurations off by more than 0.4 RTT: 2
+[all] bias (model - measured) -26.63 ms, MAE 26.63 ms, median |rel. error| 17.2 %, Spearman 0.400, mean size ratio 0.993
+[direct, loss 0] bias (model - measured) -26.63 ms, MAE 26.63 ms, median |rel. error| 17.2 %, Spearman 0.400, mean size ratio 0.993
+
+per suite (direct, loss 0): n, bias ms, MAE ms, median |rel err| %
+  ML-DSA-65|ML-KEM-768                2   -27.99   27.99    19.1
+  ML-DSA-87|ML-KEM-1024               2   -25.27   25.27    17.2
+
+largest deviations (direct, loss 0):
+  ML-DSA-65|ML-KEM-768         d1 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 147.5, model 91.9 ms, max flight 9 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 147.2, model 121.6 ms, max flight 13 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30.0 rate=100.0 mtu=1500 icw=10: measured 146.4, model 121.4 ms, max flight 11 segments
+  ML-DSA-65|ML-KEM-768         d1 rtt=30.0 rate=100.0 mtu=1500 icw=10: measured 92.3, model 91.9 ms, max flight 8 segments
+
+data segments (kernel counters) vs model: 4 of 4 configurations use more segments than the model; mean difference client +1.50, server +1.75 segments
+  ML-DSA-65|ML-KEM-768         d1 client 13 vs model 11, server 13 vs model 10; error -55.6 ms
+  ML-DSA-87|ML-KEM-1024        d1 client 13 vs model 12, server 14 vs model 12; error -24.9 ms
+  ML-DSA-87|ML-KEM-1024        d1 client 15 vs model 13, server 15 vs model 14; error -25.6 ms
+  ML-DSA-65|ML-KEM-768         d1 client 9 vs model 8, server 10 vs model 9; error -0.4 ms
+
+configurations whose TCP MSS / initial cwnd differ from the request: 0

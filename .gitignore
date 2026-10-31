@@ -1,0 +1,22 @@
+# test-only private keys: regenerate with Measurements/certs.sh
+*.key
+__pycache__/
+# regenerable large simulation results (run reproduce.sh)
+Simulation/results/results.csv
+Simulation/sens/*/results.csv
+# build artefacts and binaries
+Measurements/testbed/work/
+Measurements/testbed/tls_probe
+Measurements/bench_pqc
+Measurements/bench_pqc_x86
+Measurements/tls_client_time
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.blg
+paper/*.spl
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.synctex.gz
+desktop.ini
+Desktop.ini

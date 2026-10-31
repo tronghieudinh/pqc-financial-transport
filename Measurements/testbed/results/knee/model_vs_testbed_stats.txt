@@ -1,0 +1,15 @@
+configurations compared: 2 (direct, loss 0: 2)
+
+per suite (direct, loss 0): n, bias ms, MAE ms, median |rel err| %
+  ECDSA-P256|X25519                   1   -29.55   29.55    24.4
+  ECDSA-P256|X25519MLKEM768           1   -29.56   29.56    24.4
+
+largest deviations (direct, loss 0):
+  ECDSA-P256|X25519MLKEM768    d1 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 121.2, model 91.7 ms, max flight 11 segments
+  ECDSA-P256|X25519            d1 rtt=30.0 rate=100.0 mtu=1280 icw=10: measured 121.0, model 91.5 ms, max flight 11 segments
+
+data segments (kernel counters) vs model: 2 of 2 configurations use more segments than the model; mean difference client +0.00, server +1.00 segments
+  ECDSA-P256|X25519MLKEM768    d1 client 13 vs model 13, server 7 vs model 6; error -29.6 ms
+  ECDSA-P256|X25519            d1 client 12 vs model 12, server 6 vs model 5; error -29.5 ms
+
+configurations whose TCP MSS / initial cwnd differ from the request: 0

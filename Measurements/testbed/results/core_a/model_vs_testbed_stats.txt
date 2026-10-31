@@ -1,0 +1,25 @@
+configurations compared: 72 (direct, loss 0: 72)
+[all] bias (model - measured) -3.29 ms, MAE 4.11 ms, median |rel. error| 0.8 %, Spearman 0.979, mean size ratio 1.016
+[direct, loss 0] bias (model - measured) -3.29 ms, MAE 4.11 ms, median |rel. error| 0.8 %, Spearman 0.979, mean size ratio 1.016
+
+per suite (direct, loss 0): n, bias ms, MAE ms, median |rel err| %
+  ECDSA-P256|X25519                  12    -0.68    0.68     0.8
+  ECDSA-P256|X25519MLKEM768          12    -0.66    0.66     0.8
+  ML-DSA-44|ML-KEM-768               12    +0.61    0.66     0.4
+  ML-DSA-65|ML-KEM-768               12    -9.76   11.39     2.2
+  ML-DSA-87|ML-KEM-1024              12   -10.14   10.35     0.5
+  RSA-2048|ECDHE-P256                12    +0.88    0.95     0.7
+
+largest deviations (direct, loss 0):
+  ML-DSA-65|ML-KEM-768         d2 rtt=100 rate=100.0 mtu=1500 icw=10: measured 498.6, model 401.8 ms, max flight 12 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=100 rate=100.0 mtu=1500 icw=10: measured 496.1, model 401.4 ms, max flight 11 segments
+  ML-DSA-65|ML-KEM-768         d2 rtt=30 rate=100.0 mtu=1500 icw=10: measured 148.6, model 121.8 ms, max flight 12 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30 rate=100.0 mtu=1500 icw=10: measured 146.1, model 121.4 ms, max flight 11 segments
+  RSA-2048|ECDHE-P256          d2 rtt=5 rate=100.0 mtu=1500 icw=10: measured 13.0, model 15.6 ms, max flight 3 segments
+  RSA-2048|ECDHE-P256          d2 rtt=100 rate=100.0 mtu=1500 icw=10: measured 298.1, model 300.6 ms, max flight 3 segments
+  RSA-2048|ECDHE-P256          d2 rtt=30 rate=100.0 mtu=1500 icw=10: measured 88.1, model 90.6 ms, max flight 3 segments
+  ML-DSA-65|ML-KEM-768         d3 rtt=100 rate=100.0 mtu=1500 icw=10: measured 499.3, model 501.6 ms, max flight 16 segments
+
+configurations whose TCP MSS / initial cwnd differ from the request: 0
+
+middlebox penalty fit on the direct path (no middlebox present): RMSE with pi=0 is 16.56 ms; best theta=9 gives pi=4.414 ms, RMSE 15.648 ms. A fitted pi near 0 means the lower bound pi=0 is supported by the kernel path.

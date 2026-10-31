@@ -1,0 +1,12 @@
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+Variant & \multicolumn{4}{c}{SWIFT MX $d{=}3$ size (KB)} & \multicolumn{4}{c}{SWIFT MX $d{=}3$ latency (ms)} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+ & ECDSA & ML-DSA-65 & Falcon-512 & SLH-f & ECDSA & ML-DSA-65 & Falcon-512 & SLH-f \\
+\midrule
+Reference model & 23.0 & 83.4 & 39.9 & 246.7 & 121.5 & 186.1 & 123.1 & 287.6 \\
+XMLDSig without embedded certificate & 20.2 & 67.2 & 33.4 & 199.7 & 92.3 & 157.0 & 122.5 & 283.6 \\
+Smaller certificates (leaf 600 B, CA 350 B) & 21.0 & 81.3 & 37.9 & 244.7 & 121.3 & 186.0 & 122.8 & 287.4 \\
+Larger certificates (leaf 1400 B, CA 800 B) & 26.4 & 86.7 & 43.3 & 250.1 & 121.8 & 186.4 & 123.4 & 287.9 \\
+\bottomrule
+\end{tabular}

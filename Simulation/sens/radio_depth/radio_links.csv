@@ -1,0 +1,4 @@
+profile,gen,sinr_db,dl_mbps,ul_mbps,bler_first_tx,tx_per_tb,harq_fail,blockage,ran_rtt_floor_ms
+5G-NR sub-6 (eMBB),5G,30,410.548,30.4455,0.000952964,1.00095,7.65813e-25,0,7
+5G-NR sub-6 (eMBB),5G,10,62.3122,4.47999,0.0968655,1.09923,4.60235e-07,0,7
+5G-NR sub-6 (eMBB),5G,0,6.34153,0.752061,0.0945267,1.09665,3.31568e-08,0,7

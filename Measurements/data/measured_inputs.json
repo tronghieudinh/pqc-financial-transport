@@ -1,0 +1,173 @@
+{
+ "X925": {
+  "sigs": {
+   "RSA-2048": {
+    "sign_ms": 0.491027,
+    "verify_ms": 0.014702,
+    "source": "OpenSSL 3.5.4"
+   },
+   "RSA-3072": {
+    "sign_ms": 1.450652,
+    "verify_ms": 0.029297,
+    "source": "OpenSSL 3.5.4"
+   },
+   "ECDSA-P256": {
+    "sign_ms": 0.014462999999999998,
+    "verify_ms": 0.041121000000000005,
+    "source": "OpenSSL 3.5.4"
+   },
+   "ML-DSA-44": {
+    "sign_ms": 0.35941,
+    "verify_ms": 0.068039,
+    "source": "OpenSSL 3.5.4"
+   },
+   "ML-DSA-65": {
+    "sign_ms": 0.58597,
+    "verify_ms": 0.103018,
+    "source": "OpenSSL 3.5.4",
+    "liboqs_cross_check": {
+     "sign_ms": 0.26748700000000003,
+     "verify_ms": 0.061096
+    }
+   },
+   "ML-DSA-87": {
+    "sign_ms": 0.669058,
+    "verify_ms": 0.158858,
+    "source": "OpenSSL 3.5.4"
+   },
+   "SLH-DSA-128s": {
+    "sign_ms": 170.82494200000002,
+    "verify_ms": 0.161434,
+    "source": "OpenSSL 3.5.4"
+   },
+   "SLH-DSA-128f": {
+    "sign_ms": 8.200299999999999,
+    "verify_ms": 0.505773,
+    "source": "OpenSSL 3.5.4"
+   },
+   "Falcon-512": {
+    "sign_ms": 0.104541,
+    "verify_ms": 0.017550999999999997,
+    "source": "liboqs 0.14.0"
+   },
+   "Falcon-1024": {
+    "sign_ms": 0.211422,
+    "verify_ms": 0.030984,
+    "source": "liboqs 0.14.0"
+   }
+  },
+  "kex": {
+   "ECDHE-P256": {
+    "gen_ms": 0.008448,
+    "derive_ms": 0.034061,
+    "server_ms": 0.042509000000000005
+   },
+   "X25519": {
+    "gen_ms": 0.013262000000000001,
+    "derive_ms": 0.022699,
+    "server_ms": 0.035961
+   },
+   "X25519MLKEM768": {
+    "gen_ms": 0.031104,
+    "derive_ms": 0.037337,
+    "server_ms": 0.045158
+   },
+   "ML-KEM-768": {
+    "gen_ms": 0.017842,
+    "derive_ms": 0.014638,
+    "server_ms": 0.009196999999999999
+   },
+   "ML-KEM-1024": {
+    "gen_ms": 0.026642,
+    "derive_ms": 0.018979,
+    "server_ms": 0.011831
+   }
+  }
+ },
+ "A725": {
+  "sigs": {
+   "RSA-2048": {
+    "sign_ms": 1.085168,
+    "verify_ms": 0.031629000000000004,
+    "source": "OpenSSL 3.5.4"
+   },
+   "RSA-3072": {
+    "sign_ms": 3.271417,
+    "verify_ms": 0.064804,
+    "source": "OpenSSL 3.5.4"
+   },
+   "ECDSA-P256": {
+    "sign_ms": 0.026156,
+    "verify_ms": 0.078349,
+    "source": "OpenSSL 3.5.4"
+   },
+   "ML-DSA-44": {
+    "sign_ms": 0.753026,
+    "verify_ms": 0.148852,
+    "source": "OpenSSL 3.5.4"
+   },
+   "ML-DSA-65": {
+    "sign_ms": 1.224892,
+    "verify_ms": 0.22891,
+    "source": "OpenSSL 3.5.4",
+    "liboqs_cross_check": {
+     "sign_ms": 0.534548,
+     "verify_ms": 0.12958
+    }
+   },
+   "ML-DSA-87": {
+    "sign_ms": 1.438264,
+    "verify_ms": 0.359371,
+    "source": "OpenSSL 3.5.4"
+   },
+   "SLH-DSA-128s": {
+    "sign_ms": 259.60137299999997,
+    "verify_ms": 0.260415,
+    "source": "OpenSSL 3.5.4"
+   },
+   "SLH-DSA-128f": {
+    "sign_ms": 13.084849,
+    "verify_ms": 0.771893,
+    "source": "OpenSSL 3.5.4"
+   },
+   "Falcon-512": {
+    "sign_ms": 0.205737,
+    "verify_ms": 0.031104,
+    "source": "liboqs 0.14.0"
+   },
+   "Falcon-1024": {
+    "sign_ms": 0.402634,
+    "verify_ms": 0.05949,
+    "source": "liboqs 0.14.0"
+   }
+  },
+  "kex": {
+   "ECDHE-P256": {
+    "gen_ms": 0.017206,
+    "derive_ms": 0.065653,
+    "server_ms": 0.082859
+   },
+   "X25519": {
+    "gen_ms": 0.031268000000000004,
+    "derive_ms": 0.045219,
+    "server_ms": 0.076487
+   },
+   "X25519MLKEM768": {
+    "gen_ms": 0.073229,
+    "derive_ms": 0.08021,
+    "server_ms": 0.09851599999999999
+   },
+   "ML-KEM-768": {
+    "gen_ms": 0.041961,
+    "derive_ms": 0.034991,
+    "server_ms": 0.022029
+   },
+   "ML-KEM-1024": {
+    "gen_ms": 0.06337899999999999,
+    "derive_ms": 0.045802999999999996,
+    "server_ms": 0.028847
+   }
+  }
+ },
+ "env": "date: 2026-10-28T14:19:58+07:00\nhost: Linux 6.14.0-1015-nvidia aarch64\nModel name:                              Cortex-X925\nCPU max MHz:                             4004.0000\nModel name:                              Cortex-A725\nCPU max MHz:                             2860.0000\nopenssl: OpenSSL 3.5.4 30 Sep 2025 (Library: OpenSSL 3.5.4 30 Sep 2025)\nliboqs: 0.14.0 (NEON)\nload before: 9.66 8.09 6.01\nload after: 4.43 5.49 5.44\n"
+}

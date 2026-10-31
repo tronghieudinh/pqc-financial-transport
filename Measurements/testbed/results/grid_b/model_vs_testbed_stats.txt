@@ -1,0 +1,35 @@
+configurations compared: 144 (direct, loss 0: 144)
+[v4 rule: cwnd += every flight] bias -2.67 ms, MAE 4.31 ms, max |error| 56.9 ms, configurations off by more than 0.4 RTT: 11
+[Linux cwnd rule (grow only if the flight used > half of it)] bias -1.83 ms, MAE 3.60 ms, max |error| 56.9 ms, configurations off by more than 0.4 RTT: 7
+[Linux cwnd rule + OpenSSL write pattern (stack model)] bias +0.10 ms, MAE 2.09 ms, max |error| 5.5 ms, configurations off by more than 0.4 RTT: 0
+[all] bias (model - measured) -2.67 ms, MAE 4.31 ms, median |rel. error| 1.7 %, Spearman 0.896, mean size ratio 1.013
+[direct, loss 0] bias (model - measured) -2.67 ms, MAE 4.31 ms, median |rel. error| 1.7 %, Spearman 0.896, mean size ratio 1.013
+
+per suite (direct, loss 0): n, bias ms, MAE ms, median |rel err| %
+  ECDSA-P256|X25519                  48    -1.75    1.75     1.2
+  ML-DSA-65|ML-KEM-768               48    -2.65    5.06     1.9
+  ML-DSA-87|ML-KEM-1024              48    -3.62    6.11     2.5
+
+largest deviations (direct, loss 0):
+  ML-DSA-65|ML-KEM-768         d1 rtt=30 rate=1000 mtu=1280 icw=10: measured 147.1, model 90.2 ms, max flight 9 segments
+  ML-DSA-87|ML-KEM-1024        d4 rtt=30 rate=1000 mtu=1280 icw=32: measured 145.1, model 90.6 ms, max flight 32 segments
+  ML-DSA-65|ML-KEM-768         d1 rtt=30 rate=10 mtu=1280 icw=10: measured 153.8, model 109.1 ms, max flight 9 segments
+  ML-DSA-65|ML-KEM-768         d2 rtt=30 rate=1000 mtu=1500 icw=10: measured 146.6, model 120.2 ms, max flight 12 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30 rate=1000 mtu=1280 icw=10: measured 146.2, model 120.2 ms, max flight 13 segments
+  ML-DSA-87|ML-KEM-1024        d4 rtt=30 rate=1000 mtu=1280 icw=10: measured 206.2, model 180.2 ms, max flight 32 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30 rate=1000 mtu=1500 icw=10: measured 145.7, model 120.1 ms, max flight 11 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=30 rate=10 mtu=1280 icw=10: measured 157.6, model 136.1 ms, max flight 13 segments
+
+data segments (kernel counters) vs model: 144 of 144 configurations use more segments than the model; mean difference client +1.60, server +1.94 segments
+  ML-DSA-87|ML-KEM-1024        d3 client 30 vs model 26, server 30 vs model 26; error +3.4 ms
+  ML-DSA-87|ML-KEM-1024        d3 client 30 vs model 26, server 30 vs model 26; error -0.2 ms
+  ML-DSA-87|ML-KEM-1024        d2 client 7 vs model 4, server 7 vs model 4; error +0.6 ms
+  ML-DSA-87|ML-KEM-1024        d1 client 6 vs model 3, server 6 vs model 3; error +0.7 ms
+  ML-DSA-65|ML-KEM-768         d3 client 23 vs model 20, server 23 vs model 20; error +0.4 ms
+  ML-DSA-65|ML-KEM-768         d3 client 7 vs model 4, server 7 vs model 4; error +4.2 ms
+
+stack model inside the 95 % bootstrap CI of the measured excess: 39 of 144 configurations; within 1 ms: 52; within 0.1 RTT: 100
+
+configurations whose TCP MSS / initial cwnd differ from the request: 0
+
+middlebox penalty fit (stack model) on the direct path (no middlebox present): RMSE with pi=0 is 2.58 ms; best theta=1 gives pi=0.0 ms, RMSE 2.578 ms. A fitted pi near 0 means the lower bound pi=0 is supported by the kernel path.

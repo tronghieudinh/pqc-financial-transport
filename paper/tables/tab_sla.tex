@@ -1,0 +1,18 @@
+\begin{tabular}{@{}lrrrrrrrrrr@{}}
+\toprule
+Suite & \multicolumn{2}{c}{5G sub-6} & \multicolumn{2}{c}{5G URLLC} & \multicolumn{2}{c}{5G mmWave} & \multicolumn{2}{c}{6G mid-band$^\ast$} & \multicolumn{2}{c}{6G sub-THz$^\ast$} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9} \cmidrule(lr){10-11}
+ & 500\,ms & 1\,s & 500\,ms & 1\,s & 500\,ms & 1\,s & 500\,ms & 1\,s & 500\,ms & 1\,s \\
+\midrule
+ECDSA-P256 (baseline) & -5 & -5 & -5 & -5 & -- & -- & -5 & -5 & -- & -5 \\
+RSA-2048 & 0 & -5 & 0 & -5 & -- & -- & -5 & -5 & -- & -5 \\
+ECDSA-P256 + hybrid KEM & -5 & -5 & -5 & -5 & -- & -- & -5 & -5 & -- & -5 \\
+ML-DSA-44 & 10 & 0 & 10 & 5 & -- & -- & -5 & -5 & -- & -5 \\
+ML-DSA-65 & 10 & 0 & 15 & 10 & -- & -- & -5 & -5 & -- & -5 \\
+ML-DSA-87 & 10 & 5 & 15 & 10 & -- & -- & -5 & -5 & -- & -5 \\
+Falcon-512 & 0 & -5 & 10 & -5 & -- & -- & -5 & -5 & -- & -5 \\
+Falcon-1024 & 5 & 0 & 10 & 0 & -- & -- & -5 & -5 & -- & -5 \\
+SLH-DSA-128s & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+SLH-DSA-128f & 20 & 10 & 20 & 15 & -- & -- & 5 & -5 & -- & 0 \\
+\bottomrule
+\end{tabular}
