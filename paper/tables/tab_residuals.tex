@@ -1,0 +1,33 @@
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Group & Value & $n$ & MAE (ms) & RMSE (ms) & MAE / mean excess (\%) & MAE 95\% interval (ms) \\
+\midrule
+ & all configurations & 226 & 1.65 & 2.16 & 1.2 & 1.48--1.83 \\
+\midrule
+ & core grid (100 Mbit/s, initial window 10) & 82 & 0.96 & 1.34 & 0.6 & 0.77--1.18 \\
+ & away from the calibration point & 144 & 2.04 & 2.51 & 1.8 & 1.81--2.28 \\
+\midrule
+RTT (ms) & 5 & 24 & 0.95 & 1.31 & 4.9 & 0.63--1.33 \\
+RTT (ms) & 30 & 178 & 1.84 & 2.34 & 1.6 & 1.63--2.05 \\
+RTT (ms) & 100 & 24 & 0.92 & 1.30 & 0.2 & 0.57--1.31 \\
+\midrule
+MTU (B) & 1280 & 58 & 1.87 & 2.39 & 1.5 & 1.50--2.26 \\
+MTU (B) & 1500 & 120 & 1.33 & 1.83 & 0.9 & 1.12--1.57 \\
+MTU (B) & 9000 & 48 & 2.17 & 2.61 & 2.1 & 1.77--2.58 \\
+\midrule
+initial window & 10 & 154 & 1.32 & 1.80 & 0.9 & 1.13--1.52 \\
+initial window & 32 & 72 & 2.35 & 2.79 & 2.2 & 2.01--2.70 \\
+\midrule
+chain depth & 1 & 60 & 1.72 & 2.21 & 1.4 & 1.36--2.06 \\
+chain depth & 2 & 58 & 1.58 & 2.00 & 1.2 & 1.28--1.89 \\
+chain depth & 3 & 54 & 1.59 & 2.17 & 1.1 & 1.21--1.98 \\
+chain depth & 4 & 54 & 1.70 & 2.27 & 1.2 & 1.33--2.13 \\
+\midrule
+suite & ECDSA-P256 & 63 & 1.48 & 1.89 & 1.4 & 1.19--1.77 \\
+suite & ECDSA + hybrid KEM & 15 & 0.64 & 0.64 & 0.5 & 0.60--0.67 \\
+suite & ML-DSA-44 & 12 & 0.72 & 0.90 & 0.4 & 0.43--1.03 \\
+suite & ML-DSA-65 & 62 & 1.89 & 2.38 & 1.4 & 1.54--2.25 \\
+suite & ML-DSA-87 & 62 & 2.14 & 2.67 & 1.4 & 1.75--2.54 \\
+suite & RSA-2048 & 12 & 0.95 & 1.38 & 0.7 & 0.40--1.51 \\
+\bottomrule
+\end{tabular}

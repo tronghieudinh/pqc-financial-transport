@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 PY=${PY:-python3}
 (cd Simulation && PY=$PY ./run_paper1.sh)
-(cd Measurements/testbed && $PY paper_assets.py)
+(cd Measurements/testbed && $PY paper_assets.py && $PY residual_analysis.py)
 (cd Measurements/x86 && $PY analyze_cpu_x86.py)
 (cd paper && rm -f des_check.json && $PY make_assets.py)
 if command -v latexmk >/dev/null 2>&1; then

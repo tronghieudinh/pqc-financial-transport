@@ -9,6 +9,8 @@
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \input{numbers}
+\input{numbers_testbed}
+\input{numbers_residuals}
 \newcommand{\MLDSA}{ML-DSA-65\xspace}
 \title{Supplementary Material\\[2mm]\large Beyond Message Size: How the Behaviour of Linux TCP and OpenSSL Turns\\ Post-Quantum Signatures into Round Trips in Financial Messaging}
 \date{}
@@ -142,6 +144,16 @@ Transport penalty $\pi$ / threshold $\theta$ & 0--24 ms, reference 0 / 4 segment
 \caption{Cost per operation of the primitives on the critical path (ms, median): Cortex-X925 (simulator default), Cortex-A725 and one core of an Intel Core i7-5600U (2.5\,GHz, AVX2, turbo off), same method and OpenSSL~3.5.4 (liboqs 0.14.0 for Falcon).}
 \input{tables/tab_cpu_x86}
 \end{table}
+
+\begin{table}[h]\centering\small
+\caption{Error of the stack model against the testbed (model minus measured excess latency) by group of configurations: mean absolute error (MAE), root-mean-square error (RMSE), MAE as a percentage of the mean measured excess latency, and 95\% bootstrap interval of the MAE (2\,000 resamples of the configurations). The core grid is the set on which the two stack behaviours were identified (100\,Mbit/s, initial window 10); the rest was measured after the model was fixed. Reno, no loss, mutual TLS, direct path (\texttt{residual\_analysis.py}).}
+\resizebox{\textwidth}{!}{\input{tables/tab_residuals}}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{figures/fig_residuals}
+\caption{Residuals of the stack model (model minus measurement) of the \resCoreN\ core-grid and \resAwayN\ off-grid testbed configurations against the round-trip time, by suite (left), and against the measured excess latency (right).}
+\end{figure}
 
 \begin{figure}[h]\centering
 \includegraphics[width=\textwidth]{figures/fig_loss}

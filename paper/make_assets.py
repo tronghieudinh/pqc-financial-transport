@@ -200,6 +200,9 @@ for key, su in (("ML", ml), ("Fal", "Falcon-512|ML-KEM-768"), ("SLHs", "SLH-DSA-
                 ("SLHf", "SLH-DSA-128f|ML-KEM-768"), ("EC", BASE), ("RSA", "RSA-2048|ECDHE-P256")):
     for k in (1, 4, 16):
         num(f"share{key}x{k}", f"{100 * share(su, k):.0f}")
+    # computation that overlaps with the network on part of the critical path counts for less: the share if only half or a quarter of it is serial
+    num(f"share{key}xHalf", f"{100 * share(su, 0.5):.0f}")
+    num(f"share{key}xQuarter", f"{100 * share(su, 0.25):.0f}")
 def ratio(su, bw):
     r = at(su, "SWIFT_MX", 3, bw=bw)
     return (r["ser_ms"] + r["ssw_ms"] + r["pen_ms"]) / r["cpu_ms"]
