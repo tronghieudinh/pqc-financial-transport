@@ -3,7 +3,7 @@
 Simulator, measurements and paper assets for
 
 > **Beyond Message Size: How the Behaviour of Linux TCP and OpenSSL Turns Post-Quantum Signatures into Round Trips in Financial Messaging**
-> Trong-Hieu Dinh (Banking Academy of Vietnam), <hieudt@hvnh.edu.vn>. Submitted to *Computers & Security*.
+> Trong-Hieu Dinh (Banking Academy of Vietnam), <hieudt@hvnh.edu.vn>; Trong-Minh Hoang (Posts and Telecommunications Institute of Technology, corresponding author), <hoangtrongminh@ptit.edu.vn>. Submitted to *Computers & Security*.
 
 The study quantifies how the larger keys and signatures of post-quantum cryptography propagate through TLS 1.3, DER X.509
 certificate chains and the application-layer signatures of ISO 8583, ISO 20022, SWIFT MX, OAuth 2.0 / OpenID Connect and
@@ -16,7 +16,7 @@ validated against real transactions over a kernel-emulated link.
 |---|---|
 | `Simulation/` | The transport model (`pqc_sim.py`), the independent event-driven cross-check (`crosscheck_simpy.py`), sensitivity and uncertainty analyses, unit tests, `run_paper1.sh` |
 | `Measurements/` | CPU benchmark (`bench_pqc.c`), certificate generation (`certs.sh`), TLS handshake and application-object measurements, and their data (`data/`) |
-| `Measurements/testbed/` | Network-namespace testbed: `tls_probe.c`, `tbnet.py`, `run_testbed.py`, `analyze_testbed.py`, raw results in `results/` |
+| `Measurements/testbed/` | Network-namespace testbed: `tls_probe.c`, `tbnet.py`, `run_testbed.py`, `run_variants.sh` (CUBIC, delayed ACK, timestamps, BBR), `analyze_testbed.py`, `residual_analysis.py`, `analyze_variants.py`, raw results in `results/` |
 | `Measurements/x86/` | The same CPU benchmark on an x86 core, and the comparison with the Arm measurements |
 | `paper/` | LaTeX sources of the paper and its supplementary material, and `make_assets.py`, which generates every table, figure and number |
 
@@ -45,7 +45,7 @@ and `paper/make_assets.py`. No number in the paper is typed by hand except those
 
 | File(s) | Content |
 |---|---|
-| `Measurements/testbed/results/{core_a,segs,segs2,knee,grid_b,cubic,proxy_tcp,proxy_inspect}.csv` | One row per measured transaction: configuration, timings, bytes, kernel segment counters |
+| `Measurements/testbed/results/{core_a,segs,segs2,knee,grid_b,cubic,cubic2,delack,ts,delack_ts,bbr,proxy_tcp,proxy_inspect}.csv` | One row per measured transaction: configuration, timings, bytes, kernel segment counters |
 | `Measurements/testbed/results/env.json` | Machine, kernel, governor and software versions of a run |
 | `Measurements/data/cpu_*_core*.csv`, `Measurements/x86/data/*.csv` | Per-operation CPU costs (Cortex-X925, Cortex-A725, Intel Core i7-5600U) |
 | `Measurements/data/*.csv` | Certificate sizes, compression, real TLS handshake flights, application objects |
@@ -60,6 +60,20 @@ idealised closed form (`--stack v4`), have **not** been re-validated against the
 paper or its Supplementary Material. They are kept because `paper/make_assets.py` still builds tables and a packet-loss figure
 from them (`figures/fig_loss.pdf` and others) that the paper does not include, and for the later papers on these topics.
 Do not cite them as validated results.
+
+## Version history
+
+- `paper1-v1.2` (this version): adds the measurements made after the main campaign (`resume.csv`, `resume_swift.csv`, `capacity_gx10*.csv`
+  and their scripts: `tls_serve.c`, `tls_load.c`, `capacity_test.py`, `analyze_resume.py`, `analyze_capacity.py`, `supp_paper1_extra.py`), two
+  supplementary tables built from them (S23, S24), a lossy variant of the model and a mitigation study that paper 2 will use
+  (`Simulation/loss_sim.py`, `mitigations_wired.py`, `config_selector.py`), and the **erratum** below. Paper 1's results are unchanged.
+- `paper1-v1.1.1`: DOI recorded in the manuscript; `paper1-v1.1`: stack-model validation under CUBIC, delayed ACKs, timestamps and BBR.
+
+## Erratum
+
+`Measurements/data/capacity.csv` and `Measurements/capacity.sh` (server capacity measured with `openssl s_time -new`) overstate the handshake rate
+by a factor of 2, because `s_time` counts every handshake twice; see `Measurements/data/capacity_ERRATUM.md`. Paper 1 does not use these
+numbers. The corrected measurement is `Measurements/testbed/capacity_test.py` (results in `Measurements/testbed/results/capacity_*.csv`).
 
 ## Known limits
 

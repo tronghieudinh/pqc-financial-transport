@@ -89,3 +89,23 @@ variant with the stack model and, configuration by configuration, with the Reno 
     sudo ./host_tune.sh on            # as before the other runs; "sudo ./host_tune.sh off" afterwards
     sudo bash run_variants.sh         # about 2 hours; resumable
     python3 analyze_variants.py       # no root; writes results/variants_summary.csv and the LaTeX table/numbers
+
+## Session resumption (paper 2, WP1)
+
+`tls_probe --resume` (both sides) measures RESUMED transactions: the client first runs a full transaction on its own connection to
+obtain a TLS 1.3 ticket, then opens a new TCP connection that offers it (PSK with (EC)DHE key exchange, server tickets stateless; under
+mutual TLS OpenSSL puts the client certificate in the ticket). The row of the resumed transaction carries `reused` (1 if the session
+really was resumed; otherwise the row is an error `not_resumed`) and `prime_ms`, the total time of the full transaction just before it,
+under the same network conditions. `run_testbed.py --resume` selects it; `run_resume.sh` runs the grids of paper 2 (about an hour);
+`analyze_resume.py` compares the measurements with the stack model (`mode "resumed"`) and with the full handshake. Rebuild `tls_probe`
+(`./setup_host.sh`) after pulling.
+
+## Server capacity (paper 2, WP2)
+
+`tls_serve` is an event-driven (epoll, non-blocking) TLS 1.3 server, one thread per process (`--reuseport` + `taskset` per core);
+`tls_load` is a multi-threaded closed-loop load generator (new connection, handshake full or resumed, one request/response, close);
+`capacity_test.py` starts the servers pinned to the server cores, saturates them from the other cores and reads the CPU time and the
+number of completed transactions of each server process with SIGUSR1 over a measurement window. `analyze_capacity.py` compares the
+CPU per transaction with the sum of the measured primitive costs. `run_capacity.sh` has the commands for the i7-5600U and the Arm
+platform. Loopback only: it measures TLS, kernel and event-loop cost of the server, not NIC and interrupt cost of a real path.
+`tls_probe server --reuseport` (blocking, one connection at a time) is kept for comparison (`capacity_test.py --server tls_probe`).

@@ -116,7 +116,11 @@ def main():
     raw = []
     rdir = os.path.join(MEAS, "testbed", "results")
     for n in sorted(os.listdir(rdir)) if os.path.isdir(rdir) else []:
-        if n.endswith(".csv") and n not in ("model_vs_testbed.csv", "testbed_summary.csv"):
+        # raw runs of the reference stack only: not the analysis outputs, and not the variants with other TCP settings
+        if n.endswith(".csv") and n not in ("model_vs_testbed.csv", "testbed_summary.csv", "residual_groups.csv", "residual_worst.csv",
+                                            "variants_summary.csv", "delack.csv", "ts.csv", "delack_ts.csv", "bbr.csv", "resume.csv",
+                                            "resume_swift.csv", "loss.csv") \
+                and "topology" in open(os.path.join(rdir, n)).readline().split(","):          # raw testbed runs only (not analysis outputs)
             raw += [r for r in A.load(os.path.join(rdir, n), False) if r["net_id"] == "base" and r["topology"] == "direct"
                     and r["cc"] == "reno" and int(r["req"]) == 302 and r["mtls"] == "1"]
     base = {k: c for k, c in A.aggregate(raw).items()} if raw else {}

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# KNOWN ERROR (2026-11-01): s_time counts every handshake twice, so the rates and CPU-per-handshake written by this script are
+# off by a factor of 2. See data/capacity_ERRATUM.md; superseded by testbed/capacity_test.py. Kept as the record of the earlier run.
 # Server-side handshake capacity: single-threaded s_server pinned to one Cortex-X925 core (cpu 18),
 # saturated by 6 parallel s_time clients (cpus 5-9, 15); 10 s per configuration, chain depth 1
 # (s_time cannot send client intermediates, so depth 1 keeps mutual TLS verifiable).

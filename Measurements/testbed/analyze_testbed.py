@@ -32,7 +32,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "..", "Simulation"))
 import pqc_sim as S  # noqa: E402
 
-KEY_BASE = ("topology", "suite", "depth", "mtls", "req", "resp")
+KEY_BASE = ("topology", "suite", "depth", "mtls", "req", "resp", "resume")
 KEY_NET = ("rtt_ms", "rate_mbps", "loss_pct", "mtu", "icw", "cc")
 
 
@@ -47,6 +47,9 @@ def pct(xs, q):
 
 def load(path, allow_loopback):
     rows = list(csv.DictReader(open(path)))
+    for r in rows:
+        if r.get("resume") in (None, ""):
+            r["resume"] = "0"              # runs before the resumption extension: full handshakes
     if not allow_loopback:
         rows = [r for r in rows if r["topology"] != "loopback"]
     return rows
@@ -99,7 +102,7 @@ def probe_protocol(mtls, req, resp, depth):
 
 def model_for(c, penalty=0.0, thr=4, cwnd_validation=False, segmentation="ideal"):
     flow = S.build_flow(c["suite"], probe_protocol(c["mtls"], c["req"], c["resp"], c["depth"]), int(c["depth"]),
-                        "cold", False)
+                        "resumed" if c.get("resume") == "1" else "cold", False)
     net = S.Net(f(c["rate_mbps"]), f(c["rtt_ms"]), int(c["mtu"]), penalty_ms=penalty, thr=thr,
                 init_cwnd=int(c["icw"]), cwnd_validation=cwnd_validation, segmentation=segmentation)
     return flow, S.run_flow(flow, net)

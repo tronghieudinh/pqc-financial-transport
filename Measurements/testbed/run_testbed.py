@@ -57,8 +57,8 @@ PROFILES = {
 }
 
 COLS = ["cfg_id", "topology", "suite", "cert_alg", "group", "depth", "mtls", "req", "resp", "rtt_ms", "rate_mbps",
-        "loss_pct", "mtu", "icw", "cc", "tcp_ts", "quickack", "net_id", "iter", "t_tcp_ms", "t_hs_ms", "t_total_ms", "bytes_w", "bytes_r",
-        "snd_mss", "snd_cwnd0", "retrans", "rtt_us", "data_segs_out", "data_segs_in", "err", "ts_utc"]
+        "loss_pct", "mtu", "icw", "cc", "tcp_ts", "quickack", "resume", "net_id", "iter", "t_tcp_ms", "t_hs_ms", "t_total_ms", "bytes_w", "bytes_r",
+        "snd_mss", "snd_cwnd0", "retrans", "rtt_us", "data_segs_out", "data_segs_in", "err", "reused", "prime_ms", "ts_utc"]
 
 
 def cfg_id(c):
@@ -173,11 +173,11 @@ def run_config(c, tb, probe, cpus, work, loopback):
     mtls = ["--mtls"] if c["mtls"] else []
     srv_cmd = ["taskset", "-c", str(cpu_s)] + pre_s + [probe, "server", "--addr", s_addr, "--port", port,
               "--cert", ch["server"][0], "--key", ch["server"][1], "--ca", ch["ca"], "--groups", group,
-              "--req", str(c["req"]), "--resp", str(c["resp"])] + mtls
+              "--req", str(c["req"]), "--resp", str(c["resp"])] + mtls + (["--resume"] if c["resume"] else [])
     gap = 2 * c["rtt_ms"] + 5
     cli_cmd = ["taskset", "-c", str(cpu_c)] + pre_c + [probe, "client", "--addr", c_addr, "--port", port,
               "--ca", ch["ca"], "--groups", group, "--req", str(c["req"]), "--resp", str(c["resp"]),
-              "--n", str(c["n"]), "--warmup", str(c["warmup"]), "--gap-ms", f"{gap:g}"]
+              "--n", str(c["n"]), "--warmup", str(c["warmup"]), "--gap-ms", f"{gap:g}"] + (["--resume"] if c["resume"] else [])
     if c["mtls"]:
         cli_cmd += ["--cert", ch["client"][0], "--key", ch["client"][1]]
     if tb is not None and tb.dry:
@@ -190,7 +190,7 @@ def run_config(c, tb, probe, cpus, work, loopback):
         if srv.stdout.readline().strip() != "READY":
             srv.kill()
             raise RuntimeError("server did not start: " + srv.stderr.read()[-400:])
-        timeout = (c["n"] + c["warmup"]) * (10 + c["rtt_ms"] * 0.06) + 60
+        timeout = (c["n"] + c["warmup"]) * (10 + c["rtt_ms"] * 0.06) * (2 if c["resume"] else 1) + 60
         r = subprocess.run(cli_cmd, capture_output=True, text=True, timeout=timeout)
         rows = list(csv.DictReader(r.stdout.splitlines()))
         cerr = r.stderr.strip()
@@ -218,7 +218,7 @@ def build_configs(a, p):
     shaped = []
     for su, d, m in itertools.product(suites, depths, mtls):
         common = dict(topology=a.topology, suite=su, depth=d, mtls=m, req=a.req, resp=a.resp, cc=a.cc, n=n,
-                      tcp_ts=int(a.timestamps), quickack=int(not a.delack),
+                      tcp_ts=int(a.timestamps), quickack=int(not a.delack), resume=int(a.resume),
                       warmup=a.warmup)
         base.append(dict(common, rtt_ms=0, rate_mbps=0, loss_pct=0, mtu=1500, icw=10, net_id="base"))
         for rtt, rate, mtu, loss, icw in itertools.product(rtts, rates, mtus, losses, icws):
@@ -228,7 +228,7 @@ def build_configs(a, p):
 
 
 def estimate_s(c):
-    return (c["n"] + c["warmup"]) * (8 * c["rtt_ms"] + 20 + 2 * c["rtt_ms"] + 5) / 1000 + 1.5
+    return (c["n"] + c["warmup"]) * (8 * c["rtt_ms"] + 20 + 2 * c["rtt_ms"] + 5) * (2 if c["resume"] else 1) / 1000 + 1.5
 
 
 def main():
@@ -241,6 +241,7 @@ def main():
     ap.add_argument("--req", type=int, default=302, help="request bytes (default = ISO 8583 0200)")
     ap.add_argument("--resp", type=int, default=222, help="response bytes (default = ISO 8583 0210)")
     ap.add_argument("--cc", default="reno")
+    ap.add_argument("--resume", action="store_true", help="measure RESUMED transactions (a full transaction obtains a ticket first; prime_ms = its time)")
     ap.add_argument("--delack", action="store_true", help="no quickack on the routes: Linux delayed acknowledgements (default: quickack)")
     ap.add_argument("--timestamps", action="store_true", help="TCP timestamps on (12 option bytes, MSS = MTU - 72); default off")
     ap.add_argument("--seed", type=int, default=1)
@@ -348,7 +349,7 @@ def main():
                                     t_total_ms=r["t_total_ms"], bytes_w=r["bytes_w"], bytes_r=r["bytes_r"],
                                     snd_mss=r["snd_mss"], snd_cwnd0=r["snd_cwnd0"], retrans=r["retrans"],
                                     rtt_us=r["rtt_us"], data_segs_out=r["data_segs_out"], data_segs_in=r["data_segs_in"],
-                                    err=r["err"], ts_utc=ts))
+                                    err=r["err"], reused=r.get("reused", "0"), prime_ms=r.get("prime_ms", "-1"), ts_utc=ts))
                 out.flush()
                 fails += 1
                 if fails >= 3:
@@ -366,7 +367,7 @@ def main():
                                 t_total_ms=r["t_total_ms"], bytes_w=r["bytes_w"], bytes_r=r["bytes_r"],
                                 snd_mss=r["snd_mss"], snd_cwnd0=r["snd_cwnd0"], retrans=r["retrans"],
                                 rtt_us=r["rtt_us"], data_segs_out=r["data_segs_out"], data_segs_in=r["data_segs_in"],
-                                    err=r["err"], ts_utc=ts))
+                                    err=r["err"], reused=r.get("reused", "0"), prime_ms=r.get("prime_ms", "-1"), ts_utc=ts))
             out.flush()
             tt = sorted(float(r["t_total_ms"]) for r in ok)
             print(f"   ok {len(ok)}/{len(rows)}  median {tt[len(tt) // 2]:.1f} ms  ({info})", flush=True)

@@ -14,9 +14,11 @@ With loss = 0 the model reproduces pqc_sim.run_flow exactly (test_loss_sim.py).
 
     python3 loss_sim.py [trials] -> loss_results.csv
 
-NOTE (v5): this module implements the v4 stack (ideal segmentation, cwnd += every flight). The validated stack of
-pqc_sim (Linux congestion-window validation, OpenSSL write pattern) is not implemented here yet; update it before the
-loss results are used in a paper (paper 2).
+v5 stack: segments are cut from a byte queue at send time (a partial tail goes out at once, TCP_NODELAY), the application hands the
+sender the write() calls of the TLS library (OpenSSL 4096-byte buffer, request as a separate write), and slow start adds a segment
+per ACK only while the window is below twice the segments in flight (Linux tcp_is_cwnd_limited). With loss 0 it reproduces
+pqc_sim.run_flow exactly under both stacks (test_loss_stack.py). Loss recovery (fast retransmit, tail-loss probe, RTO) is as before and has
+NOT been validated on the testbed (WP4 of paper 2: Measurements/testbed/run_loss.sh).
 """
 from __future__ import annotations
 
@@ -42,34 +44,41 @@ class LossyDirection:
         self.mss, self.hdr = net.mtu - net.hdr, net.hdr
         self.rate = net.bw_mbps * 1e3
         self.rtt, self.owd = net.rtt_ms, net.rtt_ms / 2
+        self.validate = net.cwnd_validation
         self.link = simpy.Resource(env, capacity=1)
         self.cwnd, self.ssthresh, self.inflight = float(cwnd0), float("inf"), 0
         self.segments = self.losses = self.retransmissions = 0
 
     # ------------------------------------------------------------------ transfer
-    def transfer(self, nbytes):
-        self.n = -(-nbytes // self.mss)
-        self.last = nbytes - (self.n - 1) * self.mss
-        self.next_new = 0
+    def transfer(self, writes):
+        """Process: the write() calls are issued back to back; returns the number of segments once every byte has been delivered."""
+        self.total = sum(writes)
+        self.queued = self.delivered_bytes = self.nseg = self.max_out = 0
+        self.payload = {}          # segment id -> payload bytes
         self.delivered = set()
         self.later = {}            # lost segment -> later arrivals seen by the receiver
         self.attempt = {}          # segment -> number of retransmissions so far
         self.done = self.env.event()
-        self._try_send()
+        for w in writes:
+            self.queued += w
+            self._try_send()
         yield self.done
-        return self.n
+        return self.nseg
 
     def _try_send(self):
-        while self.next_new < self.n and self.inflight < int(self.cwnd):
-            i = self.next_new
-            self.next_new += 1
+        while self.queued > 0 and self.inflight < int(self.cwnd):
+            i = self.nseg
+            self.nseg += 1
+            pl = min(self.queued, self.mss)
+            self.queued -= pl
+            self.payload[i] = pl
             self.inflight += 1
+            self.max_out = max(self.max_out, self.inflight)
             self.attempt[i] = 0
             self.env.process(self._segment(i, 0))
 
     def _segment(self, i, attempt):
-        payload = self.last if i == self.n - 1 else self.mss
-        ser = (payload + self.hdr) * 8 / self.rate
+        ser = (self.payload[i] + self.hdr) * 8 / self.rate
         with self.link.request() as req:
             yield req
             yield self.env.timeout(ser)
@@ -100,12 +109,13 @@ class LossyDirection:
         if i in self.delivered:
             return
         self.delivered.add(i)
+        self.delivered_bytes += self.payload[i]
         for j in list(self.later):
             if j < i and j not in self.delivered:
                 self.later[j] += 1
                 if self.later[j] == 3 and self.attempt.get(j, 0) == 0:
                     self.env.process(self._fast_retransmit(j))
-        if len(self.delivered) == self.n:
+        if self.delivered_bytes == self.total:
             self.done.succeed(self.env.now)
         self.env.process(self._ack())
 
@@ -120,19 +130,21 @@ class LossyDirection:
     def _ack(self):
         yield self.env.timeout(self.owd)
         self.inflight -= 1
-        if self.cwnd < self.ssthresh:
-            self.cwnd += 1.0
-        else:
-            self.cwnd += 1.0 / self.cwnd
+        if not self.validate or self.cwnd < 2 * self.max_out:      # Linux: grow only while the window is in use
+            if self.cwnd < self.ssthresh:
+                self.cwnd += 1.0
+            else:
+                self.cwnd += 1.0 / self.cwnd
         self._try_send()
 
 
 def run_flow_lossy(flow: S.Flow, net: S.Net, p: float, seed) -> dict:
     env = simpy.Environment()
     rng = random.Random(seed)
-    cw0 = net.init_cwnd if flow.mode == "cold" else net.warm_cwnd
+    cw0 = net.init_cwnd if flow.mode in ("cold", "resumed") else net.warm_cwnd
     dirs = [LossyDirection(env, net, cw0, p, rng) for _ in range(2)]
     out = dict(syn_losses=0)
+    xi = [0]
 
     def conversation():
         for step in flow.steps:
@@ -147,7 +159,9 @@ def run_flow_lossy(flow: S.Flow, net: S.Net, p: float, seed) -> dict:
                         k += 1
                     yield env.timeout(net.rtt_ms / 2)
             else:
-                n = yield env.process(dirs[step[1]].transfer(step[2]))
+                writes = flow.writes[xi[0]] if (net.segmentation == "openssl" and flow.writes) else (step[2],)
+                xi[0] += 1
+                n = yield env.process(dirs[step[1]].transfer(writes))
                 if n > net.thr:
                     yield env.timeout(net.penalty_ms)
 
@@ -166,7 +180,7 @@ RTTS = [30.0, 100.0]
 def task(args):
     proto, p, rtt, trials = args
     rows = []
-    net = S.Net(100.0, rtt, 1500, 6.0, 4)
+    net = S.Net(100.0, rtt, 1500, 0.0, 4)              # validated stack (default), no middlebox penalty (pi = 0, paper 1)
     for su in SUITES:
         f = S.build_flow(su, proto, S.PROTOCOLS[proto].default_depth, "cold", False)
         lat = sorted(run_flow_lossy(f, net, p, f"loss|{proto}|{p}|{rtt}|{t}|{su}")["total"] for t in range(trials))

@@ -8,8 +8,13 @@ authors:
     email: "hieudt@hvnh.edu.vn"
     orcid: "https://orcid.org/0009-0005-0601-3229"
     affiliation: "Banking Academy of Vietnam, Hanoi, Vietnam"
+  - family-names: "Hoang"
+    given-names: "Trong-Minh"
+    email: "hoangtrongminh@ptit.edu.vn"
+    orcid: "https://orcid.org/0000-0001-8486-2940"
+    affiliation: "Posts and Telecommunications Institute of Technology, Hanoi, Vietnam"
 repository-code: "https://github.com/tronghieudinh/pqc-financial-transport"
 license: MIT
 keywords: [post-quantum cryptography, TLS 1.3, financial messaging, TCP congestion window, X.509, ML-DSA]
 doi: "10.5281/zenodo.23839449"
-version: "paper1-v1.1.1"
+version: "paper1-v1.2"

@@ -7,6 +7,8 @@ Simulation/sens/*/results.csv
 # build artefacts and binaries
 Measurements/testbed/work/
 Measurements/testbed/tls_probe
+Measurements/testbed/tls_serve
+Measurements/testbed/tls_load
 Measurements/bench_pqc
 Measurements/bench_pqc_x86
 Measurements/tls_client_time
