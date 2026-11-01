@@ -1,0 +1,10 @@
+metric,median,p5,p95,mean
+ml_ms,159.717,100.818,195.054,149.514
+ml_factor,1.327,1.089,1.539,1.319
+falcon_factor,1.017,1.011,1.029,1.018
+slhf_factor,3.272,2.235,6.302,3.68
+slhs_factor,27.291,8.698,85.372,35.299
+ml_percert_ms,20.189,1.771,22.466,16.214
+ml_overhead_gt_cpu,1.0,0.0,1.0,0.705
+order_holds,1.0,1.0,1.0,1.0
+ml_pen_share,0.0,0.0,0.0,0.0

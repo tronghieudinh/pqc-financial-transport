@@ -17,6 +17,7 @@ ACK-clocked) and quickack; they are replaced per configuration.
 from __future__ import annotations
 
 import shlex
+import os
 import subprocess
 import sys
 
@@ -73,6 +74,8 @@ class Testbed:
                          ("net.ipv4.tcp_timestamps", "1" if self.timestamps else "0"),   # off: MSS = MTU - 60 (model: 40 + 20 header bytes)
                          ("net.ipv4.tcp_no_metrics_save", "1")):
                 self.run(["sysctl", "-q", "-w", f"{k}={v}"], ns=ns)
+            if os.environ.get("PQC_RMEM"):        # WP6 rwnd test: receive buffer "min default max" (per namespace where the kernel allows it, else global)
+                self.run(["sysctl", "-q", "-w", f"net.ipv4.tcp_rmem={os.environ['PQC_RMEM']}"], ns=ns, check=False)
         if self.topology == "direct":
             self._link(NS_C, "vc0", A_C1, NS_S, "vs0", A_P1)
         else:

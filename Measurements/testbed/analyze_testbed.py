@@ -100,11 +100,15 @@ def probe_protocol(mtls, req, resp, depth):
     return name
 
 
-def model_for(c, penalty=0.0, thr=4, cwnd_validation=False, segmentation="ideal"):
+SLACK = 0     # Net.cwnd_slack used when model_for is not told otherwise (analyze_resume --cwnd-slack; refuted by WP5, kept for the record)
+NST_EARLY = False    # Net.nst_early (analyze_resume --nst-early): the ticket is its own, earlier write
+
+
+def model_for(c, penalty=0.0, thr=4, cwnd_validation=False, segmentation="ideal", cwnd_slack=None):
     flow = S.build_flow(c["suite"], probe_protocol(c["mtls"], c["req"], c["resp"], c["depth"]), int(c["depth"]),
                         "resumed" if c.get("resume") == "1" else "cold", False)
     net = S.Net(f(c["rate_mbps"]), f(c["rtt_ms"]), int(c["mtu"]), penalty_ms=penalty, thr=thr,
-                init_cwnd=int(c["icw"]), cwnd_validation=cwnd_validation, segmentation=segmentation)
+                init_cwnd=int(c["icw"]), cwnd_validation=cwnd_validation, segmentation=segmentation, cwnd_slack=SLACK if cwnd_slack is None else cwnd_slack, nst_early=NST_EARLY)
     return flow, S.run_flow(flow, net)
 
 

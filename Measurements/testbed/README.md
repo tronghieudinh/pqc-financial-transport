@@ -109,3 +109,101 @@ number of completed transactions of each server process with SIGUSR1 over a meas
 CPU per transaction with the sum of the measured primitive costs. `run_capacity.sh` has the commands for the i7-5600U and the Arm
 platform. Loopback only: it measures TLS, kernel and event-loop cost of the server, not NIC and interrupt cost of a real path.
 `tls_probe server --reuseport` (blocking, one connection at a time) is kept for comparison (`capacity_test.py --server tls_probe`).
+
+## WP5 — does the kernel grow the window after a 5-segment flight? (Paper 2, `cwnd_slack`)
+
+Hypothesis (from the resumed ISO 20022-sized test, see `STATUS.md`): the transport model's rule "slow start grows cwnd only while cwnd < 2 x
+segments in flight" is met exactly at the boundary by a 5-segment ClientHello, and the data behave as if the window had grown (`Net.cwnd_slack = 2`).
+Three independent measurements, from the most direct to the most applied:
+
+![A](fig_slack_A.png) ![B](fig_slack_B.png) ![C](fig_slack_C.png)
+
+| Stage | What | Tool | Time |
+|---|---|---|---|
+| A | window the kernel actually has after n1 = 1..40 segments (`TCP_INFO snd_cwnd`), 13 configurations changing one factor at a time (RTT, rate, MTU, initcwnd, delayed ACK, Cubic, timestamps, offload) | `run_slack.py` + `tcp_flight` | ~25 min |
+| B | cost of a second flight after n1 = 1..12 (n2 = 9..16; 3..12 for initcwnd 4, 17..24 for initcwnd 20; Finished write first, as TLS does), 6 configurations | `run_slack.py --stage B` | ~1 h |
+| C | resumed TLS 1.3, request flight 9..15 segments, 4 suites with ClientHello of 2/5/6/8 segments; **predictions fixed in advance** | `slack_predict.py` (before), `run_slack_tls.sh` | ~25 min |
+
+```
+python3 slack_predict.py                      # once; commit results/slack_predictions.csv BEFORE measuring (refuses to overwrite)
+sudo ./host_tune.sh on
+sudo python3 run_slack.py --stage A,B --trace   # --trace: per-ACK snd_cwnd from the tcp_probe tracepoint (best effort, base configuration)
+sudo bash run_slack_tls.sh
+sudo ./host_tune.sh off
+python3 analyze_resume.py --out results/resume_summary_slack_tls.csv results/slack_tls.csv
+python3 analyze_slack.py                      # per-stage best slack and a verdict
+```
+Read the verdict conservatively: the hypothesis stands only if stages A, B and C name the same slack, the factors the model covers do not change it,
+and stage C's pre-registered predictions for that slack are right. If delayed ACK, Cubic or offload change the window rule, say so in the paper as
+a limit. Preliminary look on a loopback/Cubic machine (not the testbed): n1 = 5 gave cwnd 10 (no growth), n1 = 6 gave 16 — the rule on that
+stack is not the model's, so expect factor dependence.
+
+### WP5 results (Mint, kernel Linux 7.0.0-42, 2026-11-01) and stage D
+
+- **Stage A** (14,200 plain-TCP connections, 13 configurations): the window after an n-segment flight is `max(w0, min(w0 + n, 2n))`, exactly, in 12 of 13 configurations (RTT 5–100 ms, 10 Mbit/s–1 Gbit/s, MTU 1280/1500, initcwnd 4/10/20, delayed ACK, Cubic, timestamps, offload); at MTU 9000 it is lower (35% of the flights match). The model's `grow_cwnd` differs by one segment at odd n > 10; none of the 238 Paper 1 validation configurations is affected (MAE 1.696 ms either way).
+- **Stage B**: time of a second flight is explained by the window the kernel really has (MAE 0.24–0.37 ms); the loosened rules (slack 1–4) are worse.
+- **Stage C** (pre-registered, 28 cells): slack 0 MAE 0.30 ms, no cell a round trip wrong; slack 2 MAE 14.45 ms, 4 cells a round trip wrong. **The slack hypothesis is refuted.** Output of `analyze_slack.py`: `results/slack_analysis.txt`.
+- What explains the ISO 20022 error instead (not yet confirmed): the NewSessionTicket is its own write, sent when the client's Finished arrives. If the client's request flight needs an extra round trip, the ticket is already acknowledged when the response leaves. Model: `Net.nst_early` (`STACKS["linux-openssl-2"]`); on the 144 resumed configurations MAE 1.42 → 0.54 ms (max 98.8 → 0.8 ms), but it was formed after seeing that data.
+- **Stage D** (confirmatory, predictions fixed in advance): `python3 nst_predict.py` (done; commit `results/nst_predictions.csv` before measuring), then `sudo bash run_nst_tls.sh` (~50 min), `python3 analyze_resume.py --out results/resume_summary_nst_tls.csv results/nst_tls.csv`, `python3 analyze_nst.py`. 80 cells, 10 on which the two models differ by a round trip.
+
+### Stage D result (Mint, 2026-11-01; predictions committed 17:18, data committed 18:26)
+`analyze_nst.py` (output in `results/nst_analysis.txt`): 80 cells, 10 on which the two models differ by a round trip. **H_early (ticket written when the client's Finished arrives) is right on all 10; H_joined (ticket with the response) is wrong on all 10.** Mean error over the 80 cells 5.5 ms against 17.8 ms. Both models are wrong by a round trip on the same 4 cells (ML-DSA-44 and -65, 19,460-byte request, responses of 11 and 12 segments): the transaction paid one extra round trip where the models charge two, so the server's window was larger than ten segments after the ticket had been acknowledged. Unexplained.
+**Stage E (suggested, ~25 min):** resumed TLS, ML-DSA-44/-65, request 19,460 B, responses of 10 to 18 segments, plus ECDSA-P256 as control (ticket of 1 segment), to find where the server flight starts to cost a round trip after an acknowledged ticket.
+**File names:** `resume_summary_earlyticket.csv` is the 144-configuration summary of the early-ticket model (Paper 2); `resume_summary_nst_tls.csv` is stage D. Both were once called `resume_summary_nst.csv`, and a run overwrote one with the other: always pass `--out`.
+
+### Stage E (prepared; to run on Mint)
+Question: after the ticket has been acknowledged, how large is the server's window for the response? Stage D left four cells (ML-DSA-44/-65, 19,460-byte request, 11–12 segments) on which both models were a round trip wrong.
+```
+python3 nst_predict_e.py      # done: results/nst_predictions_e.csv (72 cells, 24 where the window hypotheses W = 10, 12, 14, 16, 20 differ); COMMIT AND PUSH IT BEFORE MEASURING
+sudo ./host_tune.sh on
+sudo bash run_nst_e.sh        # ~45 min, resumable, writes results/nst_e_tls.csv
+sudo ./host_tune.sh off
+python3 analyze_resume.py --out results/resume_summary_nst_e_tls.csv results/nst_e_tls.csv     # --out is required
+python3 analyze_nst_e.py      # series, extra round trips, best W per suite, control
+```
+Design: ECDSA-P256 (ticket 1 segment), ML-DSA-44/-65 (4, 5), ML-DSA-87 (6; control: its client flight fits the window, so the ticket is not yet acknowledged), request 302 B (control) and 19,460 B, responses of 10 to 18 segments, 30 transactions per cell. `Net.srv_cwnd_acked` is the knob of the model.
+
+### Stage E result (Mint, 2026-11-01; predictions committed 18:38, data committed 19:51)
+`analyze_nst_e.py`: with a 302-byte request (ticket still in flight) all 36 cells are right (largest error 0.9 ms). With the 19,460-byte request the largest response that costs no extra round trip is **10 segments for ECDSA-P256 (ticket 1 segment), 12 for ML-DSA-44 (ticket 4), 15 for ML-DSA-65 (ticket 5)**; ML-DSA-87 (control: ticket not acknowledged) follows the model. The server's window after an acknowledged ticket grows with the ticket's size; the plain-TCP rule gives 10 for tickets of 4 and 5 segments, so there is no mechanism yet. Sensitivity: with these windows 8 of 252 wired mitigation cells (resumed ISO 20022 and SWIFT MX, ML-DSA-65) are one round trip lower (29–89 ms); `ms_measured_window` in `Simulation/mitigations_wired.csv`.
+
+## WP6 — further scenarios (prepared 2026-11-01; not yet run)
+The review in `paper2/REVIEW_AND_SCENARIOS.md` lists what the paper and the Letter still lack. Everything that can be measured with the tools at hand is prepared here as one script, `run_wp6.sh <scenario>`, with predictions fixed in advance where a model prediction exists.
+
+```
+python3 wp6_predict.py           # ONCE. Writes results/wp6_pred_{gen,servonly,clientalg,loss}.csv. COMMIT AND PUSH THEM BEFORE MEASURING (it refuses to overwrite)
+./setup_host.sh                  # rebuilds tls_load_open (new, open-loop load generator) and the other tools
+sudo ./host_tune.sh on
+sudo bash run_wp6.sh trace       # B1 + B11 + B5  (~45 min)
+sudo bash run_wp6.sh gen         # B3  (~2 h)
+sudo bash run_wp6.sh clientalg   # B9  (~40 min)
+sudo bash run_wp6.sh servonly    # B10 (~30 min)
+sudo bash run_wp6.sh loss        # B2  (~2.7 h at N=300; N=500 about 4.5 h; the tails need N >= 500)
+sudo bash run_wp6.sh kernel      # B6  (~1.2 h, on another kernel)
+bash run_wp6.sh latency          # B4  (~1 h, no sudo)
+bash run_wp6.sh capacity         # B7 + B8 (~1 h)
+sudo ./host_tune.sh off
+```
+| Id | Question | Tool | Analysis |
+|---|---|---|---|
+| B1 | Why does the server's window after an acknowledged ticket grow with the ticket (10/12/15)? | `trace_run.py window` (tcp_probe + pcap) | `analyze_trace.py results/trace_window/*.trace.txt` (peak in flight and cwnd of the server socket in resumed connections) |
+| B2 | Does the lossy model hold for resumed transactions, and does the ECDSA gap at 0.5–1% loss persist with N = 500–1000? | `run_testbed.py --profile loss [--resume]` | `analyze_loss.py [--resume]` against `wp6_pred_loss.csv` |
+| B3 | Do the early ticket and the measured windows hold at RTT 5/30, 10 Mbit/s, MTU 1280/9000? | `run_testbed.py --resume` | `analyze_resume.py --out results/resume_summary_wp6_gen.csv results/wp6_gen_tls.csv`, then `analyze_wp6.py gen` |
+| B4 | What are p50/p99 of a transaction at 50/80/95% of the saturation rate? | `capacity_latency.py` + `tls_load_open` | `analyze_wp6.py latency` |
+| B5 | Why is the window lower than the closed form at MTU 9000? | `run_slack.py --trace --trace-configs mtu9000` | `analyze_trace.py results/slack_trace_mtu9000.txt --port 4500` |
+| B6 | Does the window rule depend on the kernel? | `run_slack.py` (writes `*_env.json`), stage C with another `--out` | `analyze_slack.py --tcp results/slack_tcp_<kernel>.csv` |
+| B7 | Run-to-run variability of the capacity numbers | `capacity_test.py` five times | `analyze_wp6.py capacity` |
+| B8 | Where does the CPU beyond the primitives go? | `perf_capacity.py` (needs `perf`) | `analyze_wp6.py capacity` |
+| B9 | Does the ticket (client certificate) or the server's algorithm set the server window? | `run_testbed.py --client-alg` (server `--ca` is a bundle of both roots) | `analyze_wp6.py clientalg` against `wp6_pred_clientalg.csv` |
+| B10 | Server authentication only (ticket of one segment): is the window 10? | `run_testbed.py --mtls 0` | `analyze_wp6.py servonly` |
+| B11 | Where does the half round trip of a full handshake with a ticket come from? | `trace_run.py fullticket` (pcap, with and without tickets) | `pcap_summary.py results/trace_fullticket/<tag>.pcap` |
+Not prepared (other servers or hardware needed): QUIC (B12), other TLS libraries such as Go, BoringSSL or Java (B13), two machines over a real NIC (B14). Always pass `--out` to `analyze_resume.py` (it overwrites `results/resume_summary.csv` otherwise).
+
+### One command for everything (WP6)
+```
+sudo --preserve-env=SSH_AUTH_SOCK bash run_all_wp6.sh             # type the password once; about 9 h plus rests (add --with-kernel on a different kernel)
+sudo --preserve-env=SSH_AUTH_SOCK bash run_all_wp6.sh --dry-run   # plan and time only
+```
+It builds missing tools, creates the predictions if missing, **commits and pushes the code and the predictions first** (pre-registration; stops if the push fails unless `ALLOW_UNPUSHED=1`), switches host tuning on (and off at the end or on any exit), then for each scenario (`trace clientalg servonly gen loss latency capacity`) runs it, analyses it into `results/wp6_analysis_<scenario>.txt`, commits and pushes the results **as your user** (not root), rests 5 minutes and waits for load average < 0.7. A failing scenario is logged and skipped; `results/.wp6_done_<scenario>` makes a second run continue where the first stopped. Options: `--only a,b`, `--skip a`, `--rest SEC`, `--no-rest`, `--no-push`, `--no-commit`, `--force`, `--with-kernel`. Log: `results/wp6_run.log`. Pushes use your ssh key: keep the agent with `--preserve-env=SSH_AUTH_SOCK`, or use a key without passphrase.
+
+### Before the first run: `preflight_wp6.sh`
+`sudo --preserve-env=SSH_AUTH_SOCK bash preflight_wp6.sh` (about 20 s) checks everything the scenarios need and prints the fix for each problem: root, programs (`ip tc ethtool taskset tcpdump perf gcc git`), the kernel tracepoint `tcp:tcp_probe` (tracefs mounted and writable), `perf` permission, a real test of namespaces, veth, `tc netem` and `tcpdump`, the built tools and the certificate keys, OpenSSL ≥ 3.5, free cores, disk, idle load, and GitHub (git user, remote, ssh agent, `ls-remote` as your user). `run_all_wp6.sh` runs it first and stops on any FAIL; it also keeps the machine awake with `systemd-inhibit`. Run both inside `tmux` so that closing the terminal does not stop a 9-hour run.

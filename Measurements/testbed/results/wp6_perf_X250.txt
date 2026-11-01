@@ -1,0 +1,16 @@
+== ECDSA-P256|X25519, mutual TLS, depth 2, full transactions, one core, 15 s of samples
+    71.92%  libcrypto.so.3   
+    10.97%  libc.so.6        
+    10.96%  [kernel.kallsyms]
+     6.06%  libssl.so.3      
+     0.05%  tls_serve        
+     0.03%  [vdso]           
+
+== ML-DSA-65|ML-KEM-768, mutual TLS, depth 2, full transactions, one core, 15 s of samples
+    88.95%  libcrypto.so.3   
+     5.60%  [kernel.kallsyms]
+     3.52%  libc.so.6        
+     1.90%  libssl.so.3      
+     0.01%  tls_serve        
+     0.01%  [vdso]           
+

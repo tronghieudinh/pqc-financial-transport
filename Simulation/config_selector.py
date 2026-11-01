@@ -100,7 +100,7 @@ def main():
             for su in M.SUITES:
                 for state, (mode, kw) in STATES.items():
                     f = S.build_flow(su, proto, pr.default_depth, mode, False, S.Model(**kw))
-                    net = S.Net(bw, rtt, mtu, 0.0, 4)
+                    net = S.Net(bw, rtt, mtu, 0.0, 4, nst_early=True)   # Paper 2: the ticket is an earlier write (WP5 stage D)
                     res = S.run_flow(f, net)
                     resume = 1 if mode == "resumed" else 0
                     key = (su, 1 if resume else pr.default_depth, int(pr.mtls), resume)      # resumed rows were measured at depth 1 (the ticket carries the leaf)

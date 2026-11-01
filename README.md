@@ -2,7 +2,7 @@
 
 Simulator, measurements and paper assets for
 
-> **Beyond Message Size: How the Behaviour of Linux TCP and OpenSSL Turns Post-Quantum Signatures into Round Trips in Financial Messaging**
+> **The transport cost of post-quantum authentication in financial messaging** (Paper 1; the title is fixed at publication)
 > Trong-Hieu Dinh (Banking Academy of Vietnam), <hieudt@hvnh.edu.vn>; Trong-Minh Hoang (Posts and Telecommunications Institute of Technology, corresponding author), <hoangtrongminh@ptit.edu.vn>. Submitted to *Computers & Security*.
 
 The study quantifies how the larger keys and signatures of post-quantum cryptography propagate through TLS 1.3, DER X.509
@@ -18,7 +18,8 @@ validated against real transactions over a kernel-emulated link.
 | `Measurements/` | CPU benchmark (`bench_pqc.c`), certificate generation (`certs.sh`), TLS handshake and application-object measurements, and their data (`data/`) |
 | `Measurements/testbed/` | Network-namespace testbed: `tls_probe.c`, `tbnet.py`, `run_testbed.py`, `run_variants.sh` (CUBIC, delayed ACK, timestamps, BBR), `analyze_testbed.py`, `residual_analysis.py`, `analyze_variants.py`, raw results in `results/` |
 | `Measurements/x86/` | The same CPU benchmark on an x86 core, and the comparison with the Arm measurements |
-| `paper/` | LaTeX sources of the paper and its supplementary material, and `make_assets.py`, which generates every table, figure and number |
+| `paper/` | LaTeX sources of the earlier two-file version of the manuscript (main text and supplementary material) and `make_assets.py`, which generates its tables, figures and numbers from the measurements |
+| `manuscript/` | LaTeX source of the merged single-file manuscript (appendices inside), its figures and `data/` (`testbed_configurations.csv`: the 226 validation configurations; `claim_checks.csv`: the source of each headline number; `measurement_checksums.csv`) |
 
 ## Reproduce the results (no special hardware)
 
@@ -31,7 +32,7 @@ bash reproduce.sh          # simulation sweeps (about a minute), testbed and CPU
 
 `reproduce.sh` runs, in order: the unit tests and sweeps (`Simulation/run_paper1.sh`), the analysis of the testbed
 measurements (`Measurements/testbed/paper_assets.py`) and of the x86 CPU measurements (`Measurements/x86/analyze_cpu_x86.py`),
-and `paper/make_assets.py`. No number in the paper is typed by hand except those listed in the comments of `paper/main.tex`.
+and `paper/make_assets.py`. The tables of the merged manuscript (`manuscript/`) were assembled from the outputs of these scripts and are typed in its LaTeX source; `manuscript/data/claim_checks.csv` lists the source of each headline number. `reproduce.sh` also runs the analyses added in v1.3 (ablation of the two stack mechanisms, asymmetric chain depth, uncertainty analysis with the middlebox delay fixed at 0).
 
 ## Repeat the measurements (Linux, root for the testbed)
 
@@ -63,7 +64,8 @@ Do not cite them as validated results.
 
 ## Version history
 
-- `paper1-v1.2` (this version): adds the measurements made after the main campaign (`resume.csv`, `resume_swift.csv`, `capacity_gx10*.csv`
+- `paper1-v1.3` (this version): the merged manuscript (`manuscript/`); model code with a separate chain depth for the client (`build_flow(..., depth_client=)`, default unchanged: the checksum of 3,744 model results is identical to v1.2) and `Simulation/asymmetric_depth.py`; `Measurements/testbed/ablation_stack.py` (contribution of each stack mechanism); `Simulation/uncertainty.py --pi0`; the TCP-variant measurements (CUBIC, delayed ACK, timestamps, BBR) repeated with the CPU clock fixed (`run_variants_tuned.sh`; the first session, with the `ondemand` governor, is kept in `results/ondemand_session/`); the WP6 measurements of later work (loss with full and resumed transactions, latency under load, server capacity repeated, packet traces; scripts `run_all_wp6.sh`, `run_latency_resumed.sh`, `run_wp6b.sh`, `trace_run.py`, `capacity_latency.py`, `tls_load_open.c`). The results of Paper 1 are unchanged apart from the repeated variant measurements (MAE 1.19, 1.26, 1.32 and 1.23 ms for CUBIC, delayed ACK, timestamps and both, against 1.13, 1.18, 1.25 and 1.26 ms in the first session).
+- `paper1-v1.2`: adds the measurements made after the main campaign (`resume.csv`, `resume_swift.csv`, `capacity_gx10*.csv`
   and their scripts: `tls_serve.c`, `tls_load.c`, `capacity_test.py`, `analyze_resume.py`, `analyze_capacity.py`, `supp_paper1_extra.py`), two
   supplementary tables built from them (S23, S24), a lossy variant of the model and a mitigation study that paper 2 will use
   (`Simulation/loss_sim.py`, `mitigations_wired.py`, `config_selector.py`), and the **erratum** below. Paper 1's results are unchanged.

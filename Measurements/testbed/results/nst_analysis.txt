@@ -1,0 +1,16 @@
+80 of 80 predicted cells measured
+H_joined: MAE  17.83 ms, max  100.1, cells a round trip wrong 14 of 80; of the 10 cells on which the hypotheses differ: 10 wrong
+H_early : MAE   5.54 ms, max   98.6, cells a round trip wrong 4 of 80; of the 10 cells on which the hypotheses differ: 0 wrong
+
+== verdict ==
+H_early SUPPORTED: right on every cell on which the hypotheses differ; H_joined wrong on 10
+  ECDSA-P256|X25519        req  19460 resp  13700 (10 seg): measured   402.3  joined   500.9  early  401.87
+  ML-DSA-44|ML-KEM-768     req    302 resp   9380 (7 seg): measured   402.0  joined  301.88  early  400.87
+  ML-DSA-44|ML-KEM-768     req  19460 resp  10820 (8 seg): measured   402.6  joined  501.44  early  402.11
+  ML-DSA-44|ML-KEM-768     req  19460 resp  12260 (9 seg): measured   402.6  joined  501.56  early  402.23
+  ML-DSA-44|ML-KEM-768     req  19460 resp  13700 (10 seg): measured   402.7  joined  501.68  early  402.35
+  ML-DSA-65|ML-KEM-768     req  19460 resp   7940 (6 seg): measured   402.3  joined  501.21  early  401.75
+  ML-DSA-65|ML-KEM-768     req  19460 resp   9380 (7 seg): measured   402.4  joined  501.33  early  401.87
+  ML-DSA-65|ML-KEM-768     req  19460 resp  10820 (8 seg): measured   402.8  joined  501.45  early  401.99
+  ML-DSA-65|ML-KEM-768     req  19460 resp  12260 (9 seg): measured   402.7  joined  501.57  early  402.11
+  ML-DSA-65|ML-KEM-768     req  19460 resp  13700 (10 seg): measured   402.8  joined  501.69  early  402.23

@@ -379,6 +379,7 @@ class Flow:
     comp_kb_cli: float
     comp_kb_srv: float
     writes: tuple = ()          # per 'x' step: sizes of the write() calls that make up the transfer (OpenSSL pattern)
+    nst: int = 0                # bytes of the NewSessionTicket the server sends with the first response of a resumed flow (0 otherwise)
 
 
 def _obj_bytes(o: Obj, sig: Sig, leaf: int, m: Model):
@@ -395,13 +396,20 @@ def _obj_bytes(o: Obj, sig: Sig, leaf: int, m: Model):
 
 @lru_cache(maxsize=None)
 def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
-               cc: bool, m: Model = Model()) -> Flow:
+               cc: bool, m: Model = Model(), depth_client: int = 0) -> Flow:
+    """`depth` = certificates in the SERVER chain; `depth_client` = certificates in the CLIENT chain under mutual TLS
+    (0 = same as `depth`, the symmetric case of Paper 1: every published number uses it)."""
     suite, proto = SUITES[suite_name], PROTOCOLS[proto_name]
+    dc = depth_client or depth
     sig, kex = SIGS[suite.sig], KEXS[suite.kex]
     cold = mode == "cold"
     resumed = mode == "resumed"
     chain = cert_chain(sig, depth, m)
     cert_wire, cert_body, cc_used = certificate_msg(chain, sig, cc, m)
+    if dc != depth:                             # client chain of another depth (mutual TLS only)
+        cert_wire_c, cert_body_c, cc_used_c = certificate_msg(cert_chain(sig, dc, m), sig, cc, m)
+    else:
+        cert_wire_c, cert_body_c, cc_used_c = cert_wire, cert_body, cc_used
     srv_cert_wire, srv_verifies = cert_wire, depth + 1
     if m.mtc:                                   # one certificate, no CA signatures, proof by hashing
         srv_cert_wire = 4 + (1 + 3 + 5 + m.mtc_meta + sig.pk + sig.spki_hdr + m.mtc_proof)
@@ -435,16 +443,16 @@ def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
         sh = m.sh_base + kex.server_share
         fin = 4 + m.finished
         srv = [m.enc_ext] + ([m.cert_req] if proto.mtls else []) + [srv_cert_wire, cv, fin]
-        cli = ([cert_wire, cv] if proto.mtls else []) + [fin]
+        cli = ([cert_wire_c, cv] if proto.mtls else []) + [fin]
         recs = (lambda ms: sum(rec_ovh(x) for x in ms)) if m.record_per_message else (lambda ms: rec_ovh(sum(ms)))
         s_flight = sh + 6 + sum(srv) + recs(srv)
         c_hs = 6 + sum(cli) + recs(cli)
-        tls_cert = srv_cert_wire + (cert_wire if proto.mtls else 0)
+        tls_cert = srv_cert_wire + (cert_wire_c if proto.mtls else 0)
         tls_cv = cv * (2 if proto.mtls else 1)
         tls_kex = kex.client_share + kex.server_share
         tls_other = (ch + s_flight + c_hs) - tls_cert - tls_cv - tls_kex
         cli_decomp = cert_body / 1024.0 if cc_used else 0.0       # server chain -> client
-        srv_decomp = cert_body / 1024.0 if (cc_used and proto.mtls) else 0.0
+        srv_decomp = cert_body_c / 1024.0 if (cc_used_c and proto.mtls) else 0.0
 
         steps += [("cpu", kex.gen_ms), ("hs",), ("x", 0, ch),
                   ("cpu", kex.server_ms + sig.sign_ms), ("x", 1, s_flight)]
@@ -480,7 +488,7 @@ def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
         s_cpu = sum(sig.verify_ms for o in ex.req_objs if o.signer in ("client", "pre"))
         s_cpu += sum(sig.sign_ms for o in ex.resp_objs if o.signer == "server")
         if cold and i == 0 and proto.mtls:
-            s_cpu += (depth + 1) * sig.verify_ms
+            s_cpu += (dc + 1) * sig.verify_ms
         rq, rs = ex_bytes[i]
         first = (cold or resumed) and i == 0
         steps += [("cpu", c_cpu), ("x", 0, rq + (c_hs if first else 0)),
@@ -494,7 +502,7 @@ def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
                  tls_cv=tls_cv, tls_kex=tls_kex, tls_other=tls_other + app_rec)
     sizes["total_l7"] = sum(sizes.values())
     return Flow(mode, tuple(steps), sizes, cli_decomp, srv_decomp,
-                cli_decomp, srv_decomp, tuple(xw))
+                cli_decomp, srv_decomp, tuple(xw), nst if resumed else 0)
 
 
 def count_segments(flow: Flow, mtu: int, hdr: int = IP_TCP_HDR) -> int:
@@ -521,6 +529,9 @@ class Net:
     # Stack behaviour, validated against real OpenSSL 3.5 transactions over a Linux link (Measurements/testbed,
     # MAE 1.1 ms on 94 configurations). The v4 closed form (ideal segmentation, cwnd += every flight) is STACKS["v4"].
     segmentation: str = "openssl"   # "openssl": segments of OpenSSL's write() pattern; "ideal": ceil(bytes / MSS) per transfer
+    nst_early: bool = False         # a resumed server writes the ticket as soon as the client's Finished arrives, not with the response: it is still in flight when the response leaves only if the request flight did not need an extra round trip (Paper 2, WP5)
+    srv_cwnd_acked: int = 0         # with nst_early: window (segments) the server has for the response once the ticket has been acknowledged; 0 = unchanged (stage E probes it)
+    cwnd_slack: int = 0             # segments added to the test below (0: as validated for Paper 1; 2: fits the resumed flows, STACKS['linux-openssl-2'])
     cwnd_validation: bool = True    # Linux tcp_is_cwnd_limited (RFC 7661): slow start grows cwnd only while cwnd < 2 x packets in flight
 
 
@@ -532,25 +543,27 @@ QUIC_CLIENT_INITIAL = 1200  # client Initial datagrams are padded to at least 12
 
 STACKS = {
     "linux-openssl": dict(cwnd_validation=True, segmentation="openssl"),     # validated on the testbed (default)
+    "linux-openssl-2": dict(cwnd_validation=True, segmentation="openssl", nst_early=True),   # Paper 2: the ticket is its own, earlier write (cwnd_slack stays 0: refuted by WP5)
     "v4": dict(cwnd_validation=False, segmentation="ideal"),                 # closed form of v2-v4, kept for sensitivity
 }
 
 
 @lru_cache(maxsize=None)
-def grow_cwnd(cw: int, n: int) -> int:
+def grow_cwnd(cw: int, n: int, slack: int = 0) -> int:
     """cwnd after a flight of n segments in slow start with Linux congestion-window validation.
 
     Replays the ACK clock of one flight (one ACK per segment): every ACK adds one segment to cwnd and releases
     queued data, but only while cwnd < 2 x (maximum number of segments in flight so far), the test of Linux
     tcp_is_cwnd_limited (RFC 7661). A flight smaller than half the window therefore does not grow it, and a
     window-limited flight grows it by slightly less than n (e.g. 10 -> 40 after 31 segments).
+    `slack` loosens the test to cwnd < 2 x peak + slack (Net.cwnd_slack).
     """
     sent = inflight = peak = min(n, cw)
     c, acked = cw, 0
     while acked < n:
         acked += 1
         inflight -= 1
-        if c < 2 * peak:
+        if c < 2 * peak + slack:
             c += 1
         k = min(c - inflight, n - sent)
         if k > 0:
@@ -601,6 +614,8 @@ def run_flow(flow: Flow, net: Net, cpu_scale: float = 1.0) -> dict:
     segs = wire = maxseg = pf = 0
     ch_bytes, first_server = None, True
     xi = -1
+    n_x = sum(1 for t in flow.steps if t[0] == "x")
+    client_el = 0.0
     for st in flow.steps:
         k = st[0]
         if k == "cpu":
@@ -620,10 +635,25 @@ def run_flow(flow: Flow, net: Net, cpu_scale: float = 1.0) -> dict:
                     rx = QUIC_CLIENT_INITIAL * max(1, -(-ch_bytes // (QUIC_CLIENT_INITIAL - QUIC_OVH)))
                     gate = (max(1, (3 * rx) // (mss + QUIC_OVH)), True)
             sizes = ()
-            if net.segmentation == "openssl" and flow.writes and not net.quic:
-                sizes = tuple(segment_sizes(flow.writes[xi], mss, cw[side]))
-            el, s, n, w = _tcp_xfer(st[2], mss, hdr, net.bw_mbps, net.rtt_ms, cw[side], *gate, sizes)
-            cw[side] = grow_cwnd(cw[side], n) if net.cwnd_validation else cw[side] + n
+            nbytes = st[2]
+            wr = flow.writes[xi] if flow.writes else ()
+            if net.nst_early and flow.nst and side == 1 and xi == n_x - 1 and not net.quic:
+                # the ticket left when the client's Finished arrived (the first small segment of the client flight); the
+                # response leaves when the whole request has arrived. If the request flight needed another round trip,
+                # the ticket has been acknowledged by then and no longer occupies the window.
+                if client_el - net.rtt_ms / 2 >= net.rtt_ms:
+                    nbytes = st[2] - flow.nst
+                    wr = (nbytes,)
+                    if net.srv_cwnd_acked:
+                        cw[side] = max(cw[side], net.srv_cwnd_acked)
+                else:
+                    wr = (flow.nst, st[2] - flow.nst)
+            if net.segmentation == "openssl" and wr and not net.quic:
+                sizes = tuple(segment_sizes(wr, mss, cw[side]))
+            el, s, n, w = _tcp_xfer(nbytes, mss, hdr, net.bw_mbps, net.rtt_ms, cw[side], *gate, sizes)
+            if side == 0:
+                client_el = el
+            cw[side] = grow_cwnd(cw[side], n, net.cwnd_slack) if net.cwnd_validation else cw[side] + n
             ser += s
             prop += half
             ssw += max(0.0, el - s - half)

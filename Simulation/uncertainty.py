@@ -17,6 +17,8 @@ metric.
 Reference scenario: 100 Mbps, 30 ms RTT, MTU 1500, SWIFT_MX cold, chain depth 2 (4 for the per-certificate cost).
 
     python3 uncertainty.py [--n 4000] -> uncertainty_summary.csv, uncertainty_corr.csv
+    python3 uncertainty.py --pi0          -> the same with the middlebox penalty fixed at 0 (the value the HAProxy measurements support):
+                                             uncertainty_summary_pi0.csv, uncertainty_corr_pi0.csv; the LaTeX tables and numbers are NOT rewritten
 """
 import argparse
 import csv
@@ -60,8 +62,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--pi0", action="store_true", help="fix the penalty at 0 (same draws of the other inputs)")
     a = ap.parse_args()
     p = draw(np.random.default_rng(a.seed), a.n)
+    sfx = "_pi0" if a.pi0 else ""
+    if a.pi0:
+        p["penalty"] = np.zeros(a.n)    # the draws of the other inputs are unchanged (the penalty was drawn before them)
     cache, out = {}, {k: np.empty(a.n) for k in
                       ["ml_ms", "ml_factor", "falcon_factor", "slhf_factor", "slhs_factor",
                        "ml_percert_ms", "ml_overhead_gt_cpu", "order_holds", "ml_pen_share"]}
@@ -81,15 +87,16 @@ def main():
     rows = [["metric", "median", "p5", "p95", "mean"]]
     for k, v in out.items():
         rows.append([k] + [round(float(x), 3) for x in (np.median(v), *np.percentile(v, [5, 95]), v.mean())])
-    with open(os.path.join(HERE, "uncertainty_summary.csv"), "w", newline="") as fh:
+    with open(os.path.join(HERE, f"uncertainty_summary{sfx}.csv"), "w", newline="") as fh:
         csv.writer(fh).writerows(rows)
 
     def rank(x):
         return np.argsort(np.argsort(x)).astype(float)
-    cr = [["metric"] + INPUTS]
+    inputs = [x for x in INPUTS if not (a.pi0 and x == "penalty")]
+    cr = [["metric"] + inputs]
     for k in ["ml_ms", "ml_factor", "falcon_factor", "ml_percert_ms"]:
-        cr.append([k] + [round(float(np.corrcoef(rank(p[x]), rank(out[k]))[0, 1]), 3) for x in INPUTS])
-    with open(os.path.join(HERE, "uncertainty_corr.csv"), "w", newline="") as fh:
+        cr.append([k] + [round(float(np.corrcoef(rank(p[x]), rank(out[k]))[0, 1]), 3) for x in inputs])
+    with open(os.path.join(HERE, f"uncertainty_corr{sfx}.csv"), "w", newline="") as fh:
         csv.writer(fh).writerows(cr)
     names = {"ml_ms": "ML-DSA-65 latency (ms)", "ml_factor": "ML-DSA-65 factor over baseline",
              "falcon_factor": "Falcon-512 factor", "slhf_factor": "SLH-DSA-128f factor",
@@ -103,6 +110,15 @@ def main():
             tex.append(f"{names[r[0]]} & {r[1]:.2f} & {r[2]:.2f} & {r[3]:.2f} \\\\" if r[1] < 10 else
                        f"{names[r[0]]} & {r[1]:.1f} & {r[2]:.1f} & {r[3]:.1f} \\\\")
     tex.append("\\bottomrule\\end{tabular}")
+    if a.pi0:
+        for r in rows + cr:
+            print(*r, sep="\t")
+        cs = p["cpu_scale"]
+        print("P(overhead > crypto), cpu_scale < 4:", round(float(out["ml_overhead_gt_cpu"][cs < 4].mean()), 3), " 12..16:", round(float(out["ml_overhead_gt_cpu"][(cs >= 12) & (cs <= 16)].mean()), 3))
+        for w in (10, 32, 64):
+            sel = p["init_cwnd"] == w
+            print("per-cert, init_cwnd", w, [round(float(x), 1) for x in (np.median(out["ml_percert_ms"][sel]), *np.percentile(out["ml_percert_ms"][sel], [5, 95]))])
+        return
     tdir = os.path.join(HERE, "..", "paper", "tables")
     if os.path.isdir(tdir):
         open(os.path.join(tdir, "tab_uncertainty.tex"), "w").write("\n".join(tex) + "\n")
