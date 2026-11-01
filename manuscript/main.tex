@@ -312,7 +312,9 @@ The term $T_\mathrm{pen}$ of \cref{eq:latency} applies only when a middlebox del
 
 \section{Model-based protocol analysis}
 \label{sec:results}
-An operator who migrates a SWIFT~MX gateway to ML-DSA-65 must know which bytes and which round trips are added by the migration. This section reports model predictions for this question, with the model evaluated on the testbed in \cref{sec:testbed}. \Cref{tab:master} summarizes transaction size, chain-depth cost, the comparison of transport overhead with computation and compression. Its size and depth columns refer to SWIFT~MX. Its shares $\phi$ (\cref{eq:share}) use the equally weighted cold grid, separately for $\pi=0$ and for all assumed delays. These quantities refer to representative protocol profiles. They are not measured institutional transactions. \Cref{sec:sens,sec:rq5} examine their dependence on the model inputs. The results of this section are a model-based scenario analysis: \cref{tab:evidence} states which part of the study was measured and which part is model output.\n\n\begin{table}[t]
+An operator who migrates a SWIFT~MX gateway to ML-DSA-65 must know which bytes and which round trips are added by the migration. This section reports model predictions for this question, with the model evaluated on the testbed in \cref{sec:testbed}. \Cref{tab:master} summarizes transaction size, chain-depth cost, the comparison of transport overhead with computation and compression. Its size and depth columns refer to SWIFT~MX. Its shares $\phi$ (\cref{eq:share}) use the equally weighted cold grid, separately for $\pi=0$ and for all assumed delays. These quantities refer to representative protocol profiles. They are not measured institutional transactions. \Cref{sec:sens,sec:rq5} examine their dependence on the model inputs. The results of this section are a model-based scenario analysis: \cref{tab:evidence} states which part of the study was measured and which part is model output.
+
+\begin{table}[t]
 \centering\small
 \caption{Evidence level of the results.}
 \label{tab:evidence}
