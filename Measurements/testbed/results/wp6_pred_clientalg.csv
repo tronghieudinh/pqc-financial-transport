@@ -1,0 +1,5 @@
+server,client,req,ks,h_ticket_fit_segments,h_server_fit_segments,differ,note
+ML-DSA-65,ECDSA-P256,19460,9..18,10,15,1,"the request flight needs an extra round trip for every client certificate (ClientHello of 2, 5 or 6 segments, request of 15), so the ticket is acknowledged"
+ECDSA-P256,ML-DSA-65,19460,9..18,15,10,1,"the request flight needs an extra round trip for every client certificate (ClientHello of 2, 5 or 6 segments, request of 15), so the ticket is acknowledged"
+ML-DSA-44,ML-DSA-65,19460,9..18,15,12,1,"the request flight needs an extra round trip for every client certificate (ClientHello of 2, 5 or 6 segments, request of 15), so the ticket is acknowledged"
+ML-DSA-65,ML-DSA-44,19460,9..18,12,15,1,"the request flight needs an extra round trip for every client certificate (ClientHello of 2, 5 or 6 segments, request of 15), so the ticket is acknowledged"

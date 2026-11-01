@@ -37,7 +37,9 @@ cd "$HERE"
 echo "== tls_probe"
 gcc -O2 -Wall -o tls_probe tls_probe.c -I"$PREFIX/include" -L"$PREFIX/lib" -lssl -lcrypto -Wl,-rpath,"$PREFIX/lib"
 gcc -O2 -Wall -o tls_serve tls_serve.c -I"$PREFIX/include" -L"$PREFIX/lib" -lssl -lcrypto -Wl,-rpath,"$PREFIX/lib"      # capacity tests
+gcc -O2 -Wall -o tcp_flight tcp_flight.c      # plain-TCP window test (run_slack.py)
 gcc -O2 -Wall -pthread -o tls_load tls_load.c -I"$PREFIX/include" -L"$PREFIX/lib" -lssl -lcrypto -Wl,-rpath,"$PREFIX/lib"
+gcc -O2 -Wall -pthread -o tls_load_open tls_load_open.c -I"$PREFIX/include" -L"$PREFIX/lib" -lssl -lcrypto -lm -Wl,-rpath,"$PREFIX/lib"      # open-loop load (WP6 B4)
 
 echo "== certificates (real DER chains, depth 1-4; takes a few minutes, SLH-DSA is slow)"
 # the repository holds the .pem files but NOT the private test keys (*.key are git-ignored): test the key

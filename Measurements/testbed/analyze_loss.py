@@ -10,7 +10,7 @@ and an unshaped base per suite and depth. The model is Simulation/loss_sim.py (v
 
 Measured times are shifted by the median of the unshaped base transactions (this removes computation and local overhead, as in paper 1);
 modelled times are the transport time (total minus the computation steps). For every configuration it reports mean, median, 95th and
-99th percentile of both, and the mean number of retransmissions per transaction (TCP_INFO `retrans`) against the model's.
+99th percentile of both, and the mean number of retransmissions per transaction (TCP_INFO `retrans`, which counts only the CLIENT's own retransmissions) against the model's client-side count.
 The tails are where this model is weakest (timer values of the real stack, SYN retransmission, delayed ACKs): read them as a check, not a fit.
 """
 from __future__ import annotations
@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import random
 import statistics as st
 import sys
 
@@ -39,8 +40,9 @@ def main():
     ap.add_argument("csv")
     ap.add_argument("--trials", type=int, default=3000)
     ap.add_argument("--out", default="")
+    ap.add_argument("--resume", action="store_true", help="resumed transactions (WP6 B2): the model flow is the resumed one (ticket joined with the response)")
     a = ap.parse_args()
-    rows = [r for r in A.load(a.csv, False) if r["topology"] == "direct" and r["resume"] == "0"]
+    rows = [r for r in A.load(a.csv, False) if r["topology"] == "direct" and r["resume"] == ("1" if a.resume else "0")]
     agg = A.aggregate(rows)
     base = {(c["suite"], c["depth"], c["mtls"]): c["med"] for c in agg.values() if c["net_id"] == "base"}
     out = []
@@ -50,19 +52,23 @@ def main():
         k = (c["suite"], c["depth"], c["mtls"])
         if k not in base:
             continue
-        flow, _ = A.model_for(c)                                  # cold flow with the probe's message sizes
+        flow, _ = A.model_for(dict(c, resume="1") if a.resume else c)      # cold (or resumed) flow with the probe's message sizes
         cpu = sum(s[1] for s in flow.steps if s[0] == "cpu")
         net = S.Net(A.f(c["rate_mbps"]), A.f(c["rtt_ms"]), int(c["mtu"]), 0.0, 4, init_cwnd=int(c["icw"]))
         p = A.f(c["loss_pct"]) / 100.0
         sims = [L.run_flow_lossy(flow, net, p, f"an|{c['suite']}|{c['depth']}|{p}|{t}") for t in range(a.trials)]
         mod = [s["total"] - cpu for s in sims]
         mea = [t - base[k] for t in c["times"]]
+        rng = random.Random(5)
+        bs = sorted(st.mean(rng.choices(mea, k=len(mea))) for _ in range(1000))
+        ci = (bs[25], bs[974])
         out.append(dict(suite=c["suite"], depth=c["depth"], rtt_ms=c["rtt_ms"], loss_pct=c["loss_pct"], n=c["n"],
                         meas_mean=round(st.mean(mea), 2), model_mean=round(st.mean(mod), 2),
                         meas_p50=round(q(mea, .5), 2), model_p50=round(q(mod, .5), 2),
                         meas_p95=round(q(mea, .95), 2), model_p95=round(q(mod, .95), 2),
                         meas_p99=round(q(mea, .99), 2), model_p99=round(q(mod, .99), 2),
-                        meas_retx=round(c["retrans"], 3), model_retx=round(st.mean(s["retx"] for s in sims), 3)))
+                        meas_retx=round(c["retrans"], 3), model_retx=round(st.mean(s["retx_client"] for s in sims), 3), model_retx_all=round(st.mean(s["retx"] for s in sims), 3),
+                        mean_lo=round(ci[0], 2), mean_hi=round(ci[1], 2), mean_in_ci=int(ci[0] <= st.mean(mod) <= ci[1])))
     if not out:
         sys.exit("no shaped configuration with an unshaped base in " + a.csv)
     dst = a.out or os.path.join(os.path.dirname(a.csv), "loss_summary.csv")
@@ -75,6 +81,7 @@ def main():
     for o in out:
         print(f"{o['suite'][:24]:24s} {o['depth']} {A.f(o['rtt_ms']):4g}ms {A.f(o['loss_pct']):4g} {o['n']:4d}  {o['meas_mean']:7.1f}/{o['model_mean']:7.1f}  {o['meas_p50']:7.1f}/{o['model_p50']:7.1f}  "
               f"{o['meas_p95']:7.1f}/{o['model_p95']:7.1f}  {o['meas_p99']:7.1f}/{o['model_p99']:7.1f}  {o['meas_retx']:6.3f}/{o['model_retx']:6.3f}")
+    print(f"model mean inside the 95% bootstrap interval of the measured mean: {sum(o['mean_in_ci'] for o in out)} of {len(out)}")
     e = [abs(o["meas_mean"] - o["model_mean"]) for o in out]
     print(f"mean absolute error of the mean: {st.mean(e):.1f} ms; at loss 0: {st.mean([abs(o['meas_mean'] - o['model_mean']) for o in out if A.f(o['loss_pct']) == 0] or [float('nan')]):.1f} ms")
 

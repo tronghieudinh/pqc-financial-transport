@@ -1,0 +1,77 @@
+$ python3 analyze_resume.py --out results/resume_summary_wp6_gen.csv results/wp6_gen_tls.csv
+240 shaped configurations (7680 resumed transactions)
+resumed:  MAE of the stack model 12.50 ms (bias +5.01, max 100.1)
+full:     MAE of the stack model 18.81 ms (bias -4.87, max 103.6); reference: 0 configurations from earlier ticketless runs, 240 from the priming transactions (with ticket)
+gain:     MAE 24.11 ms; measured gain median 0.5 ms, model 0.9 ms; size ratio median 0.996
+request 19460 B / response 10280 B: 3 configurations, resumed MAE 66.19 ms, gain MAE 65.29 ms
+request 19460 B / response 106580 B: 3 configurations, resumed MAE 1.34 ms, gain MAE 1.15 ms
+request 19460 B / response 11500 B: 3 configurations, resumed MAE 98.97 ms, gain MAE 98.08 ms
+request 19460 B / response 115520 B: 3 configurations, resumed MAE 1.35 ms, gain MAE 1.88 ms
+request 19460 B / response 12260 B: 9 configurations, resumed MAE 27.34 ms, gain MAE 25.76 ms
+request 19460 B / response 124460 B: 3 configurations, resumed MAE 1.28 ms, gain MAE 2.54 ms
+request 19460 B / response 12720 B: 3 configurations, resumed MAE 66.33 ms, gain MAE 98.39 ms
+request 19460 B / response 133400 B: 3 configurations, resumed MAE 1.38 ms, gain MAE 3.36 ms
+request 19460 B / response 13700 B: 9 configurations, resumed MAE 40.69 ms, gain MAE 38.18 ms
+request 19460 B / response 13940 B: 3 configurations, resumed MAE 66.35 ms, gain MAE 98.37 ms
+request 19460 B / response 142340 B: 3 configurations, resumed MAE 1.26 ms, gain MAE 3.96 ms
+request 19460 B / response 15140 B: 9 configurations, resumed MAE 7.14 ms, gain MAE 22.70 ms
+request 19460 B / response 15160 B: 3 configurations, resumed MAE 33.42 ms, gain MAE 66.69 ms
+request 19460 B / response 16380 B: 3 configurations, resumed MAE 33.38 ms, gain MAE 66.68 ms
+request 19460 B / response 16580 B: 9 configurations, resumed MAE 7.15 ms, gain MAE 23.14 ms
+request 19460 B / response 17600 B: 3 configurations, resumed MAE 33.34 ms, gain MAE 66.67 ms
+request 19460 B / response 18020 B: 9 configurations, resumed MAE 3.89 ms, gain MAE 20.75 ms
+request 19460 B / response 18820 B: 3 configurations, resumed MAE 33.30 ms, gain MAE 66.67 ms
+request 19460 B / response 19460 B: 9 configurations, resumed MAE 3.88 ms, gain MAE 21.19 ms
+request 19460 B / response 20900 B: 9 configurations, resumed MAE 3.85 ms, gain MAE 21.63 ms
+request 19460 B / response 22340 B: 9 configurations, resumed MAE 0.66 ms, gain MAE 19.61 ms
+request 19460 B / response 79760 B: 3 configurations, resumed MAE 94.56 ms, gain MAE 1.30 ms
+request 19460 B / response 88700 B: 3 configurations, resumed MAE 0.93 ms, gain MAE 94.22 ms
+request 19460 B / response 97640 B: 3 configurations, resumed MAE 1.37 ms, gain MAE 0.46 ms
+request 302 B / response 10280 B: 3 configurations, resumed MAE 33.97 ms, gain MAE 0.67 ms
+request 302 B / response 106580 B: 3 configurations, resumed MAE 1.99 ms, gain MAE 0.45 ms
+request 302 B / response 11500 B: 3 configurations, resumed MAE 0.94 ms, gain MAE 33.68 ms
+request 302 B / response 115520 B: 3 configurations, resumed MAE 1.99 ms, gain MAE 0.98 ms
+request 302 B / response 12260 B: 9 configurations, resumed MAE 1.28 ms, gain MAE 31.30 ms
+request 302 B / response 124460 B: 3 configurations, resumed MAE 1.93 ms, gain MAE 1.64 ms
+request 302 B / response 12720 B: 3 configurations, resumed MAE 0.90 ms, gain MAE 0.70 ms
+request 302 B / response 133400 B: 3 configurations, resumed MAE 2.00 ms, gain MAE 2.43 ms
+request 302 B / response 13700 B: 9 configurations, resumed MAE 1.39 ms, gain MAE 30.76 ms
+request 302 B / response 13940 B: 3 configurations, resumed MAE 0.89 ms, gain MAE 0.77 ms
+request 302 B / response 142340 B: 3 configurations, resumed MAE 1.91 ms, gain MAE 3.06 ms
+request 302 B / response 15140 B: 9 configurations, resumed MAE 1.39 ms, gain MAE 16.79 ms
+request 302 B / response 15160 B: 3 configurations, resumed MAE 0.85 ms, gain MAE 0.80 ms
+request 302 B / response 16380 B: 3 configurations, resumed MAE 0.86 ms, gain MAE 0.83 ms
+request 302 B / response 16580 B: 9 configurations, resumed MAE 1.36 ms, gain MAE 16.36 ms
+request 302 B / response 17600 B: 3 configurations, resumed MAE 0.85 ms, gain MAE 0.88 ms
+request 302 B / response 18020 B: 9 configurations, resumed MAE 1.33 ms, gain MAE 15.97 ms
+request 302 B / response 18820 B: 3 configurations, resumed MAE 0.82 ms, gain MAE 0.91 ms
+request 302 B / response 19460 B: 9 configurations, resumed MAE 1.33 ms, gain MAE 15.54 ms
+request 302 B / response 20900 B: 9 configurations, resumed MAE 1.34 ms, gain MAE 15.09 ms
+request 302 B / response 22340 B: 9 configurations, resumed MAE 1.35 ms, gain MAE 14.67 ms
+request 302 B / response 79760 B: 3 configurations, resumed MAE 95.65 ms, gain MAE 1.76 ms
+request 302 B / response 88700 B: 3 configurations, resumed MAE 2.02 ms, gain MAE 94.67 ms
+request 302 B / response 97640 B: 3 configurations, resumed MAE 2.01 ms, gain MAE 0.44 ms
+  ECDSA-P256|X25519            n= 80 resumed excess   401.7  full excess   402.2  gain    -0.1 (model     0.1)
+  ML-DSA-44|ML-KEM-768         n= 80 resumed excess   402.5  full excess   405.4  gain    -0.2 (model    -2.8)
+  ML-DSA-65|ML-KEM-768         n= 80 resumed excess   402.7  full excess   406.1  gain    27.7 (model     3.8)
+
+$ python3 analyze_wp6.py gen
+240 of 240 predicted cells measured
+
+== errors by model (a cell is wrong by a round trip when |error| > half the RTT) ==
+RTT 5 ms, 100 Mbit/s, MTU 1500: joined       MAE   1.14 wrong  5 | early_w10    MAE   0.99 wrong  0 | early_wmeas  MAE   1.59 wrong  7
+RTT 30 ms, 100 Mbit/s, MTU 1500: joined       MAE   7.76 wrong 12 | early_w10    MAE   4.77 wrong  7 | early_wmeas  MAE   0.74 wrong  0
+RTT 100 ms, 10 Mbit/s, MTU 1500: joined       MAE  10.85 wrong  5 | early_w10    MAE   2.95 wrong  0 | early_wmeas  MAE  16.28 wrong  7
+RTT 100 ms, 100 Mbit/s, MTU 1280: joined       MAE  29.46 wrong 14 | early_w10    MAE  17.05 wrong  8 | early_wmeas  MAE   2.75 wrong  1
+RTT 100 ms, 100 Mbit/s, MTU 9000: joined       MAE  13.31 wrong  6 | early_w10    MAE  13.31 wrong  6 | early_wmeas  MAE  13.31 wrong  6
+
+== largest response (segments) that costs no extra round trip, large request ==
+ECDSA-P256|X25519        [5ms/100M/1500] 10  [30ms/100M/1500] 10  [100ms/10M/1500] 10  [100ms/100M/1280] 10  [100ms/100M/9000] None
+ML-DSA-44|ML-KEM-768     [5ms/100M/1500] 10  [30ms/100M/1500] 12  [100ms/10M/1500] 10  [100ms/100M/1280] 12  [100ms/100M/9000] None
+ML-DSA-65|ML-KEM-768     [5ms/100M/1500] 10  [30ms/100M/1500] 15  [100ms/10M/1500] 10  [100ms/100M/1280] None  [100ms/100M/9000] None
+
+== reading ==
+ECDSA-P256|X25519: fit [10] across 4 networks with an MTU below 9000  -> the window after an acknowledged ticket does not depend on RTT, rate or MTU; MTU 9000 is read from the error table above
+ML-DSA-44|ML-KEM-768: fit [10, 12] across 4 networks with an MTU below 9000  -> it DOES depend on the network: describe it; MTU 9000 is read from the error table above
+ML-DSA-65|ML-KEM-768: fit [10, 15] across 4 networks with an MTU below 9000  -> it DOES depend on the network: describe it; MTU 9000 is read from the error table above
+

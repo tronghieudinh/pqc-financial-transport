@@ -1,0 +1,19 @@
+{
+  "kernel": "7.0.0-42-generic",
+  "machine": "x86_64",
+  "cpu": "Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz",
+  "congestion_control": "cubic",
+  "slow_start_after_idle": "1",
+  "initial_window_default": 10,
+  "utc": "2026-11-01T15:30:15Z",
+  "args": {
+    "stage": "A",
+    "configs": "mtu9000",
+    "reps_a": 20,
+    "reps_b": 15,
+    "out": "results/slack_tcp_trace.csv",
+    "trace": true,
+    "trace_configs": "mtu9000",
+    "dry_run": false
+  }
+}

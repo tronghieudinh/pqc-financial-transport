@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software or data, please cite it as below."
-title: "pqc-financial-transport: simulator, measurements and paper assets for 'Beyond Message Size: How the Behaviour of Linux TCP and OpenSSL Turns Post-Quantum Signatures into Round Trips in Financial Messaging'"
+title: "pqc-financial-transport: simulator, measurements and paper assets for a study of the transport cost of post-quantum authentication in financial messaging"
 type: software
 authors:
   - family-names: "Dinh"
@@ -17,4 +17,4 @@ repository-code: "https://github.com/tronghieudinh/pqc-financial-transport"
 license: MIT
 keywords: [post-quantum cryptography, TLS 1.3, financial messaging, TCP congestion window, X.509, ML-DSA]
 doi: "10.5281/zenodo.23839449"
-version: "paper1-v1.2"
+version: "paper1-v1.3"

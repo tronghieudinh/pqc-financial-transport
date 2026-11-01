@@ -62,8 +62,9 @@ COLS = ["cfg_id", "topology", "suite", "cert_alg", "group", "depth", "mtls", "re
 
 
 def cfg_id(c):
-    return "|".join(str(c[k]) for k in ("topology", "suite", "depth", "mtls", "req", "resp", "rtt_ms", "rate_mbps",
-                                       "loss_pct", "mtu", "icw", "cc"))
+    cid = "|".join(str(c[k]) for k in ("topology", "suite", "depth", "mtls", "req", "resp", "rtt_ms", "rate_mbps",
+                                      "loss_pct", "mtu", "icw", "cc"))
+    return cid + ("|client=" + c["client_alg"] if c.get("client_alg") else "")       # unchanged for every earlier run
 
 
 def detect_cpus():
@@ -164,6 +165,13 @@ def start_proxy(tb, work, inspect, cpu):
 def run_config(c, tb, probe, cpus, work, loopback):
     alg, group = ALL_SUITES[c["suite"]]
     ch = ensure_chain(alg, c["depth"], work)
+    ca_srv = ch["ca"]                      # the server's trust anchor for the CLIENT certificate
+    if c.get("client_alg"):                # WP6: the client certificate comes from another algorithm's tree (mixed chains; a transition scenario)
+        chc = ensure_chain(c["client_alg"], c["depth"], work)
+        ca_srv = os.path.join(work, f"ca_{alg}_{c['client_alg']}_d{c['depth']}.pem")
+        with open(ca_srv, "w") as fh:
+            fh.write(open(ch["ca"]).read() + open(chc["ca"]).read())
+        ch = dict(ch, client=chc["client"])
     cpu_c, cpu_s, _ = cpus
     port = tbnet.PROBE_PORT if not loopback else "45600"
     pre_s = [] if loopback else tb.exec_prefix("s")
@@ -172,7 +180,7 @@ def run_config(c, tb, probe, cpus, work, loopback):
     c_addr = "::1" if loopback else tb.client_target
     mtls = ["--mtls"] if c["mtls"] else []
     srv_cmd = ["taskset", "-c", str(cpu_s)] + pre_s + [probe, "server", "--addr", s_addr, "--port", port,
-              "--cert", ch["server"][0], "--key", ch["server"][1], "--ca", ch["ca"], "--groups", group,
+              "--cert", ch["server"][0], "--key", ch["server"][1], "--ca", ca_srv, "--groups", group,
               "--req", str(c["req"]), "--resp", str(c["resp"])] + mtls + (["--resume"] if c["resume"] else [])
     gap = 2 * c["rtt_ms"] + 5
     cli_cmd = ["taskset", "-c", str(cpu_c)] + pre_c + [probe, "client", "--addr", c_addr, "--port", port,
@@ -220,6 +228,8 @@ def build_configs(a, p):
         common = dict(topology=a.topology, suite=su, depth=d, mtls=m, req=a.req, resp=a.resp, cc=a.cc, n=n,
                       tcp_ts=int(a.timestamps), quickack=int(not a.delack), resume=int(a.resume),
                       warmup=a.warmup)
+        if a.client_alg:
+            common["client_alg"] = a.client_alg
         base.append(dict(common, rtt_ms=0, rate_mbps=0, loss_pct=0, mtu=1500, icw=10, net_id="base"))
         for rtt, rate, mtu, loss, icw in itertools.product(rtts, rates, mtus, losses, icws):
             shaped.append(dict(common, rtt_ms=rtt, rate_mbps=rate, loss_pct=loss, mtu=mtu, icw=icw, net_id="shaped"))
@@ -245,6 +255,7 @@ def main():
     ap.add_argument("--delack", action="store_true", help="no quickack on the routes: Linux delayed acknowledgements (default: quickack)")
     ap.add_argument("--timestamps", action="store_true", help="TCP timestamps on (12 option bytes, MSS = MTU - 72); default off")
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--client-alg", default="", help="certificate algorithm of the CLIENT (e.g. ECDSA-P256) when it differs from the server's; adds a client_alg column")
     for k in ("suites", "depths", "mtls", "rtts", "rates", "mtus", "losses", "icws"):
         ap.add_argument(f"--{k}", default="", help="comma list overriding the profile")
     ap.add_argument("--dry-run", action="store_true", help="print the commands, run nothing")
@@ -252,6 +263,8 @@ def main():
     ap.add_argument("--debug", action="store_true", help="always print the stderr of client and server")
     ap.add_argument("--keep", action="store_true", help="do not remove the namespaces at the end")
     a = ap.parse_args()
+    if a.client_alg:
+        COLS.append("client_alg")      # only new files get the extra column; earlier outputs keep their header
 
     p = PROFILES[a.profile]
     cfgs = build_configs(a, p)

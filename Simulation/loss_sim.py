@@ -167,7 +167,8 @@ def run_flow_lossy(flow: S.Flow, net: S.Net, p: float, seed) -> dict:
 
     env.run(until=env.process(conversation()))
     return dict(total=env.now, losses=dirs[0].losses + dirs[1].losses + out["syn_losses"],
-                retx=dirs[0].retransmissions + dirs[1].retransmissions)
+                retx=dirs[0].retransmissions + dirs[1].retransmissions,
+                retx_client=dirs[0].retransmissions + out["syn_losses"])     # what the client's TCP_INFO counts: its own data segments and SYNs
 
 
 SUITES = ["ECDSA-P256|X25519", "ECDSA-P256|X25519MLKEM768", "ML-DSA-44|ML-KEM-768", "ML-DSA-65|ML-KEM-768",

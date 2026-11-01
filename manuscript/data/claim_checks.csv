@@ -1,0 +1,30 @@
+claim,value,unit,source,interpretation
+successful_testbed_transactions,6960,transactions,"core_a,segs,segs2,knee,grid_b raw CSV",Includes shaped runs and unshaped baselines; not 6960 distinct configurations
+successful_base,1300,transactions,direct Reno raw CSV,
+successful_shaped,5660,transactions,direct Reno raw CSV,
+compared_configurations,226,configurations,raw CSV aggregated by configuration,
+ideal_MAE,4.698884955752212,ms,audit/testbed_configurations.csv,"Mean over configuration errors, not transaction-level MAE"
+ideal_max_abs_error,97.09300000000002,ms,audit/testbed_configurations.csv,
+linux_window_only_MAE,3.3394070796460174,ms,audit/testbed_configurations.csv,"Mean over configuration errors, not transaction-level MAE"
+linux_window_only_max_abs_error,95.39799999999997,ms,audit/testbed_configurations.csv,
+linux_openssl_MAE,1.6479955752212392,ms,audit/testbed_configurations.csv,"Mean over configuration errors, not transaction-level MAE"
+linux_openssl_max_abs_error,5.375999999999991,ms,audit/testbed_configurations.csv,
+off_grid_MAE,2.039840277777779,ms,audit/testbed_configurations.csv,
+off_grid_configurations,144,configurations,audit/testbed_configurations.csv,
+inside_measurement_95pct_interval,46,configurations,bootstrap of raw shaped minus unshaped medians,
+testbed_environment_governor,ondemand,setting,Measurements/testbed/results/env.json,Snapshot is for a later timestamp run; earlier campaigns do not each retain a snapshot
+testbed_environment_no_turbo,0,setting,Measurements/testbed/results/env.json,0 means turbo is not disabled
+x86_primitive_environment,performance; no_turbo=1,setting,Measurements/x86/data/env_x86.txt,Separate benchmark; does not establish fixed clock policy for all network runs
+main_sweep_rows,175500,rows,Simulation/results/results.csv,
+cold_sweep_rows,140400,rows,Simulation/results/results.csv,
+warm_sweep_rows,35100,rows,Simulation/results/results.csv,
+ECDSA-P256|X25519_swift_size,23.029296875,KiB,Simulation/results/results.csv,Original manuscript labels KB; model uses division by 1024
+ML-DSA-65|ML-KEM-768_swift_size,83.359375,KiB,Simulation/results/results.csv,Original manuscript labels KB; model uses division by 1024
+ml_depth_1_to_4_total_ms,60.047200000000004,ms,Simulation/results/results.csv,Depth changes simultaneously at both mTLS endpoints
+ml_depth_1_to_4_ssw_ms,56.525499999999994,ms,Simulation/results/results.csv,Depth changes simultaneously at both mTLS endpoints
+ml_depth_1_to_4_ser_ms,2.9036999999999997,ms,Simulation/results/results.csv,Depth changes simultaneously at both mTLS endpoints
+ml_depth_1_to_4_cpu_ms,0.6180000000000003,ms,Simulation/results/results.csv,Depth changes simultaneously at both mTLS endpoints
+average_depth_increment,20.015733333333333,ms per simultaneous endpoint-depth increment,Simulation/results/results.csv,Adds one intermediate at each endpoint per increment; discrete RTT steps
+excess_average_depth_increment,10.152366666666666,ms,Simulation/results/results.csv,Relative to the corresponding classical depth effect
+ml_transport_gt_cpu_all_penalties,87.29629629629629,percent,Simulation/results/results.csv,10800 equally weighted cold rows; not bank-traffic probability
+ml_transport_gt_cpu_zero_penalty,75.60185185185185,percent,Simulation/results/results.csv,2160 equally weighted cold rows; not bank-traffic probability

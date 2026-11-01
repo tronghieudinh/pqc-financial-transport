@@ -126,5 +126,27 @@ class SimPyCrossCheck(unittest.TestCase):
                 self.assertEqual((r["d_segs"], r["d_wire"], r["d_pen"]), (0, 0, 0), (stack, case))
 
 
+class TestAsymmetricDepth(unittest.TestCase):
+    """build_flow(depth_client=) lifts the symmetric-depth assumption without changing the symmetric case."""
+
+    def test_default_is_symmetric(self):
+        a = S.build_flow("ML-DSA-65|ML-KEM-768", "SWIFT_MX", 3, "cold", False)
+        b = S.build_flow("ML-DSA-65|ML-KEM-768", "SWIFT_MX", 3, "cold", False, S.Model(), 3)
+        self.assertEqual(a, b)
+
+    def test_client_chain_changes_only_client_side(self):
+        s = "ML-DSA-65|ML-KEM-768"
+        sym = S.build_flow(s, "SWIFT_MX", 2, "cold", False)
+        asy = S.build_flow(s, "SWIFT_MX", 2, "cold", False, S.Model(), 4)
+        self.assertGreater(asy.sizes["total_l7"], sym.sizes["total_l7"])
+        extra = 2 * (S.cert_len(S.SIGS["ML-DSA-65"], False, S.Model()) + 5)   # + 3-byte length and 2-byte extensions per entry
+        self.assertEqual(asy.sizes["tls_cert"] - sym.sizes["tls_cert"], extra)
+
+    def test_no_effect_without_client_chain(self):
+        a = S.build_flow("ML-DSA-65|ML-KEM-768", "OAUTH2_RFC6749", 2, "cold", False)
+        b = S.build_flow("ML-DSA-65|ML-KEM-768", "OAUTH2_RFC6749", 2, "cold", False, S.Model(), 4)
+        self.assertEqual(a.sizes["tls_cert"], b.sizes["tls_cert"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -37,7 +37,11 @@ def main():
     ap.add_argument("--full-ref", default="core_a,segs,segs2,knee,grid_b",
                     help="earlier runs of FULL transactions without tickets (same suite, depth, RTT, rate, MTU, window): the reference for the gain; "
                          "prime_ms is a full transaction WITH a ticket, which the model has no mode for")
+    ap.add_argument("--cwnd-slack", type=int, default=0, help="Net.cwnd_slack of the model (WP5 refuted slack > 0; kept for the record)")
+    ap.add_argument("--nst-early", action="store_true", help="model the NewSessionTicket as its own earlier write (Net.nst_early, Paper 2)")
     a = ap.parse_args()
+    A.SLACK = a.cwnd_slack
+    A.NST_EARLY = a.nst_early
     rows = []
     for p in a.files:
         rows += [r for r in A.load(p, False) if r["resume"] == "1" and r["err"] == "" and A.f(r["t_total_ms"]) > 0 and r.get("reused") == "1"]

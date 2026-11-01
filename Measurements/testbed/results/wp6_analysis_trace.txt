@@ -1,0 +1,199 @@
+$ python3 analyze_trace.py results/trace_window/ECDSA-P256_req19460_resp19460_rtt100_mtu1500.trace.txt results/trace_window/ML-DSA-44_req19460_resp19460_rtt100_mtu1500.trace.txt results/trace_window/ML-DSA-65_req19460_resp19460_rtt100_mtu1500.trace.txt
+== results/trace_window/ECDSA-P256_req19460_resp19460_rtt100_mtu1500.trace.txt: 20 server connections
+  F: connections 10  peak in flight (segments) median 12.5 max 12.5   max cwnd median 26
+  R: connections 10  peak in flight (segments) median 12.0 max 12.0   max cwnd median 25
+  first resumed connection, cwnd over time: 0ms:10 101ms:11 101ms:12 101ms:13 101ms:14 102ms:15 102ms:16 102ms:17 102ms:18 102ms:19 201ms:20 201ms:21 201ms:22 201ms:23 201ms:24 202ms:25
+== results/trace_window/ML-DSA-44_req19460_resp19460_rtt100_mtu1500.trace.txt: 20 server connections
+  F: connections 10  peak in flight (segments) median 15.3 max 15.3   max cwnd median 33
+  R: connections 10  peak in flight (segments) median 12.0 max 12.0   max cwnd median 25
+  first resumed connection, cwnd over time: 0ms:10 102ms:11 102ms:12 102ms:13 102ms:14 102ms:15 102ms:16 102ms:17 102ms:18 102ms:19 202ms:20 202ms:21 202ms:22 202ms:23 202ms:24 202ms:25
+== results/trace_window/ML-DSA-65_req19460_resp19460_rtt100_mtu1500.trace.txt: 20 server connections
+  F: connections 10  peak in flight (segments) median 16.6 max 16.6   max cwnd median 35
+  R: connections 10  peak in flight (segments) median 13.0 max 13.0   max cwnd median 27
+  first resumed connection, cwnd over time: 0ms:10 0ms:11 0ms:12 102ms:13 102ms:14 102ms:15 102ms:17 102ms:19 102ms:20 103ms:21 103ms:22 103ms:23 202ms:24 202ms:25 202ms:26 202ms:27
+
+### results/trace_fullticket/ECDSA-P256_req302_resp222_rtt100_mtu1500.pcap
+20 connections
+-- connection 0 (client port 51950) full/ticket-obtaining (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.1 ms S>C SYN-ACK        1 segments      0 B
+     100.4 ms C>S PSH-ACK        1 segments    217 B
+     151.4 ms S>C ACK            1 segments   1440 B
+     151.4 ms S>C PSH-ACK        2 segments   1694 B
+     203.3 ms C>S ACK            1 segments   1440 B
+     203.3 ms C>S PSH-ACK        3 segments   1788 B
+     254.8 ms S>C PSH-ACK        3 segments   1547 B
+     254.9 ms S>C FIN-ACK        1 segments      0 B
+     305.1 ms C>S PSH-ACK        1 segments     24 B
+     305.1 ms C>S RST-ACK        1 segments      0 B
+     355.2 ms S>C RST            1 segments      0 B
+20 connections
+-- connection 1 (client port 51958) resumed (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.2 ms S>C SYN-ACK        1 segments      0 B
+     100.7 ms C>S ACK            1 segments   1440 B
+     100.7 ms C>S PSH-ACK        1 segments     72 B
+     151.3 ms S>C PSH-ACK        1 segments    241 B
+     201.6 ms C>S PSH-ACK        2 segments    404 B
+     252.1 ms S>C PSH-ACK        3 segments   1547 B
+     252.1 ms S>C FIN-ACK        1 segments      0 B
+     302.3 ms C>S PSH-ACK        1 segments     24 B
+     302.3 ms C>S RST-ACK        1 segments      0 B
+     352.4 ms S>C RST            1 segments      0 B
+### results/trace_fullticket/ECDSA-P256_req302_resp222_rtt100_mtu1500_ticketless.pcap
+10 connections
+-- connection 0 (client port 53456) full/ticket-obtaining (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.2 ms S>C SYN-ACK        1 segments      0 B
+     100.5 ms C>S PSH-ACK        1 segments    213 B
+     151.5 ms S>C ACK            1 segments   1440 B
+     151.5 ms S>C PSH-ACK        2 segments   1695 B
+     203.3 ms C>S ACK            1 segments   1440 B
+     203.3 ms C>S PSH-ACK        3 segments   1789 B
+     254.5 ms S>C PSH-ACK        2 segments    268 B
+     254.6 ms S>C FIN-ACK        1 segments      0 B
+     304.7 ms C>S PSH-ACK        1 segments     24 B
+     304.7 ms C>S RST-ACK        1 segments      0 B
+     354.9 ms S>C RST            1 segments      0 B
+10 connections
+-- connection 1 (client port 53462) resumed (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.2 ms S>C SYN-ACK        1 segments      0 B
+     100.4 ms C>S PSH-ACK        1 segments    213 B
+     151.2 ms S>C ACK            1 segments   1440 B
+     151.3 ms S>C PSH-ACK        2 segments   1695 B
+     202.8 ms C>S ACK            1 segments   1440 B
+     202.9 ms C>S PSH-ACK        3 segments   1788 B
+     254.0 ms S>C PSH-ACK        2 segments    268 B
+     254.1 ms S>C FIN-ACK        1 segments      0 B
+     304.2 ms C>S PSH-ACK        1 segments     24 B
+     304.3 ms C>S RST-ACK        1 segments      0 B
+     354.4 ms S>C RST            1 segments      0 B
+### results/trace_fullticket/ML-DSA-44_req302_resp222_rtt100_mtu1500.pcap
+20 connections
+-- connection 0 (client port 53510) full/ticket-obtaining (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.2 ms S>C SYN-ACK        1 segments      0 B
+     100.7 ms C>S PSH-ACK        1 segments   1361 B
+     151.5 ms S>C ACK            1 segments   1440 B
+     151.6 ms S>C PSH-ACK        2 segments   2656 B
+     151.8 ms S>C ACK            1 segments   1440 B
+     151.8 ms S>C PSH-ACK        1 segments   1440 B
+     152.1 ms S>C ACK            1 segments   1440 B
+     152.1 ms S>C PSH-ACK        1 segments   1440 B
+     152.3 ms S>C ACK            1 segments   1440 B
+     152.4 ms S>C PSH-ACK        1 segments   1440 B
+     152.4 ms S>C ACK            1 segments   1440 B
+     252.1 ms S>C ACK            1 segments   1440 B
+     252.2 ms S>C PSH-ACK        2 segments   1710 B
+     304.2 ms C>S ACK            1 segments   1440 B
+     304.2 ms C>S PSH-ACK        2 segments   2656 B
+     304.5 ms C>S ACK            1 segments   1440 B
+     304.5 ms C>S PSH-ACK        1 segments   1440 B
+     304.7 ms C>S ACK            1 segments   1440 B
+     304.7 ms C>S PSH-ACK        1 segments   1440 B
+     304.9 ms C>S ACK            1 segments   1440 B
+     305.0 ms C>S PSH-ACK        2 segments   2220 B
+     404.8 ms C>S ACK            1 segments   1440 B
+     404.8 ms C>S PSH-ACK        1 segments   1408 B
+     455.7 ms S>C ACK            1 segments   1440 B
+     455.7 ms S>C PSH-ACK        1 segments   1440 B
+     455.9 ms S>C ACK            1 segments   1440 B
+     455.9 ms S>C PSH-ACK        3 segments    827 B
+     455.9 ms S>C FIN-ACK        1 segments      0 B
+     506.0 ms C>S PSH-ACK        1 segments     24 B
+     506.1 ms C>S RST-ACK        1 segments      0 B
+     556.2 ms S>C RST            1 segments      0 B
+20 connections
+-- connection 1 (client port 53516) resumed (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.2 ms S>C SYN-ACK        1 segments      0 B
+     100.8 ms C>S ACK            1 segments   1440 B
+     100.8 ms C>S PSH-ACK        1 segments   1440 B
+     101.0 ms C>S ACK            1 segments   1440 B
+     101.0 ms C>S PSH-ACK        2 segments   1936 B
+     151.7 ms S>C PSH-ACK        1 segments   1297 B
+     202.1 ms C>S PSH-ACK        2 segments    404 B
+     252.8 ms S>C ACK            1 segments   1440 B
+     252.8 ms S>C PSH-ACK        1 segments   1440 B
+     252.9 ms S>C ACK            1 segments   1440 B
+     252.9 ms S>C PSH-ACK        3 segments    827 B
+     253.0 ms S>C FIN-ACK        1 segments      0 B
+     303.1 ms C>S PSH-ACK        1 segments     24 B
+     303.1 ms C>S RST-ACK        1 segments      0 B
+     353.2 ms S>C RST            1 segments      0 B
+### results/trace_fullticket/ML-DSA-44_req302_resp222_rtt100_mtu1500_ticketless.pcap
+10 connections
+-- connection 0 (client port 49322) full/ticket-obtaining (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.2 ms S>C SYN-ACK        1 segments      0 B
+     100.7 ms C>S PSH-ACK        1 segments   1357 B
+     151.5 ms S>C ACK            1 segments   1440 B
+     151.5 ms S>C PSH-ACK        2 segments   2656 B
+     151.8 ms S>C ACK            1 segments   1440 B
+     151.9 ms S>C PSH-ACK        1 segments   1440 B
+     152.1 ms S>C ACK            1 segments   1440 B
+     152.1 ms S>C PSH-ACK        1 segments   1440 B
+     152.4 ms S>C ACK            1 segments   1440 B
+     152.4 ms S>C PSH-ACK        1 segments   1440 B
+     152.4 ms S>C ACK            1 segments   1440 B
+     252.1 ms S>C ACK            1 segments   1440 B
+     252.2 ms S>C PSH-ACK        2 segments   1710 B
+     304.2 ms C>S ACK            1 segments   1440 B
+     304.2 ms C>S PSH-ACK        2 segments   2656 B
+     304.5 ms C>S ACK            1 segments   1440 B
+     304.5 ms C>S PSH-ACK        1 segments   1440 B
+     304.7 ms C>S ACK            1 segments   1440 B
+     304.7 ms C>S PSH-ACK        1 segments   1440 B
+     305.0 ms C>S ACK            1 segments   1440 B
+     305.0 ms C>S PSH-ACK        2 segments   2220 B
+     404.8 ms C>S ACK            1 segments   1440 B
+     404.8 ms C>S PSH-ACK        1 segments   1408 B
+     455.4 ms S>C PSH-ACK        2 segments    268 B
+     455.4 ms S>C FIN-ACK        1 segments      0 B
+     505.5 ms C>S PSH-ACK        1 segments     24 B
+     505.6 ms C>S RST-ACK        1 segments      0 B
+     555.7 ms S>C RST            1 segments      0 B
+10 connections
+-- connection 1 (client port 49334) resumed (pairs assumed)
+       0.0 ms C>S SYN            1 segments      0 B
+      50.2 ms S>C SYN-ACK        1 segments      0 B
+     100.6 ms C>S PSH-ACK        1 segments   1357 B
+     151.2 ms S>C ACK            1 segments   1440 B
+     151.3 ms S>C PSH-ACK        2 segments   2656 B
+     151.5 ms S>C ACK            1 segments   1440 B
+     151.6 ms S>C PSH-ACK        1 segments   1440 B
+     151.8 ms S>C ACK            1 segments   1440 B
+     151.8 ms S>C PSH-ACK        1 segments   1440 B
+     152.0 ms S>C ACK            1 segments   1440 B
+     152.0 ms S>C PSH-ACK        1 segments   1440 B
+     152.1 ms S>C ACK            1 segments   1440 B
+     251.8 ms S>C ACK            1 segments   1440 B
+     251.9 ms S>C PSH-ACK        2 segments   1710 B
+     303.8 ms C>S ACK            1 segments   1440 B
+     303.8 ms C>S PSH-ACK        2 segments   2656 B
+     304.0 ms C>S ACK            1 segments   1440 B
+     304.0 ms C>S PSH-ACK        1 segments   1440 B
+     304.2 ms C>S ACK            1 segments   1440 B
+     304.2 ms C>S PSH-ACK        1 segments   1440 B
+     304.5 ms C>S ACK            1 segments   1440 B
+     304.5 ms C>S PSH-ACK        2 segments   2220 B
+     404.3 ms C>S ACK            1 segments   1440 B
+     404.3 ms C>S PSH-ACK        1 segments   1408 B
+     454.9 ms S>C PSH-ACK        2 segments    268 B
+     454.9 ms S>C FIN-ACK        1 segments      0 B
+     505.0 ms C>S PSH-ACK        1 segments     24 B
+     505.0 ms C>S RST-ACK        1 segments      0 B
+     555.2 ms S>C RST            1 segments      0 B
+$ python3 analyze_trace.py results/slack_trace_mtu9000.txt --port 4500
+== results/slack_trace_mtu9000.txt: 390 server connections
+  F: connections 195  peak in flight (segments) median 55.9 max 149.0   max cwnd median 18
+  R: connections 195  peak in flight (segments) median 62.1 max 149.0   max cwnd median 20
+  first resumed connection, cwnd over time: 0ms:10
+
+$ python3 analyze_trace.py results/slack_trace_base.txt --port 4500
+== results/slack_trace_base.txt: 386 server connections
+  F: connections 193  peak in flight (segments) median 10.0 max 25.0   max cwnd median 21
+  R: connections 193  peak in flight (segments) median 10.0 max 25.0   max cwnd median 20
+  first resumed connection, cwnd over time: 0ms:10
+

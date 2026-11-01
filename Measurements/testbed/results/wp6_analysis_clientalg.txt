@@ -1,0 +1,9 @@
+$ python3 analyze_wp6.py clientalg
+pair (server / client)                 measured fit  H_ticket (client)  H_server
+ ML-DSA-65 / ECDSA-P256    10            10                  15      -> ticket
+ECDSA-P256 / ML-DSA-65     13            15                  10      -> neither
+ ML-DSA-44 / ML-DSA-65     15            15                  12      -> ticket
+ ML-DSA-65 / ML-DSA-44     12            12                  15      -> ticket
+
+If every pair says 'ticket', the server's window follows the size of the ticket (client certificate), not the server's algorithm.
+

@@ -10,6 +10,8 @@ PY=${PY:-python3}
 (cd Measurements/testbed && $PY paper_assets.py && $PY residual_analysis.py && { [ -f results/delack.csv ] && $PY analyze_variants.py || true; })
 (cd Measurements/testbed && { [ -f results/resume.csv ] && $PY analyze_resume.py results/resume.csv $( [ -f results/resume_swift.csv ] && echo results/resume_swift.csv ) >/dev/null || true; } && { [ -f results/capacity_gx10.csv ] && $PY analyze_capacity.py results/capacity_gx10.csv --costs x925 >/dev/null || true; } && $PY supp_paper1_extra.py >/dev/null)
 (cd Measurements/x86 && $PY analyze_cpu_x86.py)
+(cd Simulation && $PY asymmetric_depth.py >/dev/null && $PY uncertainty.py --pi0 >/dev/null)      # v1.3: asymmetric chain depth; uncertainty analysis with the middlebox delay at 0
+(cd Measurements/testbed && $PY ablation_stack.py >/dev/null)                                       # v1.3: contribution of each stack mechanism (uses manuscript/data/testbed_configurations.csv)
 (cd paper && rm -f des_check.json && $PY make_assets.py)
 if command -v latexmk >/dev/null 2>&1; then
   (cd paper && latexmk -pdf -interaction=nonstopmode main.tex supplementary.tex)

@@ -1,0 +1,26 @@
+$ python3 analyze_wp6.py capacity
+== capacity repeated (one server core): mean, standard deviation and coefficient of variation ==
+ECDSA-P256|X25519        mtls=0 runs 5  CPU/handshake 0.5459 ms (CV 0.6%)  rate 1085/s (CV 0.1%)
+ECDSA-P256|X25519        mtls=1 runs 5  CPU/handshake 1.1011 ms (CV 0.2%)  rate 908/s (CV 0.2%)
+ML-DSA-65|ML-KEM-768     mtls=0 runs 5  CPU/handshake 2.2131 ms (CV 1.1%)  rate 450/s (CV 1.0%)
+ML-DSA-65|ML-KEM-768     mtls=1 runs 5  CPU/handshake 3.5849 ms (CV 0.8%)  rate 277/s (CV 0.4%)
+
+== wp6_perf_X250.txt
+== ECDSA-P256|X25519, mutual TLS, depth 2, full transactions, one core, 15 s of samples
+    71.92%  libcrypto.so.3   
+    10.97%  libc.so.6        
+    10.96%  [kernel.kallsyms]
+     6.06%  libssl.so.3      
+     0.05%  tls_serve        
+     0.03%  [vdso]           
+
+== ML-DSA-65|ML-KEM-768, mutual TLS, depth 2, full transactions, one core, 15 s of samples
+    88.95%  libcrypto.so.3   
+     5.60%  [kernel.kallsyms]
+     3.52%  libc.so.6        
+     1.90%  libssl.so.3      
+     0.01%  tls_serve        
+     0.01%  [vdso]           
+
+
+

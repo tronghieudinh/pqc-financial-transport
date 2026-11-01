@@ -1,0 +1,5 @@
+machine,server,suite,depth,mtls,resume,server_cores,procs,client_threads,ok,err,rate_per_s,rate_per_core,cpu_ms_per_hs,system_frac,util,p50_ms,p99_ms,first_error
+X250,tls_serve,ECDSA-P256|X25519,2,0,0,1,1,8,6495,0,1082.5,1082.5,0.5498,0.178,0.595,7.305,11.015,
+X250,tls_serve,ECDSA-P256|X25519,2,1,0,1,1,8,5463,0,910.5,910.5,1.0976,0.092,1.0,8.215,14.685,
+X250,tls_serve,ML-DSA-65|ML-KEM-768,2,0,0,1,1,8,2721,0,453.5,453.5,2.201,0.061,0.998,16.035,35.575,
+X250,tls_serve,ML-DSA-65|ML-KEM-768,2,1,0,1,1,8,1666,0,277.7,277.7,3.6061,0.037,0.999,27.655,52.015,

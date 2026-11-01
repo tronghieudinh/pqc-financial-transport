@@ -2,7 +2,7 @@
 """
 supp_paper1_extra.py - two supplementary tables of paper 1 from measurements made after the main campaign.
 
-    python3 supp_paper1_extra.py [--latex ../../paper1/Latex]
+    python3 supp_paper1_extra.py [--latex ../../paper]
 
 Reads results/resume_summary.csv (analyze_resume.py) and results/capacity_gx10_summary.csv (analyze_capacity.py) and writes
     <latex>/tables/tab_ticket.tex       a full transaction that also issues a session ticket against the ticketless one of the main campaign
@@ -31,7 +31,7 @@ def rd(name):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--latex", default=os.path.join(HERE, "..", "..", "paper1", "Latex"))
+    ap.add_argument("--latex", default=os.path.join(HERE, "..", "..", "paper"))
     a = ap.parse_args()
     os.makedirs(os.path.join(a.latex, "tables"), exist_ok=True)
     f = float

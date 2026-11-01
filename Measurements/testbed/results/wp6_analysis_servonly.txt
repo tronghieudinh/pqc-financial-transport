@@ -1,0 +1,39 @@
+$ python3 analyze_resume.py --out results/resume_summary_wp6_servonly.csv results/wp6_servonly_tls.csv
+48 shaped configurations (1920 resumed transactions)
+resumed:  MAE of the stack model 2.57 ms (bias -2.57, max 29.8)
+full:     MAE of the stack model 15.28 ms (bias +1.73, max 30.8); reference: 0 configurations from earlier ticketless runs, 48 from the priming transactions (with ticket)
+gain:     MAE 14.63 ms; measured gain median -11.6 ms, model 0.1 ms; size ratio median 0.997
+request 19460 B / response 12260 B: 3 configurations, resumed MAE 0.51 ms, gain MAE 9.85 ms
+request 19460 B / response 13700 B: 3 configurations, resumed MAE 0.53 ms, gain MAE 9.99 ms
+request 19460 B / response 15140 B: 3 configurations, resumed MAE 0.99 ms, gain MAE 20.20 ms
+request 19460 B / response 16580 B: 3 configurations, resumed MAE 1.01 ms, gain MAE 20.35 ms
+request 19460 B / response 18020 B: 3 configurations, resumed MAE 0.96 ms, gain MAE 20.41 ms
+request 19460 B / response 19460 B: 3 configurations, resumed MAE 0.84 ms, gain MAE 20.42 ms
+request 19460 B / response 20900 B: 3 configurations, resumed MAE 0.81 ms, gain MAE 20.50 ms
+request 19460 B / response 22340 B: 3 configurations, resumed MAE 0.83 ms, gain MAE 20.64 ms
+request 302 B / response 12260 B: 3 configurations, resumed MAE 0.52 ms, gain MAE 20.67 ms
+request 302 B / response 13700 B: 3 configurations, resumed MAE 29.77 ms, gain MAE 9.37 ms
+request 302 B / response 15140 B: 3 configurations, resumed MAE 0.86 ms, gain MAE 10.45 ms
+request 302 B / response 16580 B: 3 configurations, resumed MAE 0.81 ms, gain MAE 10.37 ms
+request 302 B / response 18020 B: 3 configurations, resumed MAE 0.70 ms, gain MAE 10.36 ms
+request 302 B / response 19460 B: 3 configurations, resumed MAE 0.64 ms, gain MAE 10.30 ms
+request 302 B / response 20900 B: 3 configurations, resumed MAE 0.68 ms, gain MAE 10.14 ms
+request 302 B / response 22340 B: 3 configurations, resumed MAE 0.64 ms, gain MAE 10.06 ms
+  ECDSA-P256|X25519            n= 16 resumed excess   121.8  full excess   122.1  gain     0.3 (model     0.1)
+  ML-DSA-44|ML-KEM-768         n= 16 resumed excess   122.1  full excess   109.8  gain   -12.2 (model   -28.0)
+  ML-DSA-65|ML-KEM-768         n= 16 resumed excess   122.1  full excess   136.7  gain    14.6 (model     1.3)
+
+$ python3 analyze_wp6.py servonly
+48 of 48 predicted cells measured
+
+== errors by model (a cell is wrong by a round trip when |error| > half the RTT) ==
+RTT 30 ms, 100 Mbit/s, MTU 1500: joined       MAE   2.57 wrong  3 | early_w10    MAE   0.77 wrong  0 | early_wmeas  MAE   0.77 wrong  0
+
+== largest response (segments) that costs no extra round trip, large request ==
+ECDSA-P256|X25519        [30ms/100M/1500] 10
+ML-DSA-44|ML-KEM-768     [30ms/100M/1500] 10
+ML-DSA-65|ML-KEM-768     [30ms/100M/1500] 10
+
+== reading ==
+server authentication only: the ticket has one segment, so the fit should be 10 for every suite and the early-ticket model with window 10 should be right everywhere
+

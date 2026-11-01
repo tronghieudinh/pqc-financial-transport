@@ -1,0 +1,5 @@
+variant,n,mae_ms,bias_ms,max_abs_ms,over_0.4rtt
+none,226,4.7,-3.5,97.1,21
+window,226,3.34,-1.98,95.4,12
+writes,226,3.15,-1.76,95.3,15
+both,226,1.65,0.1,5.4,4

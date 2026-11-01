@@ -31,14 +31,18 @@ def main():
         f = M.flow(su, pr, mit)
         for name, (bw, rtt, mtu) in PATHS.items():
             r = {"protocol": pr, "mitigation": mit, "path": name, "suite": su}
-            for stk in ("linux-openssl", "v4"):
+            for stk in ("linux-openssl", "linux-openssl-2", "v4"):
                 net = S.Net(bw, rtt, mtu, 0.0, 4, quic=q, **S.STACKS[stk])
                 r[f"ms_{stk}"] = round(S.run_flow(f, net)["total"], 3)
+            # sensitivity: the server window for the response after an acknowledged ticket measured in stage E of WP5 (ECDSA 10, ML-DSA-44 12, ML-DSA-65 15)
+            w = 12 if su.startswith("ML-DSA-44") else (15 if su.startswith("ML-DSA-65") else 0)
+            net = S.Net(bw, rtt, mtu, 0.0, 4, quic=q, **{**S.STACKS["linux-openssl-2"], "srv_cwnd_acked": w})
+            r["ms_measured_window"] = round(S.run_flow(f, net)["total"], 3)
             rows.append(r)
     base = {(r["protocol"], r["path"], k): r[f"ms_{k}"] for r in rows if r["mitigation"] == "none" and r["suite"] == M.SUITES[0]
-            for k in ("linux-openssl", "v4")}
+            for k in ("linux-openssl", "linux-openssl-2", "v4")}
     for r in rows:
-        for k in ("linux-openssl", "v4"):
+        for k in ("linux-openssl", "linux-openssl-2", "v4"):
             r[f"factor_{k}"] = round(r[f"ms_{k}"] / base[(r["protocol"], r["path"], k)], 3)
     with open(a.out, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
