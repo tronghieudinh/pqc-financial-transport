@@ -22,12 +22,12 @@ All values are generated from the released simulation results by \texttt{make\_a
 \paragraph{How to read the tables.} \emph{Measured:} Tables S11--S16, S19, S20, S21 and Figure S2 come from measurements (CPU benchmarks, real TLS handshakes and signed objects, testbed transactions); Table S22 is a status table. \emph{Model with measured inputs, validated on the testbed for the stack described in the paper:} Tables S1--S10, Figure S1 and Table S17. \emph{Assumption-based:} Table S18 (assumed input distributions) and every row that sweeps a parameter that no standard or measurement fixes (the middlebox penalty, the CPU scale above the measured value, the initial window beyond those measured). Nothing in this document comes from the earlier idealised closed form except where a column is labelled as such; the earlier packet-loss simulation, which used it and was never validated on the testbed, is not included.
 
 \section*{S1. Model inputs}
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Financial protocol profiles. $^{a}$Algorithm-independent bytes summed over all exchanges. $d_\text{ref}$: reference chain depth.}
 \resizebox{\textwidth}{!}{\input{tables/tab_protocols}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Model constants not fixed by the cited standards (all overridable).}
 \resizebox{\textwidth}{!}{\begin{tabular}{@{}ll@{}}\toprule
 Quantity & Value \\\midrule
@@ -54,116 +54,116 @@ Transport penalty $\pi$ / threshold $\theta$ & 0--24 ms, reference 0 / 4 segment
 
 \clearpage
 \section*{S2. Wired results}
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Serialised size of one cold transaction, KB (factor over the baseline), at each protocol's reference depth.}
 \resizebox{\textwidth}{!}{\input{tables/tab_sizes}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{SWIFT~MX latency against chain depth and decomposition of the increase from depth 1 to 4 (ms).}
 \resizebox{\textwidth}{!}{\input{tables/tab_depth}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Added latency per extra \MLDSA certificate, $(T_{d4}-T_{d1})/3$ (ms), SWIFT~MX: (a) against the penalty; (b) against RTT.}
 \resizebox{\textwidth}{!}{\input{tables/tab_interaction}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Transport-threshold sensitivity, \MLDSA SWIFT~MX latency (ms), with a penalty of 6\,ms per flight longer than $\theta$ segments.}
 \input{tables/tab_threshold}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Certificate compression. Material: saves $\ge1$\,ms. Net-harmful: net effect $\le-1$\,ms at the given client inflation speed. Break-even: median inflation cost (ms/KB) over configurations with a material gain.}
 \resizebox{\textwidth}{!}{\input{tables/tab_rq4}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Sensitivity of the depth effect (SWIFT~MX, $\Delta_{d1\to d4}$) and of the warm ISO~20022 latency (ms).}
 \resizebox{\textwidth}{!}{\input{tables/tab_sens}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Transport overhead versus cryptographic time over the cold grid.}
 \resizebox{\textwidth}{!}{\input{tables/tab_rq3}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Extra latency over the baseline on a reused connection (ms).}
 \resizebox{\textwidth}{!}{\input{tables/tab_warm}}
 \end{table}
 
-\begin{figure}[h]\centering
+\begin{figure}[!htbp]\centering
 \includegraphics[width=\textwidth]{figures/fig_cc}
 \caption{Certificate compression: (a) configurations where it helps; (b) configurations where it is net-harmful.}
 \end{figure}
 
 \clearpage
 \section*{S3. Measurements (NVIDIA GX10: Cortex-X925 / Cortex-A725)}
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Per-operation CPU cost (ms): medians measured on a performance (Cortex-X925) and an efficiency (Cortex-A725) core.}
 \resizebox{\textwidth}{!}{\input{tables/tab_cpu}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{DER sizes (bytes) of the generated certificates, their metadata, and the size predicted from the ECDSA-calibrated metadata.}
 \resizebox{\textwidth}{!}{\input{tables/tab_certs}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Compression ratio of real certificate chains: zlib level 9 vs.\ the model. The generated chains repeat names and extensions more than public chains, so classical chains compress better here than in the calibration set.}
 \resizebox{\textwidth}{!}{\input{tables/tab_comp_real}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Real TLS 1.3 handshake flights (bytes, OpenSSL 3.5.4, mutual TLS) vs.\ the calibrated model with the same certificates, and loopback handshake time vs.\ modelled handshake CPU.}
 \resizebox{\textwidth}{!}{\input{tables/tab_tls}}
 \end{table}
 
 \clearpage
 \section*{S4. Internet check, application objects and sensitivity}
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Real-Internet handshakes with X25519 and X25519MLKEM768 (100 interleaved rounds per server): median times, paired difference with bootstrap 95\,\% confidence interval, and extra bytes.}
 \resizebox{\textwidth}{!}{\input{tables/tab_internet}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Real signed application objects (bytes) against the model: JWS client assertion and access token, DPoP proof and XMLDSig over a pacs.008 document (signer certificate in \texttt{KeyInfo}).}
 \resizebox{\textwidth}{!}{\input{tables/tab_app}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Global sensitivity: largest first- and second-order variance-based indices of log latency and of the log post-quantum factor over the full factorial designs.}
 \resizebox{\textwidth}{!}{\input{tables/tab_sobol}}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Parameter uncertainty: SWIFT~MX, depth 2, 100\,Mbps, 30\,ms RTT, 4\,000 draws of certificate metadata, CPU scale (1--16$\times$), $\pi$, $\theta$ and initial window (\texttt{uncertainty.py}). Probabilities are shown in the median column.}
 \input{tables/tab_uncertainty}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Cost per operation of the primitives on the critical path (ms, median): Cortex-X925 (simulator default), Cortex-A725 and one core of an Intel Core i7-5600U (2.5\,GHz, AVX2, turbo off), same method and OpenSSL~3.5.4 (liboqs 0.14.0 for Falcon).}
 \input{tables/tab_cpu_x86}
 \end{table}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Error of the stack model against the testbed (model minus measured excess latency) by group of configurations: mean absolute error (MAE), root-mean-square error (RMSE), MAE as a percentage of the mean measured excess latency, and 95\% bootstrap interval of the MAE (2\,000 resamples of the configurations). The core grid is the set on which the two stack behaviours were identified (100\,Mbit/s, initial window 10); the rest comes from a later campaign (UTC time stamps in the raw data: core grid 07:51--08:35, off-grid 09:07--09:17 on the same day), and no model parameter was fitted to it. Reno, no loss, mutual TLS, direct path (\texttt{residual\_analysis.py}).}
 \resizebox{\textwidth}{!}{\input{tables/tab_residuals}}
 \end{table}
 
-\begin{figure}[h]\centering
+\begin{figure}[!htbp]\centering
 \includegraphics[width=\textwidth]{figures/fig_residuals}
 \caption{Residuals of the stack model (model minus measurement) of the \resCoreN\ core-grid and \resAwayN\ off-grid testbed configurations against the round-trip time, by suite (left), and against the measured excess latency (right).}
 \end{figure}
 
-\begin{table}[h]\centering\small
+\begin{table}[!htbp]\centering\small
 \caption{Stack model under other TCP settings (testbed, 100\,Mbit/s). Mean absolute error (MAE) of the stack model and of the idealised closed form against the measured excess latency; bias and maximum error of the stack model; configurations whose stack-model error exceeds 0.4 RTT / the same for the idealised form; and the measured excess latency against the Reno, quick-acknowledgement, no-timestamps run of the identical configuration (pairs, median and maximum absolute difference $\Delta$). CUBIC covers 5, 30 and 100\,ms RTT, MTU 1280, 1500, 9\,000 and initial windows 10 and 32; the other rows use MTU 1280 and 1500, initial window 10 and three suites (\texttt{analyze\_variants.py}). BBR is not modelled and is shown to mark the limit of the model.}
 \resizebox{\textwidth}{!}{\input{tables/tab_variants}}
 \end{table}
 
-\begin{table}[h]\centering\footnotesize
+\begin{table}[!htbp]\centering\footnotesize
 \caption{Standardisation status of the schemes in the study on 31 October 2026, read from csrc.nist.gov and datatracker.ietf.org on that date, and what was measured for each. ``TLS'' = run through a real TLS~1.3 handshake on the testbed; ``CPU'' = per-operation cost measured (Tables S11 and S19); ``Sizes'' = certificate and signature sizes from real generated or published objects. Anything not measured is modelled. Status is not readiness: the table says nothing about library or hardware-security-module support (vendors have announced algorithm validations for ML-DSA, ML-KEM and SLH-DSA; an algorithm validation is not a validation of a module configuration, and we did not assess any HSM).}
 \resizebox{\textwidth}{!}{\begin{tabular}{@{}p{0.15\textwidth}p{0.17\textwidth}p{0.17\textwidth}p{0.22\textwidth}p{0.05\textwidth}p{0.05\textwidth}p{0.06\textwidth}@{}}
 \toprule
