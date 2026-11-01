@@ -6,6 +6,7 @@ authors:
   - family-names: "Dinh"
     given-names: "Trong-Hieu"
     email: "hieudt@hvnh.edu.vn"
+    orcid: "https://orcid.org/0009-0005-0601-3229"
     affiliation: "Banking Academy of Vietnam, Hanoi, Vietnam"
 repository-code: "https://github.com/tronghieudinh/pqc-financial-transport"
 license: MIT
