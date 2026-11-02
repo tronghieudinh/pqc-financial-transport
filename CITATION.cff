@@ -18,3 +18,8 @@ license: MIT
 keywords: [post-quantum cryptography, TLS 1.3, financial messaging, TCP congestion window, X.509, ML-DSA]
 doi: "10.5281/zenodo.23839449"
 version: "paper1-v1.3"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23875669"
+    description: "DOI of version paper1-v1.3"
+
