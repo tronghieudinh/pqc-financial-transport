@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software or data, please cite it as below."
-title: "pqc-financial-transport: simulator, measurements and paper assets for a study of the transport cost of post-quantum authentication in financial messaging"
+title: "pqc-financial-transport: simulator, measurements and paper assets for a study of the transport-layer latency overhead of post-quantum authentication in financial messaging"
 type: software
 authors:
   - family-names: "Dinh"
