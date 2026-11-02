@@ -31,7 +31,7 @@
 \begin{document}
 \begin{frontmatter}
 
-\title{Predicting the Transport Cost of Post-Quantum Authentication in Financial Messaging}
+\title{Modeling the Transport-Layer Latency Overhead of Post-Quantum Authentication in Financial Messaging}
 
 \author[1]{Trong-Hieu DINH\fnref{orc1}}\ead{hieudt@hvnh.edu.vn}
 \author[2]{Trong-Minh HOANG\corref{cor1}\fnref{orc2}}\ead{hoangtrongminh@ptit.edu.vn}
@@ -51,7 +51,7 @@ Post-quantum signatures are one to two orders of magnitude larger than their cla
 \item Linux window validation and OpenSSL writes set round-trip thresholds.
 \item Excess-latency MAE is 1.65\ms over 226 configurations (idealized: 4.70\ms).
 \item Later off-grid measurements give an MAE of 2.04\ms.
-\item Mutual-TLS chains and application signatures jointly set the transport cost.
+\item Certificate chains and application signatures jointly set the latency overhead.
 \end{highlights}
 
 \begin{keyword}
@@ -69,7 +69,7 @@ The migration follows from the vulnerability of Rivest–Shamir–Adleman (RSA) 
 
 The dominant approach estimates this cost from object sizes and the initial congestion window. Three limitations remain. First, measurement studies report handshake slowdown for given certificate sizes and initial windows, and they do not predict which flight incurs an additional RTT on a specified implementation~\cite{sikeridis2020,paquin2020}. Evaluation frameworks for post-quantum TLS measure handshake throughput and bytes under controlled loss and delay~\cite{montenegro2026} but do not predict individual flights either. Second, size analyses compare flight bytes with the initial window expressed in bytes~\cite{kampanakis2022}. This comparison is equivalent to dividing the flight size by the maximum segment size (MSS) and rounding up. The tested OpenSSL library writes handshake data through a 4\,096-byte buffer, which also decides when the ServerHello leaves~\cite{sosnowski2023}, and the Linux kernel validates window growth before enlarging the window~\cite{linuxtcp}. No earlier study uses these two behaviors to predict which flights cross the window. Each mechanism changes the segment count or the window available to the next flight. Finally, financial-system pilots measure tunnel setup and message signing but do not decompose the transport cost of mTLS chains and application signatures~\cite{bis_leap2023,bis_leap2025}. Extensible Markup Language Signature (XMLDSig), JSON Web Signature (JWS) and Demonstrating Proof of Possession (DPoP) objects add bytes above TLS.
 
-This paper develops a model that links authentication objects to library writes and TCP waiting. The scope is one Linux/OpenSSL stack on a wired link; the study introduces no cryptographic primitive and no security proof. The financial content of the model lies in the objects it carries: the certificate chains of the two mTLS peers and the application-layer signatures of the payment protocols. Linux/OpenSSL is an open, measurable choice of transport; we have no evidence that a particular bank gateway runs on it, and the write pattern of the library and the window rule of the kernel are replaceable inputs of the model. The study makes three contributions.
+This paper develops a model that links authentication objects to library writes and TCP waiting; by transport-layer latency we mean the time that TCP and the way the TLS library writes into it add to a transaction. The scope is one Linux/OpenSSL stack on a wired link; the study introduces no cryptographic primitive and no security proof. The financial content of the model lies in the objects it carries: the certificate chains of the two mTLS peers and the application-layer signatures of the payment protocols. Linux/OpenSSL is an open, measurable choice of transport; we have no evidence that a particular bank gateway runs on it, and the write pattern of the library and the window rule of the kernel are replaceable inputs of the model. The study makes three contributions.
 \begin{itemize}
 \item Method: we incorporate two observed stack mechanisms, the OpenSSL write pattern and Linux-style slow-start window validation, into a per-segment transport model.
 \item Implementation: we apply the model to thirteen suites and six financial and application programming interface (API) profiles. Each profile carries the certificate chains of the two mTLS peers and its application-layer signatures. The latency decomposition separates serialization, propagation, slow-start waiting, and cryptographic computation.
