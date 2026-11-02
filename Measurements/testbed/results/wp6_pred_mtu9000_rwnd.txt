@@ -1,0 +1,7 @@
+WP6 part B, scenario rwnd (pre-registered). Observed before this test: at MTU 9000 the advertised window in the tcp_probe trace is 63,488 B (7.1 segments of 8,940 B; 45 segments at MTU 1500);
+stage A at MTU 9000 gives windows below the closed form max(10, min(10 + n, 2n)) (n = 10: 16 instead of 20); in the TLS cells at MTU 9000 every response of 9 to 16 segments pays one extra round trip.
+H_rwnd: the sender is limited by the receive window (about 7 segments at MTU 9000), so cwnd is not the limit and does not grow by the rule.
+   Predicts: with tcp_rmem[1] raised from 131072 to 1048576, (1) the stage-A windows at MTU 9000 follow the closed form in at least 90 % of the flight sizes (default: below 70 %),
+   (2) the advertised window in the trace is above 89,400 B, (3) the TLS cells at MTU 9000 follow the early-ticket model with window 10 (fewer than 4 of 48 cells wrong by a round trip);
+   nothing changes at MTU 1500.
+If (1) fails the cause is not the receive buffer (candidates: offload settings of the virtual links, MSS accounting, the netem queue).

@@ -238,6 +238,7 @@ class Model:
     cert_req: int = 53         # CertificateRequest (mTLS, signature_algorithms incl. ML-DSA)
     finished: int = 48         # Finished verify_data (TLS_AES_256_GCM_SHA384, OpenSSL default)
     record_per_message: bool = True    # OpenSSL sends each handshake message in its own record
+    app_records: bool = False  # application data leaves as one write() per TLS record of up to 16,384 bytes (OpenSSL SSL_write); off: one write per message (Paper 1, whose messages are below one record in the validated cases). Paper 2, WP6: explains MTU 9000
     # mitigations (all off by default, so v2/v3 results are unchanged)
     cached_info: bool = False  # RFC 7924: client already holds the server chain (hash only)
     cached_info_ext: int = 40  # cached_info extension in the ClientHello
@@ -276,6 +277,12 @@ def b64u(n: int) -> int:    # unpadded base64url (JOSE)
 
 def rec_ovh(n: int) -> int:
     return -(-n // TLS_REC_MAX) * TLS_REC_OVH if n > 0 else 0
+
+
+def record_writes(payload: int) -> tuple:
+    """write() sizes of an application message of `payload` bytes that OpenSSL sends as records of at most TLS_REC_MAX bytes, each with its framing."""
+    full, rest = divmod(payload, TLS_REC_MAX)
+    return tuple([TLS_REC_MAX + TLS_REC_OVH] * full + ([rest + TLS_REC_OVH] if rest else []))
 
 
 OPENSSL_BIO_BUF = 4096    # OpenSSL writes handshake messages through a 4096-byte BIO_f_buffer
@@ -432,7 +439,7 @@ def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
             f, a = _obj_bytes(o, sig, leaf, m)
             rs += f + a; payload_fixed += f; obj_alg += a
         app_rec += rec_ovh(rq) + rec_ovh(rs)
-        ex_bytes.append((rq + rec_ovh(rq), rs + rec_ovh(rs)))
+        ex_bytes.append((rq + rec_ovh(rq), rs + rec_ovh(rs), rq, rs))
 
     steps = []
     xw = []                       # write() sizes of every 'x' step, in order
@@ -489,12 +496,18 @@ def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
         s_cpu += sum(sig.sign_ms for o in ex.resp_objs if o.signer == "server")
         if cold and i == 0 and proto.mtls:
             s_cpu += (dc + 1) * sig.verify_ms
-        rq, rs = ex_bytes[i]
+        rq, rs, rq_pay, rs_pay = ex_bytes[i]
         first = (cold or resumed) and i == 0
         steps += [("cpu", c_cpu), ("x", 0, rq + (c_hs if first else 0)),
                   ("cpu", s_cpu), ("x", 1, rs + (nst if first else 0))]
         # the handshake flight and the request are separate write() calls; the response is one write
-        xw += [tuple(list(xw.pop()) + [rq]) if first else (rq,), (rs + (nst if first else 0),)]
+        if m.app_records:
+            rqw, rsw = list(record_writes(rq_pay)), list(record_writes(rs_pay))
+            if first and nst and rsw:
+                rsw[-1] += nst
+            xw += [tuple(list(xw.pop()) + rqw) if first else tuple(rqw), tuple(rsw)]
+        else:
+            xw += [tuple(list(xw.pop()) + [rq]) if first else (rq,), (rs + (nst if first else 0),)]
         pend = sum(sig.verify_ms for o in ex.resp_objs if o.signer in ("server", "pre"))
     steps.append(("cpu", pend))
 
@@ -641,13 +654,15 @@ def run_flow(flow: Flow, net: Net, cpu_scale: float = 1.0) -> dict:
                 # the ticket left when the client's Finished arrived (the first small segment of the client flight); the
                 # response leaves when the whole request has arrived. If the request flight needed another round trip,
                 # the ticket has been acknowledged by then and no longer occupies the window.
+                rec = wr if len(wr) > 1 else ()          # the response as one write per TLS record (Model.app_records), the ticket folded into the last
+                body = tuple(rec[:-1]) + (rec[-1] - flow.nst,) if rec else ()
                 if client_el - net.rtt_ms / 2 >= net.rtt_ms:
                     nbytes = st[2] - flow.nst
-                    wr = (nbytes,)
+                    wr = body if rec else (nbytes,)
                     if net.srv_cwnd_acked:
                         cw[side] = max(cw[side], net.srv_cwnd_acked)
                 else:
-                    wr = (flow.nst, st[2] - flow.nst)
+                    wr = ((flow.nst,) + body) if rec else (flow.nst, st[2] - flow.nst)
             if net.segmentation == "openssl" and wr and not net.quic:
                 sizes = tuple(segment_sizes(wr, mss, cw[side]))
             el, s, n, w = _tcp_xfer(nbytes, mss, hdr, net.bw_mbps, net.rtt_ms, cw[side], *gate, sizes)

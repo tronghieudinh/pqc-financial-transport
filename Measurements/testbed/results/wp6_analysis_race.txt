@@ -1,0 +1,85 @@
+$ python3 analyze_ticket_race.py results/trace_race/*_srv.pcap
+suite          rtt  rate   mtu   k   n ticket burst extra ack_tkt-w ms acked<w ack_resp-w
+ML-DSA-44       15   100  1500  13   1      4    12    12        -7.76    100%       7.67
+
+$ python3 analyze_trace.py results/trace_race/*.trace.txt (server side)
+== results/trace_race/ECDSA-P256_req19460_k13_rtt100_rate100_mtu1280.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 7.7   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt100_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt100_rate100_mtu9000.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt100_rate10_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt10_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt15_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt20_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt30_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt50_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ECDSA-P256_req19460_k13_rtt5_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 1.6 max 1.6   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 0.9 max 0.9   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt100_rate100_mtu1280.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 8.0 max 8.0   max cwnd median 23
+  R: connections 8  peak in flight (segments) median 6.4 max 9.3   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10 202ms:11
+== results/trace_race/ML-DSA-44_req19460_k13_rtt100_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 20
+  R: connections 8  peak in flight (segments) median 3.4 max 10.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt100_rate100_mtu9000.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 10
+  R: connections 8  peak in flight (segments) median 3.4 max 3.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt100_rate10_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 13.4 max 14.9   max cwnd median 21
+  R: connections 8  peak in flight (segments) median 3.4 max 3.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt10_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 20
+  R: connections 8  peak in flight (segments) median 9.4 max 10.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt15_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 20
+  R: connections 8  peak in flight (segments) median 10.4 max 10.4   max cwnd median 11
+  first resumed connection, cwnd over time: 0ms:10 32ms:11
+== results/trace_race/ML-DSA-44_req19460_k13_rtt20_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 20
+  R: connections 8  peak in flight (segments) median 8.9 max 10.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt30_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 20
+  R: connections 8  peak in flight (segments) median 9.4 max 10.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt50_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 20
+  R: connections 8  peak in flight (segments) median 5.9 max 10.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
+== results/trace_race/ML-DSA-44_req19460_k13_rtt5_rate100_mtu1500.trace.txt: 16 server connections
+  F: connections 8  peak in flight (segments) median 9.0 max 9.0   max cwnd median 20
+  R: connections 8  peak in flight (segments) median 3.4 max 3.4   max cwnd median 10
+  first resumed connection, cwnd over time: 0ms:10
