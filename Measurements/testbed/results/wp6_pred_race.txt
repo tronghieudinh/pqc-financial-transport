@@ -1,0 +1,11 @@
+WP6 part B, scenario race (pre-registered). Resumed transactions, mutual TLS, request 19,460 B, response 13 segments, one server window of 10 segments after the ServerHello.
+Observed before this test (stage E, 30 ms): largest response without an extra round trip = 10 (ECDSA-P256, ticket 1 segment), 12 (ML-DSA-44, ticket 4), 15 (ML-DSA-65, ticket 5);
+gen (240 cells): 10 for every suite at 5 ms and at 100 ms/10 Mbit/s. Question: what makes the window after the ticket 12 or 15 at 30 ms and 10 at 5 ms?
+H_race: the window is raised by the ticket ONLY IF the ticket's acknowledgment reaches the server before the response is written (t_ack_tkt <= t_w in analyze_ticket_race.py).
+   Predicts: where the burst (response segments sent before the first response ACK) exceeds 10, the share of transactions with 'acked<w' is high, and where the burst is 10, it is low;
+   and as the RTT grows from 5 to 100 ms at 100 Mbit/s the transition occurs where the ticket ACK passes the response write.
+H_ack_clock: the ticket's ACK opens the window even if it arrives after the first response segments (extra > 0 in analyze_ticket_race.py); the burst is the size of the first window (10)
+   and the response finishes without an extra round trip because the ticket's ACK clocks out further segments before the first response ACK.
+H_const: the window after the ticket is a property of the stack: burst and 'acked<w' do not change with the network (refuted by gen already; reported for completeness).
+Decision rule: for the ML-DSA-65 cells at RTT 30 ms (the stage-E network) and at RTT 5 ms, compare burst and the sign of (ack_tkt - w); H_race is supported if burst > 10 occurs only with acked<w >= 80%,
+H_ack_clock if burst > 10 or 'extra' > 0 occurs with acked<w <= 20%. If neither pattern holds the mechanism stays open.

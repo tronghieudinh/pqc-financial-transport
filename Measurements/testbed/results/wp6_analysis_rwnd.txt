@@ -1,0 +1,15 @@
+$ python3 analyze_rwnd.py
+== plain TCP, window after an n-segment flight (stage A), median of the repetitions; closed form = max(10, min(10 + n, 2n)) ==
+rmem default  base    : matches the closed form in 20 of 20 flight sizes; (n, measured, closed form): [(6, 12, 12), (8, 16, 16), (10, 20, 20), (12, 22, 22), (16, 26, 26), (24, 34, 34), (40, 50, 50)]
+rmem default  mtu9000 : matches the closed form in 7 of 20 flight sizes; (n, measured, closed form): [(6, 12, 12), (8, 14, 16), (10, 16, 20), (12, 20, 22), (16, 24, 26), (24, 30, 34), (40, 51, 50)]
+rmem default  advertised window at MTU 9000 (most frequent snd_wnd values in bytes): [('63488', 5909), ('109568', 1620), ('101376', 860)]
+rmem large    base    : matches the closed form in 20 of 20 flight sizes; (n, measured, closed form): [(6, 12, 12), (8, 16, 16), (10, 20, 20), (12, 22, 22), (16, 26, 26), (24, 34, 34), (40, 50, 50)]
+rmem large    mtu9000 : matches the closed form in 16 of 20 flight sizes; (n, measured, closed form): [(6, 12, 12), (8, 14, 16), (10, 18, 20), (12, 22, 22), (16, 26, 26), (24, 34, 34), (40, 50, 50)]
+rmem large    advertised window at MTU 9000 (most frequent snd_wnd values in bytes): [('518528', 5820), ('551168', 440), ('533248', 420)]
+
+== TLS cells at MTU 9000 (resumed, RTT 100 ms, 100 Mbit/s): MAE of each model and cells wrong by a round trip ==
+rmem default : joined: MAE   13.3 ms, 6/48 wrong | early_w10: MAE   13.3 ms, 6/48 wrong | early_wmeas: MAE   13.3 ms, 6/48 wrong
+rmem large   : joined: MAE   12.4 ms, 6/48 wrong | early_w10: MAE   12.4 ms, 6/48 wrong | early_wmeas: MAE   12.4 ms, 6/48 wrong
+
+== verdict ==
+H_rwnd NOT confirmed: default 35%, raised buffer 80% of the flight sizes follow the closed form; the cause is something else (offload, MSS accounting, queue).

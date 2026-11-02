@@ -148,5 +148,29 @@ class TestAsymmetricDepth(unittest.TestCase):
         self.assertEqual(a.sizes["tls_cert"], b.sizes["tls_cert"])
 
 
+class TestAppRecords(unittest.TestCase):
+    """Model(app_records=True): one write() per TLS record of application data (off by default, Paper 1 unchanged)."""
+
+    def test_record_writes(self):
+        self.assertEqual(S.record_writes(0), ())
+        self.assertEqual(S.record_writes(100), (122,))
+        self.assertEqual(S.record_writes(16384 * 2 + 5), (16406, 16406, 27))
+        self.assertEqual(sum(S.record_writes(50000)), 50000 + S.rec_ovh(50000))
+
+    def test_off_by_default_and_equal_below_one_record(self):
+        for rq, rs in ((302, 222), (10900, 3600)):
+            a = S.build_flow("ML-DSA-65|ML-KEM-768", "ISO_8583", 2, "cold", False)
+            b = S.build_flow("ML-DSA-65|ML-KEM-768", "ISO_8583", 2, "cold", False, S.Model(app_records=True))
+            self.assertEqual(a.writes, b.writes)
+
+    def test_large_response_is_split(self):
+        proto = S.Protocol("T_REC", "t", True, 2, (S.Exchange("x", 302, 40000),))
+        S.PROTOCOLS["T_REC"] = proto
+        a = S.build_flow("ECDSA-P256|X25519", "T_REC", 2, "cold", False)
+        b = S.build_flow("ECDSA-P256|X25519", "T_REC", 2, "cold", False, S.Model(app_records=True))
+        self.assertEqual(len(a.writes[-1]), 1)
+        self.assertEqual(len(b.writes[-1]), 3)
+
+
 if __name__ == "__main__":
     unittest.main()

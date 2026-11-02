@@ -1,0 +1,13 @@
+MTU 9000 cells, tcp_rmem default                 app_records=False: n= 48  MAE  13.32 ms  max   96.0  wrong by a round trip: 6
+MTU 9000 cells, tcp_rmem default                 app_records=True : n= 48  MAE   1.17 ms  max    2.0  wrong by a round trip: 0
+MTU 9000 cells, tcp_rmem large                   app_records=False: n= 48  MAE  12.37 ms  max   94.8  wrong by a round trip: 6
+MTU 9000 cells, tcp_rmem large                   app_records=True : n= 48  MAE   0.47 ms  max    0.8  wrong by a round trip: 0
+gen, all cells                                   app_records=False: n=240  MAE   7.82 ms  max   98.7  wrong by a round trip: 21
+gen, all cells                                   app_records=True : n=240  MAE   5.39 ms  max   98.7  wrong by a round trip: 15
+gen, MTU 9000                                    app_records=False: n= 48  MAE  13.31 ms  max   96.0  wrong by a round trip: 6
+gen, MTU 9000                                    app_records=True : n= 48  MAE   1.16 ms  max    2.0  wrong by a round trip: 0
+gen, MTU below 9000                              app_records=False: n=192  MAE   6.44 ms  max   98.7  wrong by a round trip: 15
+gen, MTU below 9000                              app_records=True : n=192  MAE   6.44 ms  max   98.7  wrong by a round trip: 15
+gen, all cells, windows 10/12/15 after the ticket app_records=False: n=240  MAE   6.93 ms  max   98.1  wrong by a round trip: 21
+gen, all cells, windows 10/12/15 after the ticket app_records=True : n=240  MAE   4.38 ms  max   98.2  wrong by a round trip: 14
+Paper 1 flows (3 suites x ISO 8583 and SWIFT-sized x depth 1-4) whose writes change with the option: 0 of 24
