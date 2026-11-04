@@ -12,6 +12,8 @@ PY=${PY:-python3}
 (cd Measurements/x86 && $PY analyze_cpu_x86.py)
 (cd Simulation && $PY asymmetric_depth.py >/dev/null && $PY uncertainty.py --pi0 >/dev/null && $PY app_records_effect.py >/dev/null)      # v1.3: asymmetric chain depth; uncertainty analysis with the middlebox delay at 0
 (cd Measurements/testbed && $PY ablation_stack.py >/dev/null)                                       # v1.3: contribution of each stack mechanism (uses manuscript/data/testbed_configurations.csv)
+(cd Simulation && $PY mixed_chain.py >/dev/null)                                                         # v1.4: model-only scenario of chains with different leaf and CA algorithms (Supplementary Table SB.5)
+(cd Measurements/testbed && $PY error_profile.py > results/error_profile.txt && $PY analyze_fullticket.py >/dev/null)   # v1.4: error profile numbers; negative result on the full handshake with a ticket
 (cd paper && rm -f des_check.json && $PY make_assets.py)
 if command -v latexmk >/dev/null 2>&1; then
   (cd paper && latexmk -pdf -interaction=nonstopmode main.tex supplementary.tex)

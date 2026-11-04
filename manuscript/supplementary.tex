@@ -26,20 +26,37 @@
 \newcommand{\cpu}{\mathrm{cpu}}
 
 \usepackage{xr-hyper}
-\externaldocument[M-]{main}
+%\externaldocument[M-]{main}
+\makeatletter
+\newcommand*{\addFileDependency}[1]{%
+  \typeout{(#1)}
+  \@addtofilelist{#1}
+  \IfFileExists{#1}{}{\typeout{No file #1.}}
+}
+\makeatother
+
+\newcommand*{\myexternaldocument}[1]{%
+  \externaldocument[M-]{#1}%
+  \addFileDependency{#1.tex}%
+  \addFileDependency{#1.aux}%
+}
+\myexternaldocument{main} % Thay thế cho lệnh \externaldocument thuần túy
+
+
+
+
+
 \journal{Computers \& Security}
 \hypersetup{pdfauthor={Trong-Hieu Dinh, Trong-Minh Hoang}}
 
 \begin{document}
 \begin{frontmatter}
 \title{Supplementary Material for ``Modeling the Transport-Layer Latency Overhead of Post-Quantum Authentication in Financial Messaging''}
-\author[1]{Trong-Hieu DINH}
-\author[2]{Trong-Minh HOANG}
-\affiliation[1]{organization={Banking Academy of Vietnam}, city={Hanoi}, country={Vietnam}}
-\affiliation[2]{organization={Posts and Telecommunications Institute of Technology}, city={Hanoi}, country={Vietnam}}
+\author{Trong-Hieu DINH}
+\author{Trong-Minh HOANG}
 \end{frontmatter}
 
-\noindent This document contains Appendices SA--SF of the article. Section, table, figure and equation numbers without the prefix S refer to the article.
+\noindent This document contains Appendices SA--SF of the article. Section, table, figure and equation numbers without a letter prefix refer to the article.
 \appendix
 \counterwithin*{table}{section}\counterwithin*{figure}{section}
 \renewcommand{\thesection}{S\Alph{section}}
@@ -47,7 +64,7 @@
 
 \section{Model inputs}
 \label{app:inputs}
-The appendix tables combine retained measurements and regenerated model outputs. The analysis scripts produce the numerical entries. Size outputs use KiB (1\,024\,bytes). Unless stated otherwise, the configuration is 100\Mbits, a 30\ms RTT, an MTU of 1\,500\,bytes, $\pi=0$ with $\theta=4$ segments, a cold connection and the baseline ECDSA-P256 with X25519. The tables fall into three evidence classes. Measured: \cref{tab:cpu,tab:certs,tab:comp_real,tab:tls,tab:internet,tab:app,tab:cpux86,tab:residuals,tab:variants,tab:ablation,tab:ticket,tab:srvcpu} and \cref{fig:residuals}. Model with measured inputs, validated on the testbed for the stack of \cref{M-sec:testbed}: \cref{tab:protocols,tab:constants,tab:sizes,tab:depth,tab:interaction,tab:threshold,tab:rq4,tab:sens,tab:rq3,tab:warm,tab:sobol} and \cref{fig:cc}. Assumption-based: \cref{tab:uncertainty,tab:priors,tab:records} and every row that sweeps a parameter that no standard or measurement fixes (the middlebox delay, the CPU scale above the measured value and the initial window beyond the measured values). \Cref{tab:status} is a status table. The idealized model appears only in columns labeled as such.
+The appendix tables combine retained measurements and regenerated model outputs. The analysis scripts produce the numerical entries. Size outputs use KiB (1\,024\,bytes). Unless stated otherwise, the configuration is 100\Mbits, a 30\ms RTT, an MTU of 1\,500\,bytes, $\pi=0$ with $\theta=4$ segments, a cold connection and the baseline ECDSA-P256 with X25519. The tables fall into three evidence classes. Measured: \cref{tab:cpu,tab:certs,tab:comp_real,tab:tls,tab:internet,tab:app,tab:cpux86,tab:residuals,tab:variants,tab:ablation,tab:ticket,tab:srvcpu} and \cref{fig:residuals}. Model with measured inputs, validated on the testbed for the stack of \cref{M-sec:testbed}: \cref{tab:protocols,tab:constants,tab:sizes,tab:depth,tab:interaction,tab:asym,tab:threshold,tab:rq4,tab:sens,tab:rq3,tab:warm,tab:sobol} and \cref{fig:cc}. Assumption-based: \cref{tab:uncertainty,tab:priors,tab:records} and every row that sweeps a parameter that no standard or measurement fixes (the middlebox delay, the CPU scale above the measured value and the initial window beyond the measured values). \Cref{tab:status} is a status table. The idealized model appears only in columns labeled as such.
 
 \Cref{tab:protocols} defines the six profiles. The request and response sizes are algorithm-independent bytes summed over all exchanges, and $d_\mathrm{ref}$ is the reference chain depth. The abbreviations are BAH (Business Application Header), LAU (SWIFT Local Authentication), PAR (Pushed Authorization Request), JAR (JWT-Secured Authorization Request), JWT (JSON Web Token) and JWK(S) (JSON Web Key (Set)). \Cref{tab:constants} lists the model constants that the cited standards do not fix; all constants are overridable.
 
@@ -120,7 +137,7 @@ ML-DSA-65+ECDSA-P256 & 34.1 (6.9$\times$) & 66.3 (4.5$\times$) & 84.9 (3.7$\time
 \end{table}
 
 \begin{table}[!htbp]\centering\small
-\caption{SWIFT~MX latency against chain depth (ms).}
+\caption{SWIFT~MX latency against chain depth (ms). The SLH-DSA rows depend on the write pattern of messages above 16\,KB (\cref{app:records}).}
 \label{tab:depth}
 \resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrrrrrrrr@{}}
 \toprule
@@ -177,6 +194,22 @@ ML-DSA-65 & MTU 1\,500, window 10 & 60.0 & 30.7 & 29.3 & 60.0 \\
 \bottomrule
 \end{tabular}}
 \end{table}
+
+\begin{table}[!htbp]\centering\small
+\caption{Model only: certificate chains with different algorithms for the leaf key and for the CA keys (SWIFT~MX, cold, mutual TLS, 100\Mbits, 30\ms RTT, MTU 1\,500, window 10, $\pi=0$). Chain bytes: one peer's certificate list; segments: the whole transaction; latency at depth 1 and 4 and its increase (ms). The key exchange is post-quantum in all rows (ML-KEM-768, or X25519MLKEM768 with a classical leaf). ``Post-quantum authentication'': which signatures of the chain resist a quantum adversary; only the first row does for the whole chain. No measurement covers mixed chains. Rows 1 and 4 equal the single-algorithm model of the main sweep.}
+\label{tab:mixed}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Leaf key / CA keys & Post-quantum authentication & Chain bytes, $d{=}1$ / 4 & Segments, $d{=}1$ / 4 & $d{=}1$ & $d{=}4$ & Increase \\
+\midrule
+ML-DSA-65 / ML-DSA-65 & all of it & 6\,187 / 23\,608 & 46 / 69 & 127.3 & 187.3 & +60.0 \\
+ML-DSA-65 / ECDSA-P256 & CertificateVerify only & 2\,950 / 5\,011 & 41 / 45 & 126.5 & 127.2 & +0.7 \\
+ECDSA-P256 / ML-DSA-65 & CA signatures only & 4\,304 / 21\,725 & 24 / 47 & 122.0 & 154.4 & +32.4 \\
+ECDSA-P256 / ECDSA-P256 & none & 1\,067 / 3\,128 & 18 / 22 & 92.3 & 122.0 & +29.6 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 
 \begin{table}[!htbp]\centering\small
 \caption{Threshold sensitivity, ML-DSA-65 SWIFT~MX latency (ms).}
@@ -644,6 +677,8 @@ Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Edito
 \label{app:extra}
 \Cref{tab:ticket} compares a full transaction that also issues a TLS~1.3 session ticket with the ticketless transaction of the main campaign. \Cref{tab:srvcpu} compares the CPU per transaction of an event-driven server with the primitive costs of the model.
 
+\emph{A model test.} The slow configurations are ECDSA-P256 at depth 3 and ML-DSA-44 and -65 at depth 1, all at an MTU of 1\,500 bytes and at RTTs of 30 and 100\ms; ECDSA-P256 and ML-DSA-87 at depth 1, the 1\,280-byte runs and the other depths are within about 2\ms. We gave the model an option for a cold flow whose server issues a ticket of the size used for resumed flows (\texttt{Model(full\_ticket=True)}), either joined with the first response or written on the client's Finished (\texttt{analyze\_fullticket.py}, nothing fitted). Neither placement reproduces the slowdown: in the six slow configurations the model changes by $+0.1$ to $+0.5$\ms while the measurement changes by $+14.9$ to $+50.8$\ms, and the mean absolute error over the 40 configurations is 5.96\ms without a ticket, 5.87\ms with the ticket joined and 5.83\ms with it written on the Finished (six configurations off by more than 5\ms in each case). A ticket as an extra write does not explain the half round trip; its cause is not established, so the model keeps no ticket mode for full handshakes.
+
 \begin{table}[!htbp]\centering\small
 \caption{A full transaction that also issues a session ticket against the ticketless one of the main campaign (excess latency over the unshaped run, ms; same suite, chain depth, RTT, MTU, initial window of 10, 100\Mbits, 302/222-byte transaction, Reno with quick acknowledgments). The model has no mode for a full handshake with a ticket. In 6 of the 40 configurations that have a ticketless reference, the transaction with a ticket was slower by half a round trip (median 0.51 RTT); the median difference over all is 0.6\ms.}
 \label{tab:ticket}
@@ -656,6 +691,8 @@ Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Edito
 \resizebox{\textwidth}{!}{\input{tab_srvcpu}}
 \end{table}
 
+\emph{Reading the ratio.} The difference between the measured CPU and the primitives is 0.09--0.24\ms in every row (0.15--0.19\ms for resumed handshakes), whereas the primitives range from 0.009\ms (resumed, post-quantum) to 1.16\ms (ML-DSA-87, mutual TLS). The measured CPU therefore contains a cost per connection that the primitive costs of the model do not include (accepting the connection, the record layer, hashing and key derivation of the transcript, ticket handling, the event loop). It is a small part of a post-quantum full handshake (ratio 1.2--1.3), a larger part of a classical one (1.9--2.8) and almost the whole of a resumed handshake (4.5--19.8, at 0.18--0.21\ms), which is why the ratio is large exactly where the primitives are cheap. We did not separate the components of this cost.
+
 \FloatBarrier
 \section{Application messages above one TLS record}
 \label{app:records}
@@ -665,7 +702,7 @@ Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Edito
 
 \emph{Method.} We repeated the cold and warm grids of the main sweep with $\pi=0$ with the option on and compared the outputs with the reference model: thirteen suites, six profiles, chain depths 1--4 for cold connections (one state for warm ones), six bit rates, five RTTs and three MTUs, with a CPU scale of 1 and a window of 10 segments, so that each suite has 2\,160 cold and 540 warm rows. A flow is affected when at least one of its messages exceeds 16\,KB; the write list of an unaffected flow is the same with and without the option, and so is its latency. The script is \texttt{app\_records\_effect.py}, and its outputs are \texttt{app\_records\_effect.csv} and \texttt{app\_records\_examples.csv}.
 
-\emph{Results.} The option changes the write list of 76 of the 312 cold flows and of 19 of the 78 warm flows. The affected cold flows belong to the ML-DSA, Falcon-1024, SLH-DSA and composite suites; no flow of the RSA, ECDSA, hybrid or Falcon-512 suites is affected (\cref{tab:records}). In a warm row the largest change is 0.1\,ms. In a cold row it is at most 1.2\,ms for every suite except the two SLH-DSA suites, in which 143 of 4\,320 rows change by more than 0.5\,ms, by up to 100\,ms. The share $\phi$ of rows in which the size-dependent overhead exceeds the modeled primitive time is the same with and without the option, to the precision of \cref{tab:records}. In the reference scenario of \cref{M-sec:results} (SWIFT~MX, 100\Mbits, 30\ms RTT, MTU of 1\,500\,bytes), only SLH-DSA-128f at depth~1 changes, from 226.6 to 252.7\ms; the increase from depth 1 to 4 for this suite becomes 38.9\ms instead of 65.0\ms (\cref{M-tab:master,tab:sens}). The entries of the other suites, including the ML-DSA-65 increase of 60.0\ms and the share of 75.6\%, stay the same to 0.1\ms.
+\emph{Results.} The option changes the write list of 76 of the 312 cold flows and of 19 of the 78 warm flows. The affected cold flows belong to the ML-DSA, Falcon-1024, SLH-DSA and composite suites; no flow of the RSA, ECDSA, hybrid or Falcon-512 suites is affected (\cref{tab:records}). In a warm row the largest change is 0.1\,ms. In a cold row it is at most 1.2\,ms for every suite except the two SLH-DSA suites, in which 143 of 4\,320 rows change by more than 0.5\,ms, by up to 100\,ms. The share $\phi$ of rows in which the size-dependent overhead exceeds the modeled primitive time is the same with and without the option, to the precision of \cref{tab:records}. In the reference scenario of \cref{M-sec:results} (SWIFT~MX, 100\Mbits, 30\ms RTT, MTU of 1\,500\,bytes), only SLH-DSA-128f at depth~1 changes, from 226.6 to 252.7\ms; the increase from depth 1 to 4 for this suite becomes 38.9\ms instead of 64.9\ms (\cref{M-tab:master,tab:sens}). The entries of the other suites, including the ML-DSA-65 increase of 60.0\ms and the share of 75.6\%, stay the same to 0.1\ms.
 
 \emph{Reading of the results.} The conclusions on ML-DSA, Falcon and the classical suites do not depend on this simplification. The SLH-DSA entries that involve messages above 16\,KB, that is, the signed objects of the larger profiles, may differ by up to the amounts of \cref{tab:records}; their direction is not established. These suites cannot run in OpenSSL~3.5 TLS (\cref{M-tab:evidence}), so the entries are not measured either way. A test of the record-write pattern would need messages above 16\,KB on the testbed.
 

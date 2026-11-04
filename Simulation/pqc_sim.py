@@ -238,6 +238,7 @@ class Model:
     cert_req: int = 53         # CertificateRequest (mTLS, signature_algorithms incl. ML-DSA)
     finished: int = 48         # Finished verify_data (TLS_AES_256_GCM_SHA384, OpenSSL default)
     record_per_message: bool = True    # OpenSSL sends each handshake message in its own record
+    full_ticket: bool = False  # a COLD (full) handshake whose server also issues one TLS 1.3 session ticket (production servers do); off: no ticket (Paper 1 main results, which were measured with tickets disabled). The ticket is sized as for a resumed flow.
     app_records: bool = False  # application data leaves as one write() per TLS record of up to 16,384 bytes (OpenSSL SSL_write); off: one write per message (Paper 1, whose messages are below one record in the validated cases). Paper 2, WP6: explains MTU 9000
     # mitigations (all off by default, so v2/v3 results are unchanged)
     cached_info: bool = False  # RFC 7924: client already holds the server chain (hash only)
@@ -470,7 +471,7 @@ def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
         c_units[-1] += 0 if m.record_per_message else rec_ovh(sum(cli))
         xw += [(ch,), tuple(bio_buffer(s_units)), tuple(bio_buffer(c_units))]
         pend = kex.derive_ms + srv_verifies * sig.verify_ms + (sig.sign_ms if proto.mtls else 0.0)
-        nst = 0
+        nst = (m.ticket_base + ((leaf + 3) if proto.mtls else 0) + m.nst_overhead) if m.full_ticket else 0
     elif resumed:                               # TLS 1.3 PSK (psk_dhe_ke): no certificates, no signatures
         recs = (lambda ms: sum(rec_ovh(x) for x in ms)) if m.record_per_message else (lambda ms: rec_ovh(sum(ms)))
         ticket = m.ticket_base + ((leaf + 3) if proto.mtls else 0)   # OpenSSL embeds the client leaf
@@ -515,7 +516,7 @@ def build_flow(suite_name: str, proto_name: str, depth: int, mode: str,
                  tls_cv=tls_cv, tls_kex=tls_kex, tls_other=tls_other + app_rec)
     sizes["total_l7"] = sum(sizes.values())
     return Flow(mode, tuple(steps), sizes, cli_decomp, srv_decomp,
-                cli_decomp, srv_decomp, tuple(xw), nst if resumed else 0)
+                cli_decomp, srv_decomp, tuple(xw), nst if (resumed or (cold and m.full_ticket)) else 0)
 
 
 def count_segments(flow: Flow, mtu: int, hdr: int = IP_TCP_HDR) -> int:

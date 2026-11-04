@@ -1,0 +1,11 @@
+40 configurations with a ticketless reference; 6 where the transaction with a ticket is slower by more than 3 ms
+no ticket                          MAE over the 40: 5.96 ms; configurations off by more than 5 ms: 6
+ticket joined with the response    MAE over the 40: 5.87 ms; configurations off by more than 5 ms: 6
+ticket written on Finished         MAE over the 40: 5.83 ms; configurations off by more than 5 ms: 6
+the slow configurations (measured: ticket minus no ticket, and the model's change with a ticket):
+  ML-DSA-65    depth 1 MTU 1500 RTT  30: measured + 15.8 ms; model ticket joined with the response: +0.5; ticket written on Finished: +0.5
+  ECDSA-P256   depth 3 MTU 1500 RTT 100: measured + 50.1 ms; model ticket joined with the response: +0.1; ticket written on Finished: +0.1
+  ML-DSA-44    depth 1 MTU 1500 RTT  30: measured + 15.4 ms; model ticket joined with the response: +0.4; ticket written on Finished: +0.4
+  ECDSA-P256   depth 3 MTU 1500 RTT  30: measured + 14.9 ms; model ticket joined with the response: +0.1; ticket written on Finished: +0.1
+  ML-DSA-44    depth 1 MTU 1500 RTT 100: measured + 50.6 ms; model ticket joined with the response: +0.4; ticket written on Finished: +0.4
+  ML-DSA-65    depth 1 MTU 1500 RTT 100: measured + 50.8 ms; model ticket joined with the response: +0.5; ticket written on Finished: +0.5
