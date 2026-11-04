@@ -1,0 +1,12 @@
+226 configurations (direct, Reno, no loss, shaped)
+idealized: error > 0.5 RTT and > 5 ms in 19; errors 15 to 97 ms
+stack: same test in 0; largest error 5.4 ms; configurations above 5 ms: 3; above 10 ms: 0
+stack: errors above 0.4 RTT: 4; their RTTs: [5.0]
+stack within 1 ms: 110 of 226; inside the measurement interval: 46
+MAE by suite: min 0.64, max 2.14 ms  (ECDSA-P256 1.48, ECDSA-P256 0.64, ML-DSA-44 0.72, ML-DSA-65 1.89, ML-DSA-87 2.14, RSA-2048 0.95)
+
+by MTU: configurations, MAE stack, MAE idealized
+  1280: 58  1.87  8.22
+  1500: 120  1.33  4.03
+  9000: 48  2.17  2.11
+MTU 1280 and 1500: 178 configurations, MAE stack 1.51 ms
