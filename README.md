@@ -1,2 +1,89 @@
-<!-- Replace the `paper1-v1.4` bullet of "Version history" in the README of pqc-financial-transport by the text below (it keeps everything the earlier preparation of v1.4 already said). -->
+# pqc-financial-transport
+
+Simulator, measurements and paper assets for
+
+> **Modeling the Transport-Layer Latency Overhead of Post-Quantum Authentication in Financial Messaging** (Paper 1)
+> Trong-Hieu Dinh (Banking Academy of Vietnam), <hieudt@hvnh.edu.vn>; Trong-Minh Hoang (Posts and Telecommunications Institute of Technology, corresponding author), <hoangtrongminh@ptit.edu.vn>. Submitted for publication.
+
+The study quantifies how the larger keys and signatures of post-quantum cryptography propagate through TLS 1.3, DER X.509
+certificate chains and the application-layer signatures of ISO 8583, ISO 20022, SWIFT MX, OAuth 2.0 / OpenID Connect and
+FAPI 2.0 on wired paths, with a per-segment transport model that is calibrated on CPU costs measured with OpenSSL 3.5 and
+validated against real transactions over a kernel-emulated link.
+
+## Layout
+
+| Directory | Content |
+|---|---|
+| `Simulation/` | The transport model (`pqc_sim.py`), the independent event-driven cross-check (`crosscheck_simpy.py`), sensitivity and uncertainty analyses, unit tests, `run_paper1.sh` |
+| `Measurements/` | CPU benchmark (`bench_pqc.c`), certificate generation (`certs.sh`), TLS handshake and application-object measurements, and their data (`data/`) |
+| `Measurements/testbed/` | Network-namespace testbed: `tls_probe.c`, `tbnet.py`, `run_testbed.py`, `run_variants.sh` (CUBIC, delayed ACK, timestamps, BBR), `analyze_testbed.py`, `residual_analysis.py`, `analyze_variants.py`, raw results in `results/` |
+| `Measurements/x86/` | The same CPU benchmark on an x86 core, and the comparison with the Arm measurements |
+| `paper/` | LaTeX sources of the earlier two-file version of the manuscript (main text and supplementary material) and `make_assets.py`, which generates its tables, figures and numbers from the measurements |
+| `manuscript/` | LaTeX source of the merged single-file manuscript (appendices inside), its figures and `data/` (`testbed_configurations.csv`: the 226 validation configurations; `claim_checks.csv`: the source of each headline number; `measurement_checksums.csv`) |
+
+## Reproduce the results (no special hardware)
+
+Python 3.10 or later with `pip install -r requirements.txt`; `latexmk` and a TeX Live installation with `elsarticle` are
+needed only to build the PDFs.
+
+```bash
+bash reproduce.sh          # simulation sweeps (about a minute), testbed and CPU analysis, tables, figures, numbers, PDFs
+```
+
+`reproduce.sh` runs, in order: the unit tests and sweeps (`Simulation/run_paper1.sh`), the analysis of the testbed
+measurements (`Measurements/testbed/paper_assets.py`) and of the x86 CPU measurements (`Measurements/x86/analyze_cpu_x86.py`),
+and `paper/make_assets.py`. The tables of the merged manuscript (`manuscript/`) were assembled from the outputs of these scripts and are typed in its LaTeX source; `manuscript/data/claim_checks.csv` lists the source of each headline number. `reproduce.sh` also runs the analyses added in v1.3 (ablation of the two stack mechanisms, asymmetric chain depth, uncertainty analysis with the middlebox delay fixed at 0, effect of record-by-record application writes).
+
+## Repeat the measurements (Linux, root for the testbed)
+
+* **CPU costs** (`Measurements/run_bench.sh` on Arm, `Measurements/x86/run_bench_x86.sh` on x86): OpenSSL 3.5.4 and liboqs 0.14.0
+  built from the official releases; see `Measurements/README.md` and `Measurements/x86/README.md`.
+* **Real certificate chains**: `Measurements/certs.sh` (the test private keys are not distributed and are regenerated).
+* **Testbed**: `Measurements/testbed/README.md` (network namespaces, `tc netem`, root; set-up script, smoke test, profiles).
+  The raw results of the runs reported in the paper are in `Measurements/testbed/results/*.csv`.
+
+## Data
+
+| File(s) | Content |
+|---|---|
+| `Measurements/testbed/results/{core_a,segs,segs2,knee,grid_b,cubic,cubic2,delack,ts,delack_ts,bbr,proxy_tcp,proxy_inspect}.csv` | One row per measured transaction: configuration, timings, bytes, kernel segment counters |
+| `Measurements/testbed/results/env.json` | Machine, kernel, governor and software versions of a run |
+| `Measurements/data/cpu_*_core*.csv`, `Measurements/x86/data/*.csv` | Per-operation CPU costs (Cortex-X925, Cortex-A725, Intel Core i7-5600U) |
+| `Measurements/data/*.csv` | Certificate sizes, compression, real TLS handshake flights, application objects |
+| `Simulation/results/*.csv` (generated) | Model output for the full wired grid |
+
+## Legacy inputs (not validated, not used by the paper)
+
+`Simulation/loss_sim.py`, `Simulation/radio_sim.py`, `Simulation/mitigations.py` and their outputs
+(`Simulation/radio_results/`, `Simulation/sens/radio_*`, `Simulation/mitigations.csv`, `Simulation/loss_results.csv`,
+`Simulation/radio_factor_ci.csv`) come from earlier simulations of radio links, mitigations and packet loss. They use the
+idealised closed form (`--stack v4`), have **not** been re-validated against the testbed, and none of their results appears in the
+paper or its Supplementary Material. They are kept because `paper/make_assets.py` still builds tables and a packet-loss figure
+from them (`figures/fig_loss.pdf` and others) that the paper does not include, and for the later papers on these topics.
+Do not cite them as validated results.
+
+## Version history
+
 - `paper1-v1.4` (this version; the release is made by the authors): the manuscript and the supplementary document (`manuscript/`, which compiles on its own: `latexmk -pdf supplementary.tex main.tex`, twice, for the cross-references). **Model and code.** The default model is unchanged: the 175,500 rows of the main sweep of `Simulation/pqc_sim.py` are byte-identical to those of v1.3 (md5 of `results.csv` f2add0fe98a8a3502775a479eade07c6); the new options (`Net.carry`, `Net.thresh_rule`, the two simpler baselines) are off by default. `Model(full_ticket=True)` with `Measurements/testbed/analyze_fullticket.py` (a negative result, `results/fullticket_model.txt`); `Simulation/mixed_chain.py` (Supplementary Table SB.5); `Measurements/testbed/error_profile.py` (`results/error_profile.txt`). **Testbed.** `tbnet.py` and `run_testbed.py` have two options, `PQC_IP=4` (IPv4) and `PQC_OFFLOAD=1` (TSO/GSO/GRO on the veth pair), and the CSV has the columns `ip_ver` and `offload`; `offload_check.py` verifies with `ethtool -k` and `tcpdump` that offload is really on (74 of 77 data packets above one MSS, largest 8,640 bytes, against none of 209 with offload off; `results/offload_check_gx10_20261115.txt`). **New experiments and their analyses** (each pre-registered one has its predictions committed before the measurement: `results/*_predictions.md`, `*_configs.csv`): simpler baselines (`analyze_baselines.py`, `results/baselines_20261115.txt`); replication of the 226 configurations and of the full handshakes at MTU 9000 on the Arm machine and the i9 (`analyze_g3b.py`, `results/g3b_gx10_i9_analysis_20261115.txt`; the pre-registered criterion fails; `analyze_g3b_records.py`, a post hoc check with one write per TLS record, `results/g3b_app_records_20261115.txt`); IPv4 and segmentation offload on three machines (`ipv4_offload_predict.py`, `analyze_ipv4_offload.py`; the IPv4 criteria are met in 4 of 8 flip cells on every machine); the ML-DSA-65 depth-1 response-size sweep (`ml_dsa_d1_sweep_predict.py`, `analyze_mldsa_sweep.py`) and an independent test of the record option (`records_test_predict.py`, `analyze_records_test.py`; its first and second criteria are not met); netem round-trip calibration (`netem_calibrate.py`, `analyze_rtt_calibration.py`) and a probe without TCP (`shaper_probe.py`, A-B-A of `/dev/cpu_dma_latency`: `results/dma_aba_gx10_20261115.txt`); OpenSSL 4.1.0 shares (`Simulation/ossl41_shares.py`, `results/ossl41_shares_20261115.txt`). **Data.** `Measurements/testbed/results/p1_v14/` holds the raw files of these experiments with `SHA256SUMS` (no private keys, no host names); `results/replication/` the model-against-testbed tables of the replication runs. `reproduce.sh` has a v1.4 block that regenerates each analysis from these files and prints `v1.4 check OK` or `DIFF` against the committed result files, and checks that the pre-registered files are unchanged. No measurement of v1.3 changes.
+
+- `paper1-v1.3`: the merged manuscript (`manuscript/`); model code with a separate chain depth for the client (`build_flow(..., depth_client=)`, default unchanged: the checksum of 3,744 model results is identical to v1.2) and `Simulation/asymmetric_depth.py`; `Measurements/testbed/ablation_stack.py` (contribution of each stack mechanism); `Simulation/uncertainty.py --pi0`; `Simulation/app_records_effect.py` (effect of writing application messages record by record, Appendix SF of the supplement); `manuscript/supplementary.tex` (the appendices of the article as a separate supplementary document, compiled with `main.tex`); the TCP-variant measurements (CUBIC, delayed ACK, timestamps, BBR) repeated with the CPU clock fixed (`run_variants_tuned.sh`; the first session, with the `ondemand` governor, is kept in `results/ondemand_session/`); the WP6 measurements of later work (loss with full and resumed transactions, latency under load, server capacity repeated, packet traces; scripts `run_all_wp6.sh`, `run_latency_resumed.sh`, `run_wp6b.sh`, `trace_run.py`, `capacity_latency.py`, `tls_load_open.c`); the optional model option `Model(app_records=True)` (application data written record by record, off by default; it explains the MTU 9000 TLS cells of the later work, `Measurements/testbed/analyze_mtu9000_records.py`); the confirmatory test of the ticket-timing rule (`run_wp6c.sh`, `race2_predict.py`, `analyze_race2.py`; the predictions `results/wp6_pred_race2.csv` were committed in the private working repository at 2026-11-02 06:35 +0700, before the measurement of 07:44). The raw packet captures and tcp_probe traces of the later work (`results/trace_*`, `results/rwnd_*`, about 80 MB) are not in this archive; their analyses and per-transaction tables are (`wp6_analysis_*.txt`, `ticket_race.csv`). The results of Paper 1 are unchanged apart from the repeated variant measurements (MAE 1.19, 1.26, 1.32 and 1.23 ms for CUBIC, delayed ACK, timestamps and both, against 1.13, 1.18, 1.25 and 1.26 ms in the first session).
+- `paper1-v1.2`: adds the measurements made after the main campaign (`resume.csv`, `resume_swift.csv`, `capacity_gx10*.csv`
+  and their scripts: `tls_serve.c`, `tls_load.c`, `capacity_test.py`, `analyze_resume.py`, `analyze_capacity.py`, `supp_paper1_extra.py`), two
+  supplementary tables built from them (S23, S24), a lossy variant of the model and a mitigation study that paper 2 will use
+  (`Simulation/loss_sim.py`, `mitigations_wired.py`, `config_selector.py`), and the **erratum** below. Paper 1's results are unchanged.
+- `paper1-v1.1.1`: DOI recorded in the manuscript; `paper1-v1.1`: stack-model validation under CUBIC, delayed ACKs, timestamps and BBR.
+
+## Erratum
+
+`Measurements/data/capacity.csv` and `Measurements/capacity.sh` (server capacity measured with `openssl s_time -new`) overstate the handshake rate
+by a factor of 2, because `s_time` counts every handshake twice; see `Measurements/data/capacity_ERRATUM.md`. Paper 1 does not use these
+numbers. The corrected measurement is `Measurements/testbed/capacity_test.py` (results in `Measurements/testbed/results/capacity_*.csv`).
+
+## Known limits
+
+The model was validated on one stack: Linux TCP with Reno, OpenSSL 3.5, one machine, one TCP proxy. See the Limitations
+section of the paper. The Docker recipe of earlier versions was not carried over because it could not be tested.
+
+## Licence and citation
+
+Code: MIT (`LICENSE`). Data: CC BY 4.0 (`LICENSE-DATA.md`). Please cite the paper and this repository (`CITATION.cff`).
