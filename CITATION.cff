@@ -20,8 +20,10 @@ doi: "10.5281/zenodo.23839449"
 version: "paper1-v1.4.1"
 identifiers:
   - type: doi
+    value: "10.5281/zenodo.24312834"
+    description: "DOI of version paper1-v1.4.1"
+  - type: doi
     value: "10.5281/zenodo.23839449"
     description: "Concept DOI of all versions"
-# After the release of paper1-v1.4.1, add the version DOI created by Zenodo as a further identifier.
 # Earlier versions: paper1-v1.3 10.5281/zenodo.23875669; paper1-v1.4 10.5281/zenodo.24248122 (superseded by v1.4.1).
 
