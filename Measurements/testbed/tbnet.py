@@ -22,8 +22,16 @@ import subprocess
 import sys
 
 NS_C, NS_P, NS_S = "pqcc", "pqcp", "pqcs"
-A_C1, A_P1 = "fd99:1::1", "fd99:1::2"        # client link: client, peer (server or proxy)
-A_P2, A_S2 = "fd99:2::1", "fd99:2::2"        # proxy-server link: proxy, server
+# PQC_IP=4 runs the testbed over IPv4 (default: IPv6, as in every published result; MSS = MTU - 60, with IPv4 MSS = MTU - 40);
+# PQC_OFFLOAD=1 leaves TSO/GSO/GRO ON on the veth pair (default: off, so that every segment is one packet).
+IPV4 = os.environ.get("PQC_IP", "6") == "4"
+OFFLOAD = os.environ.get("PQC_OFFLOAD", "0") == "1"
+if IPV4:
+    A_C1, A_P1 = "10.99.1.1", "10.99.1.2"        # client link: client, peer (server or proxy)
+    A_P2, A_S2 = "10.99.2.1", "10.99.2.2"        # proxy-server link: proxy, server
+else:
+    A_C1, A_P1 = "fd99:1::1", "fd99:1::2"        # client link: client, peer (server or proxy)
+    A_P2, A_S2 = "fd99:2::1", "fd99:2::2"        # proxy-server link: proxy, server
 PROBE_PORT = "4433"
 
 
@@ -86,10 +94,13 @@ class Testbed:
         self.run(["ip", "link", "add", if1, "type", "veth", "peer", "name", if2])
         for ns, ifc, addr in ((ns1, if1, addr1), (ns2, if2, addr2)):
             self.run(["ip", "link", "set", ifc, "netns", ns])
-            self.run(["ip", "-6", "addr", "add", f"{addr}/64", "dev", ifc, "nodad"], ns=ns)
+            if IPV4:
+                self.run(["ip", "addr", "add", f"{addr}/24", "dev", ifc], ns=ns)
+            else:
+                self.run(["ip", "-6", "addr", "add", f"{addr}/64", "dev", ifc, "nodad"], ns=ns)
             self.run(["ip", "link", "set", ifc, "up"], ns=ns)
-            self.run(["ethtool", "-K", ifc, "tso", "off", "gso", "off", "gro", "off", "lro", "off"], ns=ns, check=False,
-                     capture=True)
+            self.run(["ethtool", "-K", ifc] + (["tso", "on", "gso", "on", "gro", "on"] if OFFLOAD else ["tso", "off", "gso", "off", "gro", "off", "lro", "off"]),
+                     ns=ns, check=False, capture=True)
 
     # ------------------------------------------------------------------ per-configuration shaping
     def _links(self):
@@ -114,12 +125,18 @@ class Testbed:
             if rtt_ms > 0:
                 cmd += ["delay", f"{rtt_ms / 2:g}ms"]
             if loss_pct > 0:
-                cmd += ["loss", f"{loss_pct:g}%"]
+                burst = float(os.environ.get("PQC_LOSS_BURST", "0") or 0)       # scenario G8: mean loss burst in packets > 1 -> Gilbert model of netem
+                if burst > 1:
+                    r = 100.0 / burst                                           # P(bad -> good), percent
+                    p = min(100.0, r * (loss_pct / 100.0) / (1.0 - loss_pct / 100.0))   # P(good -> bad): stationary P(bad) = p / (p + r) = loss rate
+                    cmd += ["loss", "gemodel", f"{p:g}%", f"{r:g}%"]            # every packet is lost in the bad state, none in the good state
+                else:
+                    cmd += ["loss", f"{loss_pct:g}%"]
             if rate_mbps > 0:
                 cmd += ["rate", f"{rate_mbps:g}mbit"]
             self.run(cmd, ns=ns)
         for ns, ifc, peer in self._links():
-            route = ["ip", "-6", "route", "replace", f"{peer}/128", "dev", ifc,
+            route = (["ip", "route", "replace", f"{peer}/32"] if IPV4 else ["ip", "-6", "route", "replace", f"{peer}/128"]) + ["dev", ifc,
                      "initcwnd", str(icw), "initrwnd", str(initrwnd), "congctl", cc]
             if quickack:
                 route += ["quickack", "1"]
@@ -128,7 +145,7 @@ class Testbed:
 
     def smoke_test(self) -> bool:
         """Ping the peer through the client link (needs the configuration to be applied)."""
-        r = self.run(["ping", "-6", "-c", "2", "-W", "3", A_P1], ns=NS_C, check=False, capture=True)
+        r = self.run((["ping"] if IPV4 else ["ping", "-6"]) + ["-c", "2", "-W", "3", A_P1], ns=NS_C, check=False, capture=True)
         return r.returncode == 0
 
 

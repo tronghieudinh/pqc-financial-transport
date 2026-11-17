@@ -18,10 +18,9 @@ license: MIT
 keywords: [post-quantum cryptography, TLS 1.3, financial messaging, TCP congestion window, X.509, ML-DSA]
 doi: "10.5281/zenodo.23839449"
 version: "paper1-v1.4"
-# After the Zenodo release of paper1-v1.4: add here the version DOI as
-#   identifiers:
-#     - type: doi
-#       value: "10.5281/zenodo.<id>"
-#       description: "DOI of version paper1-v1.4"
-# (the version DOI of paper1-v1.3 is 10.5281/zenodo.23875669)
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.24248122"
+    description: "DOI of version paper1-v1.4"
+# (the version DOI of paper1-v1.3 is 10.5281/zenodo.23875669; the doi: above is the concept DOI of all versions)
 

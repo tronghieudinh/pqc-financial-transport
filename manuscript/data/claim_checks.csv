@@ -28,3 +28,24 @@ average_depth_increment,20.015733333333333,ms per simultaneous endpoint-depth in
 excess_average_depth_increment,10.152366666666666,ms,Simulation/results/results.csv,Relative to the corresponding classical depth effect
 ml_transport_gt_cpu_all_penalties,87.29629629629629,percent,Simulation/results/results.csv,10800 equally weighted cold rows; not bank-traffic probability
 ml_transport_gt_cpu_zero_penalty,75.60185185185185,percent,Simulation/results/results.csv,2160 equally weighted cold rows; not bank-traffic probability
+baseline_mae_stack,1.65,ms,Measurements/testbed/results/baselines_20261115.txt,"Stack model, 226 configurations; 4 configurations above 0.4 RTT"
+baseline_mae_idealized,4.7,ms,Measurements/testbed/results/baselines_20261115.txt,21 configurations above 0.4 RTT
+baseline_mae_stateless_slow_start,3.34,ms,Measurements/testbed/results/baselines_20261115.txt,"12 configurations above 0.4 RTT; defined after the data, not pre-registered"
+baseline_mae_size_vs_window,4.55,ms,Measurements/testbed/results/baselines_20261115.txt,"26 configurations above 0.4 RTT; defined after the data, not pre-registered"
+ossl41_ml_dsa_65_transport_share_arm_ratios,83.3,percent,Measurements/testbed/results/ossl41_shares_20261115.txt,pi=0; 3.5.4 value 75.6; x86 ratios 84.0; all-pi 91.1 and 91.4
+ossl41_depth_effect_ml_dsa_65,59.72,ms,Measurements/testbed/results/ossl41_shares_20261115.txt,3.5.4 value 60.05; x86 ratios 59.71
+g3b_cells_within_2ms_raised_buffer_arm,2,of 24 cells,Measurements/testbed/results/g3b_gx10_i9_analysis_20261115.txt,Pre-registered criterion (>= 80 percent) failed; same on Linux 6.14 and 7.0
+g3b_cells_within_2ms_raised_buffer_i9,15,of 24 cells,Measurements/testbed/results/g3b_gx10_i9_analysis_20261115.txt,Pre-registered criterion failed; 21 of 24 with a 19460-byte request
+g3b_records_cells_over_50ms_raised_buffer,0,cells,Measurements/testbed/results/g3b_app_records_20261115.txt,"Post hoc, model with one write per TLS record; three campaigns (two Arm, one i9)"
+g3b_records_i9_cells_within_2ms_raised_buffer,24,of 24 cells,Measurements/testbed/results/g3b_app_records_20261115.txt,Post hoc; Arm 24 of 24 within 2 ms after removing the machine offset
+ipv4_flip_cells_met_per_machine,4,of 8 cells,Measurements/testbed/results/ipv4_offload_gx10_analysis_20261115.txt; ipv4_offload_i9_x250_analysis_20261115.txt,"F1 not met on Arm, i9 and X250; the four ECDSA-P256 cells -29.3 to -30.8 ms against -28.9 predicted; controls 6 of 6 on i9 and X250"
+ipv4_stack_model_mae_ipv4_i9,10.64,ms,Measurements/testbed/results/ipv4_offload_i9_x250_analysis_20261115.txt,"F3 not met; X250 12.84 ms, Arm 12.69 ms"
+offload_median_difference_arm,0.19,ms,Measurements/testbed/results/ipv4_offload_gx10_analysis_20261115.txt,24 core configurations; offload activation not verified with a capture
+offload_median_difference_x250_same_session,0.52,ms,Measurements/testbed/results/ipv4_offload_i9_x250_analysis_20261115.txt,Control run in the same session; against the standard run of another day 2.67 ms (session offset)
+mldsa_d1_transition_ipv6,22200,bytes,Measurements/testbed/results/mldsa_d1_sweep_gx10_analysis_20261115.txt,"Arm; resolution 200 B; default model 23000, model with records 22200"
+mldsa_d1_transition_ipv4,22400,bytes,Measurements/testbed/results/mldsa_d1_sweep_gx10_analysis_20261115.txt,"Arm; resolution 200 B; default model 23400, model with records 22300"
+records_test_flip_cells_closer_to_records_model,4,of 8 cells,Measurements/testbed/results/records_test_gx10_analysis_20261115.txt,"R1 not met (7 required): depth 1 band confirmed (4 of 4), depth 2 band not (0 of 4); MAE of the model with records 8.68 ms; controls 11 of 12"
+offload_check_packets_above_mss_offload_on,74,of 77 data packets,Measurements/testbed/results/offload_check_gx10_20261115.txt,Arm; largest 8640 B; offload off: 0 of 209 (largest 1440 B); sender-side capture before the qdisc
+dma_hold_rtt_probe_arm,30.035,ms,Measurements/testbed/results/dma_aba_gx10_20261115.txt,A-B-A UDP probe 64 B datagram; without the hold 31.004 and 31.349 ms; transactions not tested on Arm; X250 transactions +1.67 ms with the hold
+dubetskyy_segment_cells_write_pattern,15,of 15 cells,Measurements/testbed/results/dubetskyy_segments_20261116.txt,Post hoc; published counts of Dubetskyy and Cano (Information 2026) at three MTUs; ceil(bytes/MSS) gives 11 of 15; needs tickets and alert as 3 segments
+offgrid_mae_mtu_le_1500,1.98,ms,Measurements/testbed/analyze_baselines.py (96 off-grid configurations with MTU 1280 or 1500),Off-grid 144 configurations: 2.04 ms in all; MTU 9000 (48 configurations) 2.17 ms

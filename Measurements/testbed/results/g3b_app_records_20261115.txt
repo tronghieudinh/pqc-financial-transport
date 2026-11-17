@@ -1,0 +1,12 @@
+gx10_20261114-145109       default req   302 n=24  records=off: within 2 ms  2, after offset +2.9 ms 20, >50 ms off 3 | records=on : within 2 ms  6, after offset +2.3 ms 24, >50 ms off 0
+gx10_20261114-145109       default req 19460 n=24  records=off: within 2 ms  3, after offset +2.8 ms 19, >50 ms off 3 | records=on : within 2 ms  8, after offset +2.2 ms 23, >50 ms off 0
+gx10_20261114-145109       large   req   302 n=24  records=off: within 2 ms  2, after offset +3.5 ms 19, >50 ms off 3 | records=on : within 2 ms  3, after offset +2.9 ms 24, >50 ms off 0
+gx10_20261114-145109       large   req 19460 n=24  records=off: within 2 ms  3, after offset +2.8 ms 19, >50 ms off 3 | records=on : within 2 ms  9, after offset +2.2 ms 24, >50 ms off 0
+gx10_20261115-120108       default req   302 n=24  records=off: within 2 ms  2, after offset +3.3 ms 19, >50 ms off 3 | records=on : within 2 ms  6, after offset +2.5 ms 23, >50 ms off 0
+gx10_20261115-120108       default req 19460 n=24  records=off: within 2 ms  6, after offset +2.7 ms 20, >50 ms off 3 | records=on : within 2 ms 11, after offset +2.0 ms 23, >50 ms off 0
+gx10_20261115-120108       large   req   302 n=24  records=off: within 2 ms  2, after offset +3.2 ms 19, >50 ms off 3 | records=on : within 2 ms  5, after offset +2.6 ms 24, >50 ms off 0
+gx10_20261115-120108       large   req 19460 n=24  records=off: within 2 ms  5, after offset +2.9 ms 19, >50 ms off 3 | records=on : within 2 ms 12, after offset +2.0 ms 23, >50 ms off 0
+i9-10900_20261113-164054   default req   302 n=24  records=off: within 2 ms 14, after offset +1.5 ms 19, >50 ms off 4 | records=on : within 2 ms 16, after offset +0.8 ms 23, >50 ms off 1
+i9-10900_20261113-164054   default req 19460 n=24  records=off: within 2 ms 14, after offset +1.0 ms 19, >50 ms off 4 | records=on : within 2 ms 22, after offset +0.3 ms 23, >50 ms off 1
+i9-10900_20261113-164054   large   req   302 n=24  records=off: within 2 ms 15, after offset +1.4 ms 21, >50 ms off 3 | records=on : within 2 ms 24, after offset +0.9 ms 24, >50 ms off 0
+i9-10900_20261113-164054   large   req 19460 n=24  records=off: within 2 ms 21, after offset +1.1 ms 20, >50 ms off 3 | records=on : within 2 ms 24, after offset +0.5 ms 23, >50 ms off 0

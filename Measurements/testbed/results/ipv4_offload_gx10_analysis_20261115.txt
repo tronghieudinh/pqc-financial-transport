@@ -1,0 +1,26 @@
+== Experiment A (IPv4 against IPv6), 14 cells: 8 flip, 6 controls
+  F1 flip cells with IPv4 - IPv6 in [-35, -22] ms: 4 of 8 (need >= 7 of 8) -> NOT MET
+  F2 controls with |IPv4 - IPv6| <= 3 ms: 6 of 6 (need >= 5 of 6) -> MET
+  F3 stack model, IPv4, header 40: MAE 12.69 ms, bias -12.69, cells above 0.4 RTT 5 -> NOT MET
+  F3 stack model, IPv6, header 60: MAE 5.15 ms, bias -5.15, cells above 0.4 RTT 1 (reference)
+  per cell (req resp suite depth | model v6 v4 | measured v6 v4 | measured diff | predicted diff):
+   ECDSA- d2   302 14000 |    91.6    91.6 |    94.3    94.2 |    -0.1 |   -0.0
+   ECDSA- d2   302 14400 |   120.5    91.6 |   124.5    94.3 |   -30.3 |  -28.9
+   ECDSA- d2   302 14500 |   120.5    91.6 |   124.8    94.1 |   -30.7 |  -28.9
+   ECDSA- d2   302 15000 |   120.6   120.6 |   125.0   124.6 |    -0.3 |   -0.0
+   ECDSA- d2 11000   222 |    91.3    91.3 |    93.6    93.6 |    +0.1 |   -0.0
+   ECDSA- d2 11500   222 |   120.4    91.3 |   124.3    93.5 |   -30.8 |  -29.0
+   ECDSA- d2 11600   222 |   120.4    91.4 |   124.5    93.7 |   -30.8 |  -29.0
+   ECDSA- d2 12000   222 |   120.4   120.4 |   124.3   124.0 |    -0.2 |   -0.0
+   ML-DSA d1   302 22500 |    93.8    93.7 |   124.0   124.7 |    +0.7 |   -0.1
+   ML-DSA d1   302 23000 |   122.0    93.7 |   124.2   124.5 |    +0.3 |  -28.3
+   ML-DSA d1   302 23100 |   122.0    93.7 |   124.0   124.2 |    +0.2 |  -28.3
+   ML-DSA d1   302 23200 |   122.0    93.8 |   125.2   124.6 |    -0.6 |  -28.3
+   ML-DSA d1   302 23300 |   122.0    93.8 |   124.5   124.3 |    -0.2 |  -28.3
+   ML-DSA d1   302 24000 |   122.1   122.0 |   124.4   123.7 |    -0.7 |   -0.1
+== Experiment B (offload on, IPv6), 24 cells against the standard run: median |difference| 0.19 ms (signed median -0.01, max |d| 1.2) -> OFF-1 MET
+   model against offload data: MAE 2.50 ms, bias -2.50, cells above 0.4 RTT 0 -> OFF-2 MET
+
+Cấu hình giống sản xuất trên GX10 (CUBIC + ACK trễ + timestamp, 24 cấu hình, kernel 7.0.0-1019; analyze_testbed.py với tiêu đề 72 byte): mô hình stack MAE 2,65 ms, chệch -2,65 ms, 0/24 cấu hình lệch hơn 0,4 RTT (lý tưởng 6,36 ms, 3 cấu hình; Linux cwnd 3,89 ms, 1). Excess đo được so với lần chạy chuẩn GX10 (G1 7.0, Reno, quickack, không timestamp): trung vị +0,09 ms, 23/24 trong 1 ms (X250: +2,15 ms, 2/24).
+Ghi chú: (1) offload BẬT chưa được xác nhận bằng ethtool -k hoặc tcpdump trong lúc chạy; bộ đếm đoạn (median data_segs_out 7) và MSS (1440) giống lần không offload; (2) F1 và F3 không đạt do nhóm ML-DSA-65 độ sâu 1: đo 124 ms ở phản hồi 22 500-23 300 B với cả IPv6 và IPv4, mô hình dự đoán 93,8 (IPv6, 22 500 B) và 93,7 (IPv4, 22 500-23 300 B): thiếu một RTT, không do cabecera; 4 ô ECDSA-P256 độ sâu 2 đạt đúng dự đoán (IPv4 bớt một RTT: -30,3 đến -30,8 ms đo, -28,9 dự đoán).
+Tệp: ~/ipv4flip_v6_gx10.csv, ~/ipv4flip_v4_gx10.csv, ~/offload_gx10.csv, ~/prodlike_gx10.csv (thư mục home của GX10). Chưa chạy: bước A-B-A (cpu_dma_latency) trên GX10; X250 hai lần đo IPv4 và offload chờ.

@@ -545,7 +545,10 @@ class Net:
     segmentation: str = "openssl"   # "openssl": segments of OpenSSL's write() pattern; "ideal": ceil(bytes / MSS) per transfer
     nst_early: bool = False         # a resumed server writes the ticket as soon as the client's Finished arrives, not with the response: it is still in flight when the response leaves only if the request flight did not need an extra round trip (Paper 2, WP5)
     srv_cwnd_acked: int = 0         # with nst_early: window (segments) the server has for the response once the ticket has been acknowledged; 0 = unchanged (stage E probes it)
+    carry: bool = True              # False (baseline for Paper 1): every flight starts at the initial window, no window is carried between flights (per-flight textbook slow start)
+    thresh_rule: bool = False       # True (baseline for Paper 1): a flight takes half an RTT plus its serialisation, plus one RTT iff its segment count exceeds the window (the size-versus-initial-window rule)
     cwnd_slack: int = 0             # segments added to the test below (0: as validated for Paper 1; 2: fits the resumed flows, STACKS['linux-openssl-2'])
+    rwnd_bytes: int = 0             # receive window the peer advertises (bytes), constant; 0 = unlimited (every published result). The sender may have at most rwnd_bytes in flight (bytes, as in TCP); Paper L3 / KICH_BAN_MTU9000.md J5: 63 488 B is the window seen at MTU 9000 with the default tcp_rmem (Paper 2 WP6, B14)
     cwnd_validation: bool = True    # Linux tcp_is_cwnd_limited (RFC 7661): slow start grows cwnd only while cwnd < 2 x packets in flight
 
 
@@ -563,7 +566,7 @@ STACKS = {
 
 
 @lru_cache(maxsize=None)
-def grow_cwnd(cw: int, n: int, slack: int = 0) -> int:
+def grow_cwnd(cw: int, n: int, slack: int = 0, rwnd: int = 0) -> int:
     """cwnd after a flight of n segments in slow start with Linux congestion-window validation.
 
     Replays the ACK clock of one flight (one ACK per segment): every ACK adds one segment to cwnd and releases
@@ -571,15 +574,17 @@ def grow_cwnd(cw: int, n: int, slack: int = 0) -> int:
     tcp_is_cwnd_limited (RFC 7661). A flight smaller than half the window therefore does not grow it, and a
     window-limited flight grows it by slightly less than n (e.g. 10 -> 40 after 31 segments).
     `slack` loosens the test to cwnd < 2 x peak + slack (Net.cwnd_slack).
+    `rwnd` (segments, 0 = none) caps the segments in flight at the receive window, so a receive-limited flight does not grow cwnd.
     """
-    sent = inflight = peak = min(n, cw)
+    lim = (lambda c_: min(c_, rwnd)) if rwnd else (lambda c_: c_)
+    sent = inflight = peak = min(n, lim(cw))
     c, acked = cw, 0
     while acked < n:
         acked += 1
         inflight -= 1
         if c < 2 * peak + slack:
             c += 1
-        k = min(c - inflight, n - sent)
+        k = min(lim(c) - inflight, n - sent)
         if k > 0:
             sent += k
             inflight += k
@@ -589,12 +594,14 @@ def grow_cwnd(cw: int, n: int, slack: int = 0) -> int:
 
 @lru_cache(maxsize=1_000_000)
 def _tcp_xfer(nbytes: int, mss: int, hdr: int, bw: float, rtt: float, cw0: int,
-              gate_k: int = 1 << 30, gate_after_rtt: bool = False, sizes: tuple = ()):
+              gate_k: int = 1 << 30, gate_after_rtt: bool = False, sizes: tuple = (), rwnd: int = 0):
     """ACK-clocked slow start, one ACK per segment, +2 segments released per ACK.
 
     Returns (elapsed_ms until the last byte is received, serialization_ms,
     n_segments, wire_bytes). The link is a FIFO of capacity `bw`; ACKs are
-    assumed lossless and zero-size. No loss, no receive-window limit.
+    assumed lossless and zero-size. No loss. Receive window: unlimited unless `rwnd` > 0 (bytes): a segment also waits until the bytes in
+    flight, itself included, fit in `rwnd` (constant advertised window; the limit is in bytes, as in TCP, so the small segments
+    of OpenSSL's 4,096-byte writes count by their size).
     """
     n = len(sizes) if sizes else -(-nbytes // mss)
     rate = bw * 1e3                                   # bits per ms
@@ -603,11 +610,19 @@ def _tcp_xfer(nbytes: int, mss: int, hdr: int, bw: float, rtt: float, cw0: int,
     acks = []
     link = 0.0
     ser_tot = 0.0
+    cum = [0]
+    for k in range(n):
+        cum.append(cum[-1] + (sizes[k] if sizes else (mss if k < n - 1 else nbytes - (n - 1) * mss)))
+    j = 0                                             # first segment whose ACK is not yet needed by the window
     for k in range(n):
         ser = (sizes[k] + hdr) * 8 / rate if sizes else (ser_last if k == n - 1 else ser_full)
         ready = 0.0 if k < cw0 else acks[(k - cw0) >> 1]
         if k >= gate_k and gate_after_rtt:      # QUIC: wait until the client's address validation
             ready = max(ready, acks[0] - 0.0 if acks else rtt)
+        if rwnd and cum[k + 1] > rwnd:
+            while cum[k + 1] - cum[j + 1] > rwnd:     # smallest j such that the bytes after segment j fit the window
+                j += 1
+            ready = max(ready, acks[j])
         start = ready if ready > link else link
         link = start + ser
         acks.append(link + rtt)
@@ -666,10 +681,15 @@ def run_flow(flow: Flow, net: Net, cpu_scale: float = 1.0) -> dict:
                     wr = ((flow.nst,) + body) if rec else (flow.nst, st[2] - flow.nst)
             if net.segmentation == "openssl" and wr and not net.quic:
                 sizes = tuple(segment_sizes(wr, mss, cw[side]))
-            el, s, n, w = _tcp_xfer(nbytes, mss, hdr, net.bw_mbps, net.rtt_ms, cw[side], *gate, sizes)
+            rw = net.rwnd_bytes if not net.quic else 0
+            el, s, n, w = _tcp_xfer(nbytes, mss, hdr, net.bw_mbps, net.rtt_ms, cw[side], *gate, sizes, rw)
+            if net.thresh_rule:
+                el = s + half + (net.rtt_ms if n > cw[side] else 0.0)
+            rs = max(1, int(rw // max(1.0, nbytes / n))) if rw else 0      # receive window in segments of this flight's average size, for the cwnd test
             if side == 0:
                 client_el = el
-            cw[side] = grow_cwnd(cw[side], n, net.cwnd_slack) if net.cwnd_validation else cw[side] + n
+            if net.carry and not net.thresh_rule:
+                cw[side] = grow_cwnd(cw[side], n, net.cwnd_slack, rs) if net.cwnd_validation else cw[side] + n
             ser += s
             prop += half
             ssw += max(0.0, el - s - half)

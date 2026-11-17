@@ -20,6 +20,7 @@ Outputs (outdir):
 from __future__ import annotations
 
 import argparse
+import csvhdr  # noqa: F401  (skips the "#" header lines of pqcm data files)
 import csv
 import math
 import random
@@ -84,7 +85,8 @@ def aggregate(rows):
             mss=st.mode(int(r["snd_mss"]) for r in good), cwnd0=st.mode(int(r["snd_cwnd0"]) for r in good),
             retrans=sum(int(r["retrans"]) for r in good) / len(good),
             segs_out=st.median([int(r["data_segs_out"]) for r in good if r.get("data_segs_out")] or [0]),   # older runs lack the counters
-            segs_in=st.median([int(r["data_segs_in"]) for r in good if r.get("data_segs_in")] or [0]))
+            segs_in=st.median([int(r["data_segs_in"]) for r in good if r.get("data_segs_in")] or [0]),
+            **({"ip_ver": r0["ip_ver"], "tcp_ts": r0.get("tcp_ts", "0")} if "ip_ver" in r0 else {}))   # new data: header bytes follow IP version and timestamps
     return out
 
 
@@ -107,8 +109,11 @@ NST_EARLY = False    # Net.nst_early (analyze_resume --nst-early): the ticket is
 def model_for(c, penalty=0.0, thr=4, cwnd_validation=False, segmentation="ideal", cwnd_slack=None):
     flow = S.build_flow(c["suite"], probe_protocol(c["mtls"], c["req"], c["resp"], c["depth"]), int(c["depth"]),
                         "resumed" if c.get("resume") == "1" else "cold", False)
+    kw = {}
+    if "ip_ver" in c:      # new data (run_testbed.py with the ip_ver column): header bytes follow the IP version and the TCP timestamps; older data keep the model default (60)
+        kw["hdr"] = (40 if str(c["ip_ver"]) == "4" else 60) + (12 if str(c.get("tcp_ts", "0")) == "1" else 0)
     net = S.Net(f(c["rate_mbps"]), f(c["rtt_ms"]), int(c["mtu"]), penalty_ms=penalty, thr=thr,
-                init_cwnd=int(c["icw"]), cwnd_validation=cwnd_validation, segmentation=segmentation, cwnd_slack=SLACK if cwnd_slack is None else cwnd_slack, nst_early=NST_EARLY)
+                init_cwnd=int(c["icw"]), cwnd_validation=cwnd_validation, segmentation=segmentation, cwnd_slack=SLACK if cwnd_slack is None else cwnd_slack, nst_early=NST_EARLY, **kw)
     return flow, S.run_flow(flow, net)
 
 
@@ -256,7 +261,9 @@ def main():
     lines.append(f"\nstack model inside the 95 % bootstrap CI of the measured excess: {sum(t['stack_in_ci'] for t in table)} of "
                  f"{len(table)} configurations; within 1 ms: {sum(t['stack_within_1ms'] for t in table)}; "
                  f"within 0.1 RTT: {sum(abs(t['model_stack_ms'] - t['excess_ms']) <= 0.1 * f(t['rtt_ms']) for t in table)}")
-    bad = [t for t in table if int(t["mss"]) != int(t["mtu"]) - 60 or int(t["cwnd0"]) != int(t["icw"])]
+    def want_mss(t):      # expected TCP MSS: IPv6 60 / IPv4 40 header bytes, +12 with timestamps (old data without the ip_ver column: 60)
+        return int(t["mtu"]) - ((40 if str(t.get("ip_ver", "6")) == "4" else 60) + (12 if str(t.get("tcp_ts", "0")) == "1" else 0))
+    bad = [t for t in table if int(t["mss"]) != want_mss(t) or int(t["cwnd0"]) != int(t["icw"])]
     lines.append(f"\nconfigurations whose TCP MSS / initial cwnd differ from the request: {len(bad)}")
 
     # ------------------------------------------------------------ pi / theta fit (direct path, no loss)

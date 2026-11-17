@@ -2,16 +2,17 @@
 """
 error_profile.py - the numbers of the paragraphs "What the error measures" and "Scope at an MTU of 9000 bytes" of Paper 1 (Section 4.4), from the table of configurations.
 
-    python3 error_profile.py [--csv ../../manuscript/data/testbed_configurations.csv] > results/error_profile.txt
+    python3 error_profile.py [--csv ../../paper1/Latex/data/testbed_configurations.csv] > results/error_profile.txt
 
 The table has one row per configuration (the direct path, Reno, no configured loss): excess_ms (measured), model_ms (idealized model), model_stack_ms (stack model), rtt_ms, mtu, suite.
 "idealized wrong in the round-trip steps" = absolute error above half an RTT and above 5 ms; the same test is applied to the stack model.
 """
+import csvhdr  # noqa: F401  (skips the "#" header lines of pqcm data files)
 import argparse, csv, os, statistics as st
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--csv", default=os.path.join(HERE, "..", "..", "manuscript", "data", "testbed_configurations.csv")); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--csv", default=next((f for f in (os.path.join(HERE, "..", "..", *d, "testbed_configurations.csv") for d in (("manuscript", "data"), ("paper1", "Latex_v8", "data"), ("paper1", "Latex", "data"))) if os.path.exists(f)), "")); a = ap.parse_args()
     rows = [r for r in csv.DictReader(open(a.csv)) if r["topology"] == "direct" and r["cc"] == "reno" and float(r["loss_pct"]) == 0 and r["net_id"] == "shaped"]
     f = lambda r, k: float(r[k])
     print(f"{len(rows)} configurations (direct, Reno, no loss, shaped)")

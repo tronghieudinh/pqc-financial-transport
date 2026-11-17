@@ -1,0 +1,33 @@
+{
+ "meta": {
+  "host": "gx10",
+  "kernel": "7.0.0-1019-nvidia",
+  "stamp": "20261115-170411",
+  "mtu": 1500,
+  "reps": 50,
+  "server_cpu": null,
+  "client_cpu": null
+ },
+ "cells": {
+  "rate100_rtt30": {
+   "single_median_ms": {
+    "64": 31.004,
+    "400": 31.002,
+    "800": 31.128,
+    "1200": 31.057,
+    "1452": 31.116
+   },
+   "slope_us_per_byte": 0.078,
+   "expected_slope_us_per_byte": 0.08,
+   "intercept_ms": 31.0,
+   "train_span_ms_median": 1.768,
+   "train_span_ms_p10_p90": [
+    1.595,
+    2.166
+   ],
+   "train_lost_runs": 0,
+   "charged_bytes_per_packet": 1163.0,
+   "wire_bytes_per_packet": 1500
+  }
+ }
+}

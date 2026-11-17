@@ -1,0 +1,24 @@
+ML-DSA-65 d1  67500 control measured   128.0  with records   125.8  without   125.7
+ML-DSA-65 d1  67900 control measured   127.3  with records   125.8  without   125.7
+ML-DSA-65 d1  68300 flip    measured   155.9  with records   152.1  without   125.8
+ML-DSA-65 d1  68500 flip    measured   155.3  with records   152.2  without   125.8
+ML-DSA-65 d1  68700 flip    measured   155.8  with records   152.2  without   125.8
+ML-DSA-65 d1  68900 flip    measured   155.2  with records   152.2  without   125.8
+ML-DSA-65 d1  69300 control measured   155.5  with records   152.2  without   152.1
+ML-DSA-65 d1  69700 control measured   155.5  with records   152.2  without   152.2
+ML-DSA-65 d2  30400 control measured   155.5  with records   153.4  without   153.4
+ML-DSA-65 d2  30700 control measured   156.5  with records   153.4  without   153.4
+ML-DSA-65 d2  31000 flip    measured   156.2  with records   181.0  without   153.4
+ML-DSA-65 d2  31200 flip    measured   156.0  with records   181.0  without   153.4
+ML-DSA-65 d2  31400 flip    measured   156.2  with records   181.0  without   153.5
+ML-DSA-65 d2  31500 flip    measured   155.8  with records   181.0  without   153.5
+ML-DSA-65 d2  31900 control measured   155.5  with records   181.1  without   181.0
+ML-DSA-65 d2  32300 control measured   185.2  with records   181.1  without   181.0
+ECDSA-P25 d2  22500 control measured   125.1  with records   121.2  without   121.2
+ECDSA-P25 d2  31200 control measured   125.3  with records   121.9  without   121.9
+ECDSA-P25 d2  40000 control measured   126.0  with records   122.7  without   122.7
+ECDSA-P25 d2  68700 control measured   157.5  with records   152.8  without   152.8
+R1 flip cells closer to the model with records: 4 of 8 (need 7): NOT MET
+R2 model with records, MAE 8.68 ms (need <= 2.5), cells above 0.4 RTT 5 (need 0): NOT MET
+R3 controls within 12 ms: 11 of 12 (need 11): MET
+Rejection: without records closer in 4 of 8 flip cells: not rejected

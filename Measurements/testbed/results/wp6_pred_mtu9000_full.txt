@@ -1,0 +1,15 @@
+G3b (draft): full handshakes at MTU 9000, tcp_rmem default and raised (written 2026-11-12 10:07:08)
+
+Rewritten 2026-11-12 only to record the sha256 of pqc_sim.py after the receive-window option (the prediction CSV is byte-identical to the 2026-11-11 one). The criteria below are fixed on this commit (committed and pushed on the author's instruction before any measurement).
+Predictions: wp6_pred_mtu9000_full.csv (sha256 49f2b7a88106df31dfc27ffbe13d3517fb00313dacfb061507f2ff8dd1b5e7f2; pqc_sim.py sha256 7954c4909113abd51a32d8b597eda0ffcdd0ff43ed8064dc66ef07f569bf05f3).
+
+Background: for RESUMED transactions at MTU 9000 the plain-TCP receive window explains part of the gap (Paper 2, stage wp6-rwnd); Paper 1's validation does not cover MTU 9000.
+Question: do full handshakes at MTU 9000 follow the stack model with the default tcp_rmem and with a raised tcp_rmem?
+
+Measured quantity: excess latency = median of the shaped cell minus the median of the unshaped base of the same suite, depth and mTLS mode; n per cell as run.sh (default 20).
+
+Criteria (DRAFT, to be fixed by the authors):
+* P1: with the RAISED tcp_rmem the stack model's excess latency is within 2 ms of the measured excess in at least 80 % of the cells.
+* P2: with the DEFAULT tcp_rmem at least 10 % of the cells differ from the model by more than 0.5 RTT (the receive window matters at MTU 9000), and every such cell has a measured excess ABOVE the model.
+* P3 (exploratory): the cells that differ are those where the server flight exceeds the advertised window (peak bytes in flight from the plain-TCP trace of the same run, slack.csv).
+Not covered: tickets (full handshakes without tickets, as Paper 1).

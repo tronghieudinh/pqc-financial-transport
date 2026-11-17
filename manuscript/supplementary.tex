@@ -4,7 +4,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb}
-\usepackage{booktabs,array,graphicx,xcolor,tabularx}
+\usepackage{booktabs,array,graphicx,xcolor,tabularx,longtable}
 \usepackage{microtype}
 \usepackage{xspace}
 \usepackage{tikz}
@@ -16,7 +16,7 @@
 \usepackage[capitalise,nameinlink]{cleveref}
 \usepackage{caption}
 \usepackage[section]{placeins}
-\captionsetup{font=small,labelfont=bf}
+\captionsetup{font=small,labelfont=bf,hypcap=false}
 \setlength{\emergencystretch}{2em}
 \renewcommand{\topfraction}{0.9}\renewcommand{\textfraction}{0.08}\renewcommand{\floatpagefraction}{0.7}
 
@@ -51,12 +51,12 @@
 
 \begin{document}
 \begin{frontmatter}
-\title{Supplementary Material for ``Modeling the Transport-Layer Latency Overhead of Post-Quantum Authentication in Financial Messaging''}
+\title{Supplementary Material for ``Modelling TCP and TLS Latency Thresholds for Post-Quantum Authentication in Financial Messaging''}
 \author{Trong-Hieu DINH}
 \author{Trong-Minh HOANG}
 \end{frontmatter}
 
-\noindent This document contains Appendices SA--SF of the article. Section, table, figure and equation numbers without a letter prefix refer to the article.
+\noindent This document contains Appendices SA--SL of the article. Section, table, figure and equation numbers without a letter prefix refer to the article.
 \appendix
 \counterwithin*{table}{section}\counterwithin*{figure}{section}
 \renewcommand{\thesection}{S\Alph{section}}
@@ -64,7 +64,7 @@
 
 \section{Model inputs}
 \label{app:inputs}
-The appendix tables combine retained measurements and regenerated model outputs. The analysis scripts produce the numerical entries. Size outputs use KiB (1\,024\,bytes). Unless stated otherwise, the configuration is 100\Mbits, a 30\ms RTT, an MTU of 1\,500\,bytes, $\pi=0$ with $\theta=4$ segments, a cold connection and the baseline ECDSA-P256 with X25519. The tables fall into three evidence classes. Measured: \cref{tab:cpu,tab:certs,tab:comp_real,tab:tls,tab:internet,tab:app,tab:cpux86,tab:residuals,tab:variants,tab:ablation,tab:ticket,tab:srvcpu} and \cref{fig:residuals}. Model with measured inputs, validated on the testbed for the stack of \cref{M-sec:testbed}: \cref{tab:protocols,tab:constants,tab:sizes,tab:depth,tab:interaction,tab:asym,tab:threshold,tab:rq4,tab:sens,tab:rq3,tab:warm,tab:sobol} and \cref{fig:cc}. Assumption-based: \cref{tab:uncertainty,tab:priors,tab:records} and every row that sweeps a parameter that no standard or measurement fixes (the middlebox delay, the CPU scale above the measured value and the initial window beyond the measured values). \Cref{tab:status} is a status table. The idealized model appears only in columns labeled as such.
+The appendix tables combine retained measurements and regenerated model outputs. The analysis scripts produce the numerical entries. Size outputs use KiB (1\,024\,bytes). Unless stated otherwise, the configuration is 100\Mbits, a 30\ms RTT, an MTU of 1\,500\,bytes, $\pi=0$ with $\theta=4$ segments, a cold connection and the baseline ECDSA-P256 with X25519. The tables fall into three evidence classes. Measured: \cref{tab:cpu,tab:certs,tab:comp_real,tab:tls,tab:internet,tab:app,tab:cpux86,tab:residuals,tab:variants,tab:ablation,tab:ticket,tab:srvcpu,tab:loss,tab:prereg_repl,tab:prereg_g3b,tab:prereg_ipv4,tab:prereg_sweep} and \cref{fig:residuals}. Model with measured inputs, validated on the testbed for the stack of \cref{M-sec:testbed}: \cref{tab:protocols,tab:constants,tab:sizes,tab:depth,tab:interaction,tab:asym,tab:threshold,tab:rq4,tab:sens,tab:rq3,tab:warm,tab:sobol} and \cref{fig:cc}. Assumption-based: \cref{tab:uncertainty,tab:priors,tab:records,tab:writes} and every row that sweeps a parameter that no standard or measurement fixes (the middlebox delay, the CPU scale above the measured value and the initial window beyond the measured values). \Cref{tab:status} is a status table, \cref{tab:assump} a summary of assumptions and \cref{tab:repro} a map from numbers to scripts. The idealised model appears only in columns labelled as such.
 
 \Cref{tab:protocols} defines the six profiles. The request and response sizes are algorithm-independent bytes summed over all exchanges, and $d_\mathrm{ref}$ is the reference chain depth. The abbreviations are BAH (Business Application Header), LAU (SWIFT Local Authentication), PAR (Pushed Authorization Request), JAR (JWT-Secured Authorization Request), JWT (JSON Web Token) and JWK(S) (JSON Web Key (Set)). \Cref{tab:constants} lists the model constants that the cited standards do not fix; all constants are overridable.
 
@@ -102,15 +102,47 @@ XMLDSig fixed part & 750--800\,bytes + base64 signature + base64 signer certific
 Compression ratio of DER metadata & 0.68 (first certificate), 0.52 (subsequent); keys and signatures incompressible \\
 Client decompression rate & 330, 33, 3.3, 0.33\,MB/s \\
 Composite signature & concatenated public keys and signatures, summed CPU times \\
-TCP stack behavior & Linux-style window validation (tracked peak outstanding segments; model abstraction) and the OpenSSL write pattern (4\,096-byte handshake buffer, request as a separate write, \texttt{TCP\_NODELAY}); the idealized model is the comparison baseline \\
+TCP stack behaviour & Linux-style window validation (tracked peak outstanding segments; model abstraction) and the OpenSSL write pattern (4\,096-byte handshake buffer, request as a separate write, \texttt{TCP\_\allowbreak NODELAY}); the idealised model is the comparison baseline \\
 Middlebox delay $\pi$ / threshold $\theta$ & 0--24\,ms, reference 0 / 4 segments (2--16 in a dedicated run) \\
 \bottomrule\end{tabularx}}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\caption{Cryptographic inputs of all thirteen suites: the signature schemes and the key-establishment mechanisms.}
+\label{tab:algos_full}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Signature & Family & PK & SPKI & Sig. & Sign & Verify & Pair \\
+ & & (B) & (B) & (B) & (ms) & (ms) & KEM \\
+\midrule
+RSA-2048 & classical & 270 & 294 & 256 & 0.491 & 0.0147 & ECDHE-P256 \\
+RSA-3072 & classical & 398 & 422 & 384 & 1.451 & 0.0293 & ECDHE-P256 \\
+ECDSA-P256 & classical & 65 & 91 & 72 & 0.01446 & 0.04112 & X25519 / hybrid \\
+ML-DSA-44 & lattice & 1\,312 & 1\,334 & 2\,420 & 0.3594 & 0.06804 & ML-KEM-768 \\
+ML-DSA-65 & lattice & 1\,952 & 1\,974 & 3\,309 & 0.586 & 0.103 & ML-KEM-768 \\
+ML-DSA-87 & lattice & 2\,592 & 2\,614 & 4\,627 & 0.6691 & 0.1589 & ML-KEM-1024 \\
+Falcon-512 & lattice & 897 & 919 & 666 & 0.1045 & 0.01755 & ML-KEM-768 \\
+Falcon-1024 & lattice & 1\,793 & 1\,815 & 1\,280 & 0.2114 & 0.03098 & ML-KEM-1024 \\
+SLH-DSA-128s & hash & 32 & 54 & 7\,856 & 170.8 & 0.1614 & ML-KEM-768 \\
+SLH-DSA-128f & hash & 32 & 54 & 17\,088 & 8.2 & 0.5058 & ML-KEM-768 \\
+ML-DSA-44+ECDSA-P256 & composite & 1\,377 & 1\,399 & 2\,492 & 0.37386 & 0.10916 & X25519MLKEM768 \\
+ML-DSA-65+ECDSA-P256 & composite & 2\,017 & 2\,039 & 3\,381 & 0.60046 & 0.14412 & X25519MLKEM768 \\
+\midrule
+\multicolumn{8}{l}{\textit{Key establishment: key-share bytes; last two columns = client / server computation (ms)}} \\
+\quad ECDHE-P256 & classical & \multicolumn{2}{r}{client 65} & \multicolumn{2}{r}{server 65} & 0.04251 & 0.04251 \\
+\quad X25519 & classical & \multicolumn{2}{r}{client 32} & \multicolumn{2}{r}{server 32} & 0.03596 & 0.03596 \\
+\quad X25519MLKEM768 & hybrid & \multicolumn{2}{r}{client 1\,216} & \multicolumn{2}{r}{server 1\,120} & 0.06844 & 0.04516 \\
+\quad ML-KEM-768 & post-quantum & \multicolumn{2}{r}{client 1\,184} & \multicolumn{2}{r}{server 1\,088} & 0.03248 & 0.009197 \\
+\quad ML-KEM-1024 & post-quantum & \multicolumn{2}{r}{client 1\,568} & \multicolumn{2}{r}{server 1\,568} & 0.04562 & 0.01183 \\
+\bottomrule
+\end{tabular}}
 \end{table}
 
 \FloatBarrier
 \section{Model results}
 \label{app:results}
-\Cref{tab:sizes} gives the serialized size of one cold transaction at the reference depth of each protocol, with the factor over the baseline in parentheses. \Cref{tab:depth} decomposes the SWIFT~MX depth increase from 1 to 4 into serialization (ser.), slow-start waiting (wait) and middlebox delay (pen.). \Cref{tab:interaction} gives $\bar{\Delta}_d$ for ML-DSA-65 against $\pi$ (a) and against the RTT (b). \Cref{tab:threshold} varies the segment threshold $\theta$ with a delay of 6\,ms per flight longer than $\theta$ segments.
+\Cref{tab:sizes} gives the serialised size of one cold transaction at the reference depth of each protocol, with the factor over the baseline in parentheses. \Cref{tab:depth} decomposes the SWIFT~MX depth increase from 1 to 4 into serialisation (ser.), slow-start waiting (wait) and middlebox delay (pen.). \Cref{tab:interaction} gives $\bar{\Delta}_d$ for ML-DSA-65 against $\pi$ (a) and against the RTT (b). \Cref{tab:threshold} varies the segment threshold $\theta$ with a delay of 6\,ms per flight longer than $\theta$ segments.
 
 \begin{table}[!htbp]\centering\small
 \caption{Size of one cold transaction (KiB).}
@@ -136,8 +168,40 @@ ML-DSA-65+ECDSA-P256 & 34.1 (6.9$\times$) & 66.3 (4.5$\times$) & 84.9 (3.7$\time
 \end{tabular}}
 \end{table}
 
+\begin{figure}[!htbp]\centering
+\includegraphics[width=\textwidth]{figures/fig_sizes}
+\caption{Composition of a cold transaction by suite and byte category, in KiB, for SWIFT~MX at chain depth~3 (left) and FAPI~2.0 at depth~2 (right). The figure at the end of each bar is the total.}
+\label{fig:sizes}
+\end{figure}
+
+\begin{table}[t]
+\centering\small
+\caption{Model predictions by suite (all thirteen suites). $^\dagger$The signed objects of the larger profiles exceed one TLS record; the model writes each message at once, and the option that writes it record by record, validated so far only on resumed transactions, changes these rows (up to 100\ms; the 1 to 4 depth increase of SLH-DSA-128f falls from 64.9 to 38.9\ms, below the ML-DSA-65 value; Appendix~\ref{app:records}).}
+\label{tab:master_full}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Suite & Size, KiB & Depth: $T_{d=4}-T_{d=1}$ & $O>T_\text{cpu}$ & Cert.\ bytes \\
+ & (factor) & (ms) & (\% of rows) & compressed (\%) \\
+\midrule
+RSA-2048 & 27.2 (1.2$\times$) & 0.6 & 27.5 & 22 \\
+RSA-3072 & 30.0 (1.3$\times$) & 0.9 & 27.3 & 18 \\
+ECDSA-P256 (baseline) & 23.0 (1.0$\times$) & 29.6 & 44.2 & 31 \\
+ECDSA-P256 + hybrid KEM & 25.2 (1.1$\times$) & 29.6 & 46.5 & 31 \\
+ML-DSA-44 & 66.3 (2.9$\times$) & 31.4 & 70.6 & 6 \\
+ML-DSA-65 & 83.4 (3.6$\times$) & 60.0 & 75.6 & 5 \\
+ML-DSA-87 & 106.8 (4.6$\times$) & 32.3 & 79.4 & 3 \\
+Falcon-512 & 39.9 (1.7$\times$) & 1.2 & 63.4 & 12 \\
+Falcon-1024 & 56.4 (2.4$\times$) & 30.9 & 72.7 & 7 \\
+SLH-DSA-128s$^\dagger$ & 126.3 (5.5$\times$) & 32.7 & 0.3 & 3 \\
+SLH-DSA-128f$^\dagger$ & 246.7 (10.7$\times$) & 64.9 & 70.6 & 2 \\
+ML-DSA-44+ECDSA-P256 & 67.9 (2.9$\times$) & 31.7 & 69.0 & 6 \\
+ML-DSA-65+ECDSA-P256 & 84.9 (3.7$\times$) & 60.4 & 73.2 & 4 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \begin{table}[!htbp]\centering\small
-\caption{SWIFT~MX latency against chain depth (ms). The SLH-DSA rows depend on the write pattern of messages above 16\,KB (\cref{app:records}).}
+\caption{SWIFT~MX latency against chain depth (ms). The SLH-DSA rows depend on the write pattern of messages above 16\,KiB (\cref{app:records}).}
 \label{tab:depth}
 \resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrrrrrrrr@{}}
 \toprule
@@ -308,6 +372,13 @@ ML-DSA-65+ECDSA-P256 & 85 & 74 & 46 & 14.1 & 85 \\
 \end{tabular}}
 \end{table}
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/fig_ratio}
+\caption{Ratio of size-dependent transport overhead to cryptographic time for SWIFT~MX at chain depth~3, by suite and bit rate (30\ms RTT, MTU of 1\,500\,bytes, cold connection, $\pi=0$). Values above 1 mean that the transaction is transport-bound; the colour scale is logarithmic.}
+\label{fig:ratio}
+\end{figure}
+
 \begin{table}[!htbp]\centering\small
 \caption{Added latency on a reused connection (ms).}
 \label{tab:warm}
@@ -340,7 +411,7 @@ ML-DSA-65+ECDSA-P256 & 0.0 & 61.1 & 61.1 & 2.6 & 3.9 & 7.4 \\
 \FloatBarrier
 \section{Measured inputs and input checks}
 \label{app:meas}
-\Cref{tab:cpu} gives the per-operation medians on a performance core (Cortex-X925) and an efficiency core (Cortex-A725). \Cref{tab:certs} compares the DER sizes of the generated certificates with the sizes predicted from the ECDSA-calibrated metadata. \Cref{tab:comp_real} compares the zlib level-9 compression ratio of real chains with the model. Since the generated chains repeat names and extensions more often than public chains, classical chains compress better here than in the calibration set. \Cref{tab:tls} compares real TLS~1.3 handshake flights (OpenSSL~3.5.4, mTLS) with the calibrated model for the same certificates, and the loopback handshake time with the modeled handshake CPU time; CH denotes the ClientHello.
+\Cref{tab:cpu} gives the per-operation medians on a performance core (Cortex-X925) and an efficiency core (Cortex-A725). \Cref{tab:certs} compares the DER sizes of the generated certificates with the sizes predicted from the ECDSA-calibrated metadata. \Cref{tab:comp_real} compares the zlib level-9 compression ratio of real chains with the model. Since the generated chains repeat names and extensions more often than public chains, classical chains compress better here than in the calibration set. \Cref{tab:tls} compares real TLS~1.3 handshake flights (OpenSSL~3.5.4, mTLS) with the calibrated model for the same certificates, and the loopback handshake time with the modelled handshake CPU time; CH denotes the ClientHello.
 
 \begin{table}[!htbp]\centering\footnotesize
 \caption{Per-operation CPU cost (ms).}
@@ -457,7 +528,7 @@ ML-DSA-87 & 4 & 1818 & 38415 & 36649 & 76882 & 0.00 & 2.36 & 2.98 \\
 \FloatBarrier
 \section{Internet check, application objects, sensitivity, residuals and status}
 \label{app:more}
-\Cref{tab:internet} reports real-Internet handshakes with X25519 and X25519\allowbreak{}MLKEM768 over 100 interleaved rounds per server: median times, the paired difference with its bootstrap 95\% confidence interval and the extra bytes. \Cref{tab:app} compares real signed application objects with the model: the JWS client assertion and access token, the DPoP proof and the XMLDSig over a pacs.008 document with the signer certificate in \texttt{KeyInfo}. \Cref{tab:sobol} lists the largest first- and second-order variance-based indices of log latency and of the log post-quantum (PQ) factor over the full factorial wired designs. \Cref{tab:uncertainty} summarizes the 4\,000 draws of \cref{M-sec:rq5} by median and 5th and 95th percentiles; probabilities appear in the median column.
+\Cref{tab:internet} reports real-Internet handshakes with X25519 and X25519\allowbreak{}MLKEM768 over 100 interleaved rounds per server: median times, the paired difference and the extra bytes. The paired difference is the median of the 100 per-round differences (X25519MLKEM768 minus X25519 in the same round), with a percentile bootstrap 95\% confidence interval of that median (2\,000 resamples); it need not equal the difference of the two medians in the table (1.6 and 3.0\ms). \Cref{tab:app} compares real signed application objects with the model: the JWS client assertion and access token, the DPoP proof and the XMLDSig over a pacs.008 document with the signer certificate in \texttt{KeyInfo}. \Cref{tab:sobol} lists the largest first- and second-order variance-based indices of log latency and of the log post-quantum (PQ) factor over the full factorial wired designs. \Cref{tab:uncertainty} summarises the 4\,000 draws of \cref{M-sec:rq5} by median and 5th and 95th percentiles; probabilities appear in the median column.
 
 \begin{table}[!htbp]\centering\small
 \caption{Real-Internet handshakes.}
@@ -531,13 +602,15 @@ $\Pr$(Falcon-512 $<$ ML-DSA-65 $<$ SLH-DSA-128f) & 1.00 & \multicolumn{2}{c}{--}
 \toprule
 Model & MAE (ms) & Bias (ms) & \shortstack[r]{Maximum\\error (ms)} & \shortstack[r]{Configurations\\above 0.4\,RTT} \\
 \midrule
-Idealized (no mechanism) & 4.70 & $-3.5$ & 97.1 & 21 \\
+Idealised (no mechanism) & 4.70 & $-3.5$ & 97.1 & 21 \\
 Window validation only & 3.34 & $-2.0$ & 95.4 & 12 \\
 OpenSSL write boundaries only & 3.15 & $-1.8$ & 95.3 & 15 \\
 Both (model of this paper) & 1.65 & $+0.1$ & 5.4 & 4 \\
 \bottomrule
 \end{tabular}}
 \end{table}
+
+The row ``window validation only'' gives the same prediction, configuration by configuration, as the stateless slow-start rule of \cref{M-tab:baselines} (maximum difference 0.0\ms over the 226 configurations), and the stack model with and without carrying the enlarged window between flights also agree on all 226. In these configurations no flight is sent after a window that a long flight has enlarged, so what the validation rule contributes here is that a short flight, the one-segment ClientHello, does not enlarge the window. The half of the Linux rule by which a window-limited flight enlarges the window by less than its segment count is not tested by these configurations; the plain-TCP measurement of \cref{M-sec:mech} tests it.
 
 \begin{table}[!htbp]\centering\small
 \caption{Prior distributions of the uncertainty analysis (4\,000 draws, seed 1). The inputs are drawn independently, except that the metadata of leaf and CA certificates share one quantile and so move together. The priors are assumptions, not fitted distributions.}
@@ -556,12 +629,12 @@ Initial window & 10, 32, 64 segments with probabilities 0.6, 0.3, 0.1 & RFC~6928
 \end{tabularx}
 \end{table}
 
-\Cref{tab:cpux86} compares the primitive costs on the critical path for the Cortex-X925 (simulator default), the Cortex-A725 and one core of the Intel Core i7-5600U (2.5\,GHz, AVX2, turbo disabled), with the same method. \Cref{tab:residuals} and \cref{fig:residuals} break down the stack-model error (model minus measurement) by configuration group. The 95\% interval of the MAE uses 2\,000 bootstrap resamples of the configurations. The core grid is the identification set (100\Mbits, initial window of 10 segments). The off-grid set comes from a later campaign on the same day (UTC 07:51--08:35 for the core grid and 09:07--09:17 off-grid); no model parameter was fitted to it. All rows use Reno, no loss, mTLS and the direct path.
+\Cref{tab:cpux86} compares the primitive costs on the critical path for the Cortex-X925 (simulator default), the Cortex-A725 and one core of the Intel Core i7-5600U (2.6\,GHz, AVX2, turbo disabled), with the same method. \Cref{tab:residuals} and \cref{fig:residuals} break down the stack-model error (model minus measurement) by configuration group. The 95\% interval of the MAE uses 2\,000 bootstrap resamples of the configurations. The core grid is the identification set (100\Mbits, initial window of 10 segments). The off-grid set comes from a later campaign on the same day (UTC 07:51--08:35 for the core grid and 09:07--09:17 off-grid); no model parameter was fitted to it. All rows use Reno, no loss, mTLS and the direct path.
 
 \begin{table}[!htbp]\centering\small
 \caption{Primitive cost on three cores (ms).}
 \label{tab:cpux86}
-\begin{tabular}{@{}llrrrr@{}}
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\begin{tabular}{@{}llrrrr@{}}
 \toprule
 Primitive & Operation & X925 (ms) & A725 (ms) & x86 (ms) & x86/X925 \\
 \midrule
@@ -587,7 +660,7 @@ ML-KEM-768 & key generation & 0.0178 & 0.042 & 0.0641 & 3.6 \\
 ML-KEM-768 & encapsulate & 0.0092 & 0.022 & 0.04 & 4.3 \\
 ML-KEM-768 & decapsulate & 0.0146 & 0.035 & 0.0608 & 4.2 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \begin{table}[!htbp]\centering\small
@@ -634,14 +707,14 @@ suite & RSA-2048 & 12 & 0.95 & 1.38 & 0.7 & 0.40--1.51 \\
 \label{fig:residuals}
 \end{figure}
 
-In \cref{fig:residuals}, the left panel plots the residuals of the 82 core-grid and 144 off-grid configurations against the RTT by suite, and the right panel plots them against the measured excess latency. \Cref{tab:variants} evaluates the stack model under other TCP settings at 100\Mbits. Its columns give the MAE of the stack model and of the idealized model, the bias and maximum error of the stack model, the number of configurations above 0.4\,RTT (stack / idealized) and the difference $\Delta$ of measured excess latency against the Reno, quick-acknowledgment, no-timestamp run of the same configuration. CUBIC covers 5, 30 and 100\ms RTT, MTUs of 1\,280, 1\,500 and 9\,000\,bytes and initial windows of 10 and 32. The other rows use MTUs of 1\,280 and 1\,500\,bytes, an initial window of 10 and three suites. The model does not represent BBR; the BBR row marks the limit of the model.
+In \cref{fig:residuals}, the left panel plots the residuals of the 82 core-grid and 144 off-grid configurations against the RTT by suite, and the right panel plots them against the measured excess latency. \Cref{tab:variants} evaluates the stack model under other TCP settings at 100\Mbits. Its columns give the MAE of the stack model and of the idealised model, the bias and maximum error of the stack model, the number of configurations above 0.4\,RTT (stack / idealised) and the difference $\Delta$ of measured excess latency against the Reno, quick-acknowledgement, no-timestamp run of the same configuration. CUBIC covers 5, 30 and 100\ms RTT, MTUs of 1\,280, 1\,500 and 9\,000\,bytes and initial windows of 10 and 32. The other rows use MTUs of 1\,280 and 1\,500\,bytes, an initial window of 10 and three suites. The model does not represent BBR; the BBR row marks the limit of the model.
 
 \begin{table}[!htbp]\centering\small
 \caption{Stack model under other TCP settings.}
 \label{tab:variants}
 \resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrrrrrrrr@{}}
 \toprule
-Variant & $n$ & MAE (ms) & idealized MAE (ms) & bias (ms) & max (ms) & off $>0.4$ RTT (stack / idealized) & pairs & median $\Delta$ (ms) & max $|\Delta|$ (ms) \\
+Variant & $n$ & MAE (ms) & idealised MAE (ms) & bias (ms) & max (ms) & off $>0.4$ RTT (stack / idealised) & pairs & median $\Delta$ (ms) & max $|\Delta|$ (ms) \\
 \midrule
 CUBIC, quick ACK & 216 & 1.19 & 5.43 & +0.61 & 5.1 & 12 / 18 & 42 & +0.10 & 1.4 \\
 Reno, delayed ACK & 72 & 1.26 & 11.04 & +0.48 & 3.8 & 5 / 11 & 42 & +0.14 & 0.7 \\
@@ -652,12 +725,12 @@ BBR, quick ACK (exploratory) & 8 & 3.51 & 3.54 & -3.23 & 21.8 & 0 / 0 & 8 & +0.1
 \end{tabular}}
 \end{table}
 
-\Cref{tab:status} records the standardization status of each scheme on 31 October 2026, read from csrc.nist.gov and datatracker.ietf.org on that date (the draft of the pure ML-KEM groups~\cite{tlsmlkem} on 2 November 2026), and the measured components. TLS marks a run through a real TLS~1.3 handshake on the testbed. CPU marks a measured per-operation cost (\cref{tab:cpu,tab:cpux86}). Sizes marks certificate and signature sizes from real generated or published objects. Unmeasured quantities are modeled. Standardization status does not indicate deployment readiness, and the table does not assess library or HSM support.
+\Cref{tab:status} records the standardisation status of each scheme on 31 October 2026, read from csrc.nist.gov and datatracker.ietf.org on that date (the draft of the pure ML-KEM groups~\cite{tlsmlkem} on 2 November 2026), and the measured components. TLS marks a run through a real TLS~1.3 handshake on the testbed. CPU marks a measured per-operation cost (\cref{tab:cpu,tab:cpux86}). Sizes marks certificate and signature sizes from real generated or published objects. Unmeasured quantities are modelled. Standardisation status does not indicate deployment readiness, and the table does not assess library or HSM support.
 
 \begin{table}[!htbp]\centering\footnotesize
-\caption{Standardization status and measured components.}
+\caption{Standardisation status and measured components.}
 \label{tab:status}
-\resizebox{\textwidth}{!}{\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.05\textwidth}>{\raggedright\arraybackslash}p{0.05\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}@{}}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}@{}}
 \toprule
 Scheme & NIST standard & X.509 profile (IETF) & TLS~1.3 specification & TLS & CPU & Sizes \\
 \midrule
@@ -680,7 +753,7 @@ Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Edito
 \emph{A model test.} The slow configurations are ECDSA-P256 at depth 3 and ML-DSA-44 and -65 at depth 1, all at an MTU of 1\,500 bytes and at RTTs of 30 and 100\ms; ECDSA-P256 and ML-DSA-87 at depth 1, the 1\,280-byte runs and the other depths are within about 2\ms. We gave the model an option for a cold flow whose server issues a ticket of the size used for resumed flows (\texttt{Model(full\_ticket=True)}), either joined with the first response or written on the client's Finished (\texttt{analyze\_fullticket.py}, nothing fitted). Neither placement reproduces the slowdown: in the six slow configurations the model changes by $+0.1$ to $+0.5$\ms while the measurement changes by $+14.9$ to $+50.8$\ms, and the mean absolute error over the 40 configurations is 5.96\ms without a ticket, 5.87\ms with the ticket joined and 5.83\ms with it written on the Finished (six configurations off by more than 5\ms in each case). A ticket as an extra write does not explain the half round trip; its cause is not established, so the model keeps no ticket mode for full handshakes.
 
 \begin{table}[!htbp]\centering\small
-\caption{A full transaction that also issues a session ticket against the ticketless one of the main campaign (excess latency over the unshaped run, ms; same suite, chain depth, RTT, MTU, initial window of 10, 100\Mbits, 302/222-byte transaction, Reno with quick acknowledgments). The model has no mode for a full handshake with a ticket. In 6 of the 40 configurations that have a ticketless reference, the transaction with a ticket was slower by half a round trip (median 0.51 RTT); the median difference over all is 0.6\ms.}
+\caption{A full transaction that also issues a session ticket against the ticketless one of the main campaign (excess latency over the unshaped run, ms; same suite, chain depth, RTT, MTU, initial window of 10, 100\Mbits, 302/222-byte transaction, Reno with quick acknowledgements). The model has no mode for a full handshake with a ticket. In 6 of the 40 configurations that have a ticketless reference, the transaction with a ticket was slower by half a round trip (median 0.51 RTT); the median difference over all is 0.6\ms.}
 \label{tab:ticket}
 \resizebox{\textwidth}{!}{\input{tab_ticket}}
 \end{table}
@@ -691,20 +764,28 @@ Composite ML-DSA + ECDSA & -- & draft-ietf-lamps-pq-composite-sigs-19, RFC Edito
 \resizebox{\textwidth}{!}{\input{tab_srvcpu}}
 \end{table}
 
-\emph{Reading the ratio.} The difference between the measured CPU and the primitives is 0.09--0.24\ms in every row (0.15--0.19\ms for resumed handshakes), whereas the primitives range from 0.009\ms (resumed, post-quantum) to 1.16\ms (ML-DSA-87, mutual TLS). The measured CPU therefore contains a cost per connection that the primitive costs of the model do not include (accepting the connection, the record layer, hashing and key derivation of the transcript, ticket handling, the event loop). It is a small part of a post-quantum full handshake (ratio 1.2--1.3), a larger part of a classical one (1.9--2.8) and almost the whole of a resumed handshake (4.5--19.8, at 0.18--0.21\ms), which is why the ratio is large exactly where the primitives are cheap. We did not separate the components of this cost.
+\emph{Reading the ratio.} The difference between the measured CPU and the primitives is 0.09--0.24\ms in every row (0.15--0.19\ms for resumed handshakes), whereas the primitives range from 0.009\ms (resumed, post-quantum) to 1.16\ms (ML-DSA-87, mutual TLS). The measured CPU therefore contains a cost per connection that the primitive costs of the model do not include (accepting the connection, the record layer, hashing and key derivation of the transcript, ticket handling, the event loop). It is a small part of a post-quantum or RSA full handshake (ratio 1.2--1.3), a larger part of an ECDSA one (1.9--2.8) and almost the whole of a resumed handshake (4.5--19.8, at 0.18--0.21\ms), which is why the ratio is large exactly where the primitives are cheap. We did not separate the components of this cost.
+
+\emph{Library version: OpenSSL~4.1.0.} In our primitive measurements OpenSSL~4.1.0 signs with ML-DSA 63\% (Arm) to 70\% (x86) faster and verifies 54\% faster than 3.5.4, so we reran the model with those costs (the ratios measured on the Arm core and on the i9; ML-KEM and the other algorithms unchanged). The transport-bound share $\phi$ of ML-DSA-65 rises from 75.6\% to 83--84\% (87\% to 91\% over all $\pi$), that of the other ML-DSA and composite suites by 6 to 11 points, and the depth effect stays at 59.7\ms (60.0\ms with 3.5.4). The conclusion that transport dominates holds for both library versions; the percentages of the main text are those of 3.5.4. The script is \texttt{ossl41\_shares.py}.
 
 \FloatBarrier
 \section{Application messages above one TLS record}
 \label{app:records}
-\emph{What the model assumes.} The model of the main text writes each application message, a request or a response, to the socket at once. The OpenSSL~3.5 library does so only for messages that fit in one TLS record. \texttt{SSL\_write()} splits a longer message into records of at most 16\,384\,bytes of plaintext and sends each record, with its 22\,bytes of framing, as a write of its own. With \texttt{TCP\_NODELAY}, the end of a record can leave a partial segment at once when the window permits, which is the write-boundary mechanism that \cref{M-sec:mech} establishes for handshake data. A message above 16\,KB therefore has more write boundaries than the model assumes. Handshake messages are not affected, since the model already accounts for their records and the 4\,096-byte buffer.
+\emph{What the model assumes.} The model of the main text writes each application message, a request or a response, to the socket at once. The OpenSSL~3.5 library does so only for messages that fit in one TLS record. \texttt{SSL\_write()} splits a longer message into records of at most 16\,384\,bytes of plaintext and sends each record, with its 22\,bytes of framing, as a write of its own. With \texttt{TCP\_\allowbreak NODELAY}, the end of a record can leave a partial segment at once when the window permits, which is the write-boundary mechanism that \cref{M-sec:mech} establishes for handshake data. A message above 16\,KiB therefore has more write boundaries than the model assumes. Handshake messages are not affected, since the model already accounts for their records and the 4\,096-byte buffer.
 
-\emph{What was validated.} No validated transaction contains a message above one record: the requests and responses measured on the testbed are 302 and 222\,bytes, and 10.9 and 3.6\,KiB in the SWIFT-sized experiment. The write pattern of messages above one record is therefore not validated in this paper. The model has the option \texttt{Model(app\_records=True)} (\texttt{pqc\_sim.py}), which writes each message as one write per record. The option is off in every result of this paper.
+\emph{What was validated.} No validated transaction contains a message above one record: the requests and responses measured on the testbed are 302 and 222\,bytes, and 10.9 and 3.6\,KiB in the SWIFT-sized experiment. The write pattern of messages above one record is therefore not validated by the measurements of this paper. Later work on resumed transactions did validate it: at an MTU of 9\,000\,bytes, over 48 configurations whose responses span several records, the mean absolute error of the model falls from 13.32 to 1.17\,ms with the default receive buffer and to 0.47\,ms with a raised receive buffer, and the number of configurations wrong by a round trip falls from 6 to 0 (\texttt{analyze\_mtu9000\_records.py}, in the archive named in the Data availability section; no parameter is fitted). Those are resumed transactions, not full handshakes. The model has the option \texttt{Model(app\_records=True)} (\texttt{pqc\_sim.py}), which writes each message as one write per record. The option is off in every result of this paper.
 
-\emph{Method.} We repeated the cold and warm grids of the main sweep with $\pi=0$ with the option on and compared the outputs with the reference model: thirteen suites, six profiles, chain depths 1--4 for cold connections (one state for warm ones), six bit rates, five RTTs and three MTUs, with a CPU scale of 1 and a window of 10 segments, so that each suite has 2\,160 cold and 540 warm rows. A flow is affected when at least one of its messages exceeds 16\,KB; the write list of an unaffected flow is the same with and without the option, and so is its latency. The script is \texttt{app\_records\_effect.py}, and its outputs are \texttt{app\_records\_effect.csv} and \texttt{app\_records\_examples.csv}.
+\emph{Two later tests that reach the same message size.} With IPv4 the segment holds 1\,460 bytes instead of 1\,440, and the model predicts one round trip less for a flight between the two window limits (14 pre-registered configurations: eight such cells and six controls, 30 repetitions each). In the four ECDSA-P256 cells chosen for it the measured change was $-30.3$ to $-30.8$\ms on the Arm machine and $-29.3$ to $-29.9$\ms on the two x86 machines, against $-28.9$ to $-29.0$\ms predicted; the six controls did not change. The four ML-DSA-65 cells (depth~1, responses of 23\,000 to 23\,300 bytes) did not change with IPv4, since the flight crosses the window earlier than the default model puts it (see below): the predicted change appeared in 4 of the 8 flip cells on each of the three machines, short of the criterion. A sweep of the response size in 200-byte steps on the Arm machine (pre-registered with the hypothesis that the model counts too few bytes) found the transition at 22\,200 bytes with IPv6 and 22\,400 bytes with IPv4, against 23\,000 and 23\,400 in the default model; the two criteria on the existence and the header shift of the transition were met, and the criterion on the size of the byte shortfall (2\,400 bytes, the value of the full-handshake test at 9\,000 bytes) was not (the shortfall was 0.8 to 1.0\,kB). With one write per record the model puts the transition at 22\,200 (IPv6) and 22\,300 bytes (IPv4), which agrees with the measurement at the resolution of the sweep; this agreement was found after the data were seen. A test written afterwards (\texttt{results/records\_test\_predictions.md}) confirmed the option in one band of sizes (ML-DSA-65, depth~1, 68\,300 to 68\,900 bytes) and not in another (depth~2, 31\,000 to 31\,500 bytes), so the explanation is partial; see \cref{M-sec:mech}. With segmentation offload switched on, the 24 core configurations changed by a median of 0.19\ms on the Arm machine and 0.52\ms on the X250 (against a control run of the same session; the standard run of another day differed by 2.7\ms, a session offset). A capture on the Arm machine (\texttt{offload\_check.py}, ethtool and tcpdump on the client link of the testbed, 300\,000 bytes over a fresh connection) confirmed the state: with offload on, TSO, GSO and GRO are on on both interfaces and 74 of 77 data packets are larger than one MSS (largest 8\,640 bytes), against none of 209 with offload off (largest 1\,440 bytes). The capture sees the sender's packets before the queueing discipline, so it shows that the kernel sends merged segments, not how the receiver sees them. Pre-registrations: \texttt{results/ipv4\_\allowbreak offload\_\allowbreak predictions.md} and \texttt{results/mldsa\_\allowbreak d1\_\allowbreak sweep\_\allowbreak predictions.md}; outputs: the \texttt{*\_\allowbreak analysis\_\allowbreak 20261115.txt} files of \texttt{Measurements/testbed/results/}.
 
-\emph{Results.} The option changes the write list of 76 of the 312 cold flows and of 19 of the 78 warm flows. The affected cold flows belong to the ML-DSA, Falcon-1024, SLH-DSA and composite suites; no flow of the RSA, ECDSA, hybrid or Falcon-512 suites is affected (\cref{tab:records}). In a warm row the largest change is 0.1\,ms. In a cold row it is at most 1.2\,ms for every suite except the two SLH-DSA suites, in which 143 of 4\,320 rows change by more than 0.5\,ms, by up to 100\,ms. The share $\phi$ of rows in which the size-dependent overhead exceeds the modeled primitive time is the same with and without the option, to the precision of \cref{tab:records}. In the reference scenario of \cref{M-sec:results} (SWIFT~MX, 100\Mbits, 30\ms RTT, MTU of 1\,500\,bytes), only SLH-DSA-128f at depth~1 changes, from 226.6 to 252.7\ms; the increase from depth 1 to 4 for this suite becomes 38.9\ms instead of 64.9\ms (\cref{M-tab:master,tab:sens}). The entries of the other suites, including the ML-DSA-65 increase of 60.0\ms and the share of 75.6\%, stay the same to 0.1\ms.
+\emph{Full handshakes at an MTU of 9\,000 bytes: the pre-registered experiment.} The experiment ran on the Arm machine (Linux~6.14, and again on Linux~7.0 with the same result) and on the i9 (Linux~7.0), each with the default and with a raised receive buffer, with a 302-byte request. The deviation of the 88\,700-byte cells is the same at 1\,MiB. After removing the constant offset of the machine and session, 19 to 21 of the other 21 cells lie within 2\ms. The criterion that the default buffer makes at least 10\% of the cells deviate upward by more than half a round trip was met (3 of 24 cells on the Arm machine and 4 of 24 on the i9); the one extra i9 cell (79\,760 bytes, ECDSA-P256) is slow in all 20 repetitions and unexplained.
 
-\emph{Reading of the results.} The conclusions on ML-DSA, Falcon and the classical suites do not depend on this simplification. The SLH-DSA entries that involve messages above 16\,KB, that is, the signed objects of the larger profiles, may differ by up to the amounts of \cref{tab:records}; their direction is not established. These suites cannot run in OpenSSL~3.5 TLS (\cref{M-tab:evidence}), so the entries are not measured either way. A test of the record-write pattern would need messages above 16\,KB on the testbed.
+\emph{Full handshakes at an MTU of 9\,000 bytes: the two checks of the main text.} After the data were seen we found the cause of the first miss in the model itself, and this check was not pre-registered. The responses of this experiment are far above one TLS record, and the model writes a message at once, whereas OpenSSL writes one record of at most 16\,384 bytes at a time (\cref{app:records}). With the option of the model that writes one record at a time (defined earlier for resumed transactions, and off in every other result of this paper) the 88\,700-byte cells move up by 94\ms, no cell is more than 50\ms from the model with the raised buffer in any of the three campaigns (two on the Arm machine, one on the i9), all 24 cells of the i9 lie within 2\ms, and on the Arm machine all 24 lie within 2\ms after removing the offset (\texttt{results/g3b\_app\_records\_20261115.txt}). A test made for this purpose afterwards, with criteria written before the run, used 20 full-handshake cells at an MTU of 1\,500 bytes (responses of 22 to 69\,kB, Arm machine) at sizes where the two versions of the model differ by a round trip. It confirmed the option in the four cells of one band (ML-DSA-65, depth~1, 68\,300 to 68\,900 bytes: measured 155--156\ms, 152\ms with records, 126\ms without) and failed in the four cells of another (depth~2, 31\,000 to 31\,500 bytes: measured 156\ms, 181\ms with records, 153\ms without; the measured transition lies at 31\,900 to 32\,300 bytes, after both versions of the model). The criteria on the flip cells (4 of 8, 7 required) and on the accuracy (MAE 8.7\ms) were not met, the controls were (11 of 12). We therefore do not claim that one write per record is the whole explanation: it accounts for the misses of this experiment and of one band of the later test, and at depth~2 a different error remains, which we did not find. The limit that stays is that the pre-registered criterion failed, that outputs at this MTU remain outside the validated range of the main results, and that the model has a residual flight-size error of about one round trip in narrow bands of the response size for ML-DSA-65 chains.
+
+\emph{Method.} We repeated the cold and warm grids of the main sweep with $\pi=0$ with the option on and compared the outputs with the reference model: thirteen suites, six profiles, chain depths 1--4 for cold connections (one state for warm ones), six bit rates, five RTTs and three MTUs, with a CPU scale of 1 and a window of 10 segments, so that each suite has 2\,160 cold and 540 warm rows. A flow is affected when at least one of its messages exceeds 16\,KiB; the write list of an unaffected flow is the same with and without the option, and so is its latency. The script is \texttt{app\_records\_effect.py}, and its outputs are \texttt{app\_records\_effect.csv} and \texttt{app\_records\_examples.csv}.
+
+\emph{Results.} The option changes the write list of 76 of the 312 cold flows and of 19 of the 78 warm flows. The affected cold flows belong to the ML-DSA, Falcon-1024, SLH-DSA and composite suites; no flow of the RSA, ECDSA, hybrid or Falcon-512 suites is affected (\cref{tab:records}). In a warm row the largest change is 0.1\,ms. In a cold row it is at most 1.2\,ms for every suite except the two SLH-DSA suites, in which 143 of 4\,320 rows change by more than 0.5\,ms, by up to 100\,ms. The share $\phi$ of rows in which the size-dependent overhead exceeds the modelled primitive time is the same with and without the option, to the precision of \cref{tab:records}. In the reference scenario of \cref{M-sec:results} (SWIFT~MX, 100\Mbits, 30\ms RTT, MTU of 1\,500\,bytes), only SLH-DSA-128f at depth~1 changes, from 226.6 to 252.7\ms; the increase from depth 1 to 4 for this suite becomes 38.9\ms instead of 64.9\ms (\cref{tab:master_full,tab:sens}). The entries of the other suites, including the ML-DSA-65 increase of 60.0\ms and the share of 75.6\%, stay the same to 0.1\ms.
+
+\emph{Reading of the results.} The conclusions on ML-DSA, Falcon and the classical suites do not depend on this simplification. The SLH-DSA entries that involve messages above 16\,KiB, that is, the signed objects of the larger profiles, may differ by up to the amounts of \cref{tab:records}; their direction is not established. These suites cannot run in OpenSSL~3.5 TLS (\cref{M-tab:evidence}), so the entries are not measured either way. A test of the pattern for full handshakes would need messages above 16\,KiB on the testbed.
 
 \begin{table}[!htbp]\centering\small
 \caption{Effect of writing application messages as one write per TLS record on the model outputs (cold connections, main-sweep grid with $\pi=0$, CPU scale 1; \texttt{app\_records\_effect.py}). Flows: affected flows, of the 24 combinations of profile and chain depth of each suite. Rows $>0.5$\,ms: rows whose latency changes by more than 0.5\,ms, of the 2\,160 combinations of bit rate, RTT and MTU of each suite. Largest: largest absolute change. $\phi$ and $\phi$ with: share of rows with $O>T_\mathrm{cpu}$ (\cref{M-eq:share}) without and with the option. The RSA-2048, RSA-3072, ECDSA-P256, ECDSA-P256 + hybrid KEM and Falcon-512 suites have no affected flow.}
@@ -725,7 +806,274 @@ ML-DSA-65+ECDSA-P256 & 8 & 0 & 0.0 & 73.2 & 73.2 \\
 \end{tabular}}
 \end{table}
 
+
+\FloatBarrier
+\section{Measurement machines and kernels}
+\label{app:machines}
+The measurements of the article ran on three machines, which the text calls the i7-5600U, the i9-10900K and the GX10. \Cref{tab:machines} describes them, \cref{tab:conditions} gives the conditions of the campaigns, and \cref{tab:kernels} lists the kernels that each machine ran. Every machine has more kernels installed than the measurements used; the kernel of a measurement is named in the path of its data file in the repository. The descriptions come from the script \texttt{tools/machine\_spec.sh} (its outputs are in \texttt{Measurements/machines/}), and the settings during the campaigns are those recorded with every data file (\texttt{ENV.txt}). The same software ran on all three: OpenSSL~3.5.4 built privately (the system OpenSSL~3.0.13 was not used), iproute2~6.1.0 (\texttt{tc} and \texttt{ip}), ethtool~6.7, tcpdump~4.99.4, GCC~13.3.0 and Python~3.12.3; HAProxy~2.8.30 was the proxy of the proxy experiment, liboqs~0.14.0 provided Falcon, and OpenSSL~4.1.0 appears only in the comparison of primitive costs.
+
+\begin{table}[!htbp]\centering\small
+\caption{The three measurement machines.}
+\label{tab:machines}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}@{}}
+\toprule
+ & i7-5600U & i9-10900K & GX10 \\
+\midrule
+Machine & Lenovo ThinkPad X250 (20CLA00BVA) & ASUS Pro E500 G6 WS720T & ASUS Ascent GX10 (product GX10) \\
+BIOS & N10ET56W (1.35) & 2102 & GX10DGX.\allowbreak 0104.\allowbreak 2026.\allowbreak 0326.\allowbreak 1657 \\
+Processor & Intel Core i7-5600U (Broadwell) & Intel Core i9-10900K (Comet Lake) & NVIDIA GB10: Arm Cortex-X925 and Cortex-A725 \\
+Cores and threads & 2 cores, 4 threads & 10 cores, 20 threads & 10 + 10 cores, no SMT \\
+Clock & 2.6\,GHz base, 3.2\,GHz turbo & 3.7\,GHz base, 5.3\,GHz maximum & 3.9\,GHz (X925), 2.8\,GHz (A725) \\
+Caches & L1d 64\,KiB, L2 512\,KiB, L3 4\,MiB & L1d 320\,KiB, L2 2.5\,MiB, L3 20\,MiB & L2 25\,MiB, L3 24\,MiB (two instances) \\
+Memory & 7.6\,GiB & 46.8\,GiB & 121.7\,GiB \\
+Operating system & Linux Mint 22.3 & Ubuntu 24.04.4 LTS & Ubuntu 24.04.3 LTS \\
+Microcode & 0x2f & 0x100 & not applicable \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]\centering\small
+\caption{Conditions of the campaigns, from the \texttt{ENV.txt} file of each data set. Cores are logical CPU numbers. ``At rest'' is the state of the machine when no campaign runs.}
+\label{tab:conditions}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}@{}}
+\toprule
+ & i7-5600U & i9-10900K & GX10 \\
+\midrule
+Server core & 0 & 6 & 5 \\
+Client cores & 2, 3 & 7 & 6--9, 15--19 \\
+Governor during campaigns & performance & performance & performance \\
+Turbo during campaigns & off (\texttt{no\_turbo}\,=\,1) & off (\texttt{no\_turbo}\,=\,1) & not applicable \\
+Governor at rest & ondemand & powersave & performance \\
+Idle states & POLL, C1, C1E, C3, C6, C7s, C8, C9, C10 (not disabled) & POLL, C1, C2, C3 (not disabled) & LPI-0 to LPI-3 (not disabled) \\
+Services stopped during a run & \multicolumn{3}{>{\raggedright\arraybackslash}p{0.70\textwidth}}{\texttt{power-profiles-daemon}, \texttt{thermald}, the \texttt{apt} timers, \texttt{unattended-upgrades}} \\
+Start of a measurement & \multicolumn{3}{>{\raggedright\arraybackslash}p{0.70\textwidth}}{waits until the one-minute load average is below 0.4} \\
+Host TCP defaults & \multicolumn{3}{>{\raggedright\arraybackslash}p{0.70\textwidth}}{CUBIC, \texttt{fq\_codel}, \texttt{tcp\_rmem} 4\,096 / 131\,072 / 33\,554\,432, \texttt{tcp\_wmem} 4\,096 / 16\,384 / 4\,194\,304} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The testbed sets Reno, the timestamp option, the initial window and the receive buffer for each configuration inside its own network namespaces (\cref{M-sec:testbed}), so the host defaults above do not apply to the measured connections. The idle states of the processor were left enabled in every campaign except the probe without TCP that holds \texttt{/dev/cpu\_dma\_latency} at zero (\cref{M-sec:repl}). The testbed output \texttt{run\_testbed.py} does not record the kernel; the kernel of a result is the one of its campaign log, and for the tests of 15 November on the i9 it is inferred (the machine ran 7.0.0-43 from 14 November until its specification was taken on 15 November).
+
+\begin{table}[!htbp]\centering\small
+\caption{Kernels used on each machine. All are the distribution kernels (\texttt{generic} or \texttt{nvidia}). HZ is \texttt{CONFIG\_HZ}; preemption lists the \texttt{CONFIG\_PREEMPT\_*} options built in.}
+\label{tab:kernels}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}llp{0.42\textwidth}rl@{}}
+\toprule
+Machine & Kernel & Use in the article & HZ & Preemption \\
+\midrule
+i7-5600U & 6.8.0-149 & plain-TCP window test & 1\,000 & voluntary, dynamic \\
+ & 6.14.0-37 & plain-TCP window test & 1\,000 & voluntary, dynamic \\
+ & 6.17.0-42 & plain-TCP window test & 1\,000 & voluntary, dynamic \\
+ & 7.0.0-42 & 226-configuration validation and its repeat, window test, IPv4, offload and production-like tests of 15 November & 1\,000 & dynamic \\
+ & (7.0.0-30, 7.0.0-31) & installed, not used & 1\,000 & dynamic \\
+\addlinespace
+i9-10900K & 7.0.0-42 & 226-configuration validation (two runs), full handshakes at an MTU of 9\,000 bytes, CPU primitives & 1\,000 & dynamic \\
+ & 7.0.0-43 & server latency, capacity and CPU of the server (\cref{app:extra}), CPU primitives, IPv4 and production-like tests & 1\,000 & dynamic \\
+\addlinespace
+GX10 & 6.14.0-1015 & 226-configuration validation (two runs, eight hours apart), window test, CPU primitives, server tests & 1\,000 & none, dynamic \\
+ & 7.0.0-1019 & validation, window test, full handshakes at an MTU of 9\,000 bytes, IPv4, offload, response-size sweep, test of the record option, probe without TCP & 1\,000 & dynamic \\
+ & (6.11.0-1014, 7.0.0-1025) & installed, not used & 1\,000 & none, dynamic (6.11); dynamic (7.0) \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 %% References (generated with elsarticle-num and included here)
+
+\FloatBarrier
+\section{Packet loss on the controlled link}
+\label{app:loss}
+The model of the article has no loss. This appendix compares the measurements with the loss extension of the simulator (\texttt{Simulation/loss\_sim.py}): the same stack model, with Bernoulli loss of data segments, fast retransmit after three duplicate acknowledgements, a tail-loss probe after $\max(2\,\mathrm{RTT},10\,\mathrm{ms})$, a retransmission timeout of 200\ms that doubles, and a one-second timeout for a lost SYN or SYN-ACK. The timer values are Linux defaults and were not fitted to the measurements, the predictions were not pre-registered, and the model does not lose acknowledgements.
+
+The measurements ran on 1 November 2026 on the i7-5600U (OpenSSL 3.5.4, direct path, 100\Mbits, MTU of 1\,500 bytes, initial window of 10 segments, Reno). The 16 shaped cells are two suites (ECDSA-P256 with X25519 and ML-DSA-65 with ML-KEM-768), chain depth~3 with mutual authentication, RTTs of 30 and 100\ms and random loss of 0, 0.5, 1 and 2\%; each cell has 300 full-handshake transactions (4\,800 in all), plus 600 unshaped baselines. The measured times are shifted by the median of the unshaped baseline, as in the article, and the model gives the transport time. \texttt{tc netem} drops packets at the egress of both end interfaces, so data segments, acknowledgements and handshake packets all face the stated rate in both directions. The retransmissions are those that \texttt{TCP\_INFO} counts for the client (\texttt{results/wp6\_loss\_full.csv}, analysed by \texttt{analyze\_loss.py} and \texttt{loss\_table.py}).
+
+\begin{table}[!htbp]\centering\small
+\caption{Transaction time under random packet loss: measurement and the loss model of the simulator (chain depth~3, 300 transactions per cell, i7-5600U). The interval is a bootstrap 95\% interval of the measured mean. The retransmissions are the client's own.}
+\label{tab:loss}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+Suite & RTT & Loss & Mean, measured (95\% interval) & Mean, model & p50 & p95 & p99 & Client retransmissions \\
+ & (ms) & (\%) & (ms) & (ms) & \multicolumn{3}{c}{measured / model (ms)} & measured / model \\
+\midrule
+ECDSA-P256 & 30 & 0 & 91.5 (91.4--91.5) & 90.5 & 91 / 91 & 92 / 91 & 92 / 91 & 0.00 / 0.00 \\
+ECDSA-P256 & 30 & 0.5 & 98.7 (92.8--106.9) & 101.9 & 91 / 91 & 92 / 91 & 359 / 151 & 0.02 / 0.02 \\
+ECDSA-P256 & 30 & 1 & 112.4 (99.3--129.8) & 111.9 & 91 / 91 & 162 / 151 & 365 / 1091 & 0.05 / 0.06 \\
+ECDSA-P256 & 30 & 2 & 159.6 (134.7--187.4) & 146.4 & 91 / 91 & 359 / 211 & 1175 / 1091 & 0.16 / 0.12 \\
+\midrule
+ECDSA-P256 & 100 & 0 & 301.4 (301.4--301.5) & 300.6 & 301 / 301 & 302 / 301 & 302 / 301 & 0.00 / 0.00 \\
+ECDSA-P256 & 100 & 0.5 & 314.8 (304.5--329.6) & 316.4 & 301 / 301 & 302 / 301 & 609 / 501 & 0.03 / 0.02 \\
+ECDSA-P256 & 100 & 1 & 345.9 (324.2--370.8) & 332.6 & 301 / 301 & 530 / 501 & 1355 / 1301 & 0.06 / 0.06 \\
+ECDSA-P256 & 100 & 2 & 389.0 (360.9--420.8) & 378.7 & 301 / 301 & 836 / 701 & 1732 / 1301 & 0.15 / 0.12 \\
+\midrule
+ML-DSA-65 & 30 & 0 & 149.4 (149.4--149.4) & 151.7 & 149 / 152 & 150 / 152 & 150 / 152 & 0.00 / 0.00 \\
+ML-DSA-65 & 30 & 0.5 & 177.2 (161.3--196.2) & 165.1 & 149 / 152 & 180 / 182 & 1265 / 272 & 0.14 / 0.11 \\
+ML-DSA-65 & 30 & 1 & 173.1 (161.1--188.2) & 184.3 & 149 / 152 & 219 / 212 & 1151 / 1152 & 0.22 / 0.19 \\
+ML-DSA-65 & 30 & 2 & 213.0 (192.8--238.7) & 214.1 & 150 / 152 & 444 / 381 & 1210 / 1212 & 0.32 / 0.41 \\
+\midrule
+ML-DSA-65 & 100 & 0 & 499.4 (499.4--499.5) & 501.7 & 499 / 502 & 500 / 502 & 500 / 502 & 0.00 / 0.00 \\
+ML-DSA-65 & 100 & 0.5 & 521.7 (510.4--535.3) & 524.9 & 499 / 502 & 627 / 602 & 1511 / 802 & 0.08 / 0.11 \\
+ML-DSA-65 & 100 & 1 & 545.6 (527.6--567.8) & 554.2 & 499 / 502 & 801 / 702 & 1546 / 1502 & 0.14 / 0.19 \\
+ML-DSA-65 & 100 & 2 & 591.5 (564.4--620.5) & 603.1 & 500 / 502 & 910 / 902 & 1811 / 1702 & 0.43 / 0.41 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\Cref{tab:loss} shows three things. First, the median does not move: in all 16 cells it lies within 2.3\ms of the model, the offset of the loss-free cells, so the typical transaction still pays the round trips that the model locates, up to a loss of 2\%. Second, the mean follows the model, with limits. The modelled mean lies inside the bootstrap interval of the measured mean in all 12 cells with loss, but the intervals are wide (a mean half-width of 19\ms), because rare timeouts dominate the mean, and the mean absolute error of the mean is 7.5\ms against 1.6\ms without loss; it grows with the loss rate (5.0, 8.4 and 9.1\ms at 0.5, 1 and 2\%). The mean number of client retransmissions agrees (0.150 measured, 0.151 modelled, over the 12 cells). Third, the tail does not: the mean absolute error of the 95th percentile is 44\ms, and the 99th percentile is within 20\% of the model in 6 of the 12 cells, with measured-to-model ratios from 0.33 to 4.65. A 99th percentile of a cell of 300 transactions rests on three of them, mostly timeouts of 200\ms to 1\,s, and we did not bootstrap it.
+
+The test covers one machine, two suites, one chain depth and independent random loss of 0 to 2\%. Bursty loss, loss on the wide area, competing traffic and queueing are not covered here; the model of the article has no queue, and we did not measure the effect of a competing flow.
+
+\FloatBarrier
+\section{Pre-registered tests and their outcomes}
+\label{app:prereg}
+This article reports four experiments whose criteria were written before the data were collected: the replication on other machines, the full handshakes at an MTU of 9\,000 bytes, the IPv4 and offload tests, and the sweep of the response size together with the test of the one-write-per-record option. In each case the criteria were written in a file of \texttt{Measurements/\allowbreak testbed/\allowbreak results} and committed before the run, and a script scored them (\texttt{analyze\_\allowbreak replication.py}, \texttt{analyze\_\allowbreak g3b.py}, \texttt{analyze\_\allowbreak ipv4\_\allowbreak offload.py}, \texttt{analyze\_\allowbreak mldsa\_\allowbreak sweep.py}, \texttt{analyze\_\allowbreak records\_\allowbreak test.py}). \Cref{tab:prereg_repl,tab:prereg_g3b,tab:prereg_ipv4,tab:prereg_sweep} list every criterion with its result. Of the 19 criteria, 9 were met, 9 were not met and 1 was met in part. The comparisons with simpler rules (\cref{M-tab:baselines}), the check of the record option on the data of the 9\,000-byte test, the ablation and the packet-loss test (\cref{app:loss}) were defined after the data were seen or without criteria, and they are not in the tables. Two more experiments were registered in the same way for other work, one with round-trip times below 1\ms and one with bursty loss; they were run, and they are not reported here. Both address regimes that this article does not claim to validate (round-trip times below the 5\ms of its grid, and bursty loss), and their criteria are in the repository (\texttt{results/h5\_\allowbreak lowrtt\_\allowbreak predictions.md} and \texttt{results/h5\_\allowbreak burstloss\_\allowbreak predictions.md}).
+
+\begin{center}\begin{minipage}{\textwidth}\footnotesize\captionsetup{justification=raggedright,singlelinecheck=off}
+\captionof{table}{Replication on other machines (criteria fixed in \texttt{results/replication\_\allowbreak predictions.md}, committed 5 November 2026, before the runs of 13 to 15 November).}\label{tab:prereg_repl}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.11\textwidth}@{}}
+\toprule
+ID & Criterion, written before the run & Result & Verdict \\
+\midrule
+R1 & Stack MAE of at most 2.0\ms on the 178 configurations at an MTU of 1\,500 bytes or less, and an idealised MAE at least twice as large, in every run & Stack 1.51, 1.15, 0.89 and 1.55\ms in four runs and 2.47 and 2.44\ms in the two later Arm runs; the idealised MAE at least 2.5 times the stack MAE in every run & Partly met (4 of 6 runs) \\
+R2 & The measured excess of the same configuration differs by at most 1\ms in at least 90\% of the configurations, with a median of at most 0.5\ms, between machines & 11 to 81\% within 1\ms and a median of 0.28 to 2.13\ms, for every pair & Not met \\
+R3 & Repeat on the first machine with Linux~7.0 against the original data: median difference of the excess at most 0.5\ms, and a stack MAE within 0.5\ms of the original & Median 0.36\ms; MAE 1.25 against 1.65\ms (0.40\ms) & Met \\
+R4 & Window after an $n$-segment flight is $\max(w_0,\min(w_0+n,2n))$ in 12 of the 13 sizes tested originally (plain TCP, Linux~7.0) & Holds at every flight size in the base, MTU~1\,280 and initial-window-20 configurations on all eight machine--kernel points & Met \\
+R5 & Stack MAE of the 48 configurations at an MTU of 9\,000 bytes within 0.5\ms of 2.17\ms in every run on Linux~7.0 & 2.01\ms (Arm), 1.63\ms (first machine), 1.07\ms (i9) & Not met (met on the Arm machine only) \\
+\bottomrule
+\end{tabularx}
+\end{minipage}\end{center}
+
+\begin{center}\begin{minipage}{\textwidth}\footnotesize\captionsetup{justification=raggedright,singlelinecheck=off}
+\captionof{table}{Full handshakes at an MTU of 9\,000 bytes (criteria fixed in \texttt{results/wp6\_\allowbreak pred\_\allowbreak mtu9000\_\allowbreak full.txt}, committed 11 November 2026, before the runs of 15 November).}\label{tab:prereg_g3b}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.11\textwidth}@{}}
+\toprule
+ID & Criterion, written before the run & Result & Verdict \\
+\midrule
+P1 & With the raised receive buffer, at least 80\% of the 24 cells within 2\ms of the model & 2 of 24 (Arm), 15 of 24 (i9) & Not met \\
+P2 & With the default buffer, at least 10\% of the cells deviate from the model by more than half a round trip, all of them upward & 3 of 24 (Arm), 4 of 24 (i9); all above the model & Met \\
+P3 & (Exploratory) The cells that deviate are those whose response exceeds the advertised window & With the default buffer all 24 cells exceed it (62\,592 and 63\,488 bytes), so the set does not discriminate (21 and 20 of its cells do not deviate); with the raised buffer the set is empty and 3 cells still deviate & Not met \\
+\bottomrule
+\end{tabularx}
+\end{minipage}\end{center}
+
+\begin{center}\begin{minipage}{\textwidth}\footnotesize\captionsetup{justification=raggedright,singlelinecheck=off}
+\captionof{table}{IPv4 and segmentation offload (criteria fixed in \texttt{results/ipv4\_\allowbreak offload\_\allowbreak predictions.md}, committed 15 November 2026 at 16:36, before the analysis of 17:03).}\label{tab:prereg_ipv4}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.11\textwidth}@{}}
+\toprule
+ID & Criterion, written before the run & Result & Verdict \\
+\midrule
+F1 & The excess latency with IPv4 minus that with IPv6 lies between $-35$ and $-22$\ms in at least 7 of the 8 flip cells & 4 of 8 on each of the three machines (the four ECDSA-P256 cells $-29.3$ to $-30.8$\ms; the four ML-DSA-65 cells did not change) & Not met \\
+F2 & In the six control cells the difference is at most 3\ms in at least 5 of 6 & 6 of 6 (Arm) & Met \\
+F3 & Stack model with a 40-byte header: MAE of at most 2\ms on the 14 cells and no cell above 0.4\,RTT & MAE 12.69\ms (Arm), 12.84\ms (first machine), 10.64\ms (i9); 5 cells above 0.4\,RTT (Arm) & Not met \\
+OFF-1 & With offload on, the median difference of 24 configurations from the standard run is at most 1\ms & 0.19\ms (Arm); 0.52\ms (first machine, control run of the same session) & Met \\
+OFF-2 & The unchanged model leaves no configuration above 0.4\,RTT & MAE 2.50\ms; no configuration (Arm) & Met \\
+\bottomrule
+\end{tabularx}
+\end{minipage}\end{center}
+
+\begin{center}\begin{minipage}{\textwidth}\footnotesize\captionsetup{justification=raggedright,singlelinecheck=off}
+\captionof{table}{Sweep of the response size (criteria in \texttt{results/mldsa\_\allowbreak d1\_\allowbreak sweep\_\allowbreak predictions.md}, committed 15 November 2026 at 17:43, before the analysis of 18:00) and test of one write per TLS record (\texttt{results/records\_\allowbreak test\_\allowbreak predictions.md}, committed at 18:16, before the analysis of 18:24). The test of the record option also had a rejection rule (withdraw the explanation if the model without records is closer in 5 or more of the 8 flip cells); it did not apply, since the model without records was closer in 4.}\label{tab:prereg_sweep}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.11\textwidth}@{}}
+\toprule
+ID & Criterion, written before the run & Result & Verdict \\
+\midrule
+S1 & Sweep of the ML-DSA-65 response size, depth~1, IPv6: a transition of $+20$ to $+35$\ms against the cell 200 bytes below exists below 22\,500 bytes & At 22\,200 bytes & Met \\
+S2 & The IPv4 transition lies 400 bytes ($\pm200$) above the IPv6 transition (header effect) & 200 bytes (22\,400 against 22\,200) & Met \\
+S3 & The IPv6 transition lies within 400 bytes of 20\,600 bytes (the model minus the 2\,400-byte shortfall of the 9\,000-byte test) & 22\,200 bytes; shortfall about 800 bytes & Not met \\
+RT1 & Test of one write per TLS record: in at least 7 of 8 flip cells the measured excess is closer to the model with records & 4 of 8 (depth~1 band 4 of 4, depth~2 band 0 of 4) & Not met \\
+RT2 & The model with records has an MAE of at most 2.5\ms over the 20 cells and no cell above 0.4\,RTT & MAE 8.68\ms; 5 cells above 0.4\,RTT & Not met \\
+RT3 & At least 11 of the 12 controls within 12\ms & 11 of 12 & Met \\
+\bottomrule
+\end{tabularx}
+\end{minipage}\end{center}
+
+
+\FloatBarrier
+\section{Stack assumptions: evidence, scope and consequence}
+\label{app:assumptions}
+The model is implementation-aware: it combines the write pattern of one TLS library with the window rule of one TCP stack. \Cref{tab:assump} states, for each component that depends on the stack, what the model assumes, what supports it, where it was tested, and what changes on a stack that behaves differently. The table adds no measurement: its numbers come from the article and from \cref{app:writes}, and only the last column, which puts them together, is new. No handshake or window behaviour was measured on another TLS library or operating system, so the last column states what the model predicts for such a stack, not what was observed on one.
+
+\begin{footnotesize}\sloppy
+\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.1}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}@{}}
+\caption{Assumptions of the model that depend on the stack, with their evidence, scope and consequence.}\label{tab:assump}\\
+\toprule
+Part & Assumption of the model & Evidence & Scope tested & Consequence if another stack differs \\
+\midrule\endfirsthead
+\toprule
+Part & Assumption of the model & Evidence & Scope tested & Consequence if another stack differs \\
+\midrule\endhead
+\bottomrule\endlastfoot
+Handshake write pattern & Handshake messages leave through a 4\,096-byte buffer, each in its own TLS record; a full buffer is one write & \texttt{strace} of OpenSSL~3.5 (ML-DSA-65, depth~1: server writes 4\,096, 4\,096 and 2\,688 bytes); kernel segment counters, 11 of 12 counts exact; MAE 1.65\ms against 3.34\ms with ideal segmentation (\cref{tab:ablation}) & OpenSSL 3.5.4 on Linux; no other library measured & A buffer of 2\,048 to 16\,384 bytes, or one write per flight, changes the prediction of 3 to 10 of the 226 configurations by more than 0.4\,RTT and the SWIFT~MX depth effect by at most 0.12\ms (\cref{app:writes}) \\
+Partial segment & With \texttt{TCP\_\allowbreak NODELAY} a partial tail segment leaves at once when the window has room & The same counters & Sockets with \texttt{TCP\_\allowbreak NODELAY}; Linux & Segments follow bytes divided by the MSS (window validation kept): MAE 3.34\ms, 12 configurations above 0.4\,RTT \\
+Window growth & Linux window validation: slow start adds a segment per acknowledgement only while the window is below twice the segments in flight; the window carries over between flights & Plain-TCP test, 12 of 13 sizes; the closed form holds at every flight size on eight machine--kernel points (Linux 6.8 to 7.0); ablation (\cref{tab:ablation}); window validation alone equals the stateless rule on the 226 configurations & Linux, kernels 6.8 to 7.0, initial windows of 10, 20 and 32 & Without window validation but with the write pattern the MAE is 3.15\ms and 15 configurations exceed 0.4\,RTT; without both, which is the idealised model, 4.70\ms and 21 \\
+Acknowl\-edgements & One acknowledgement per segment (quick acknowledgements) & Delayed acknowledgements, timestamps and both: MAE 1.26, 1.32 and 1.23\ms (72 configurations); CUBIC 1.19\ms (216 configurations); the three together 2.5\ms against 1.25\ms & Reno and CUBIC; BBR exploratory & The round-trip steps are still located, with an offset of 2.2\ms (median) that the model does not carry; BBR is under-predicted (MAE 3.51\ms, maximum 21.8\ms, 8 configurations) \\
+TLS record layer & Handshake messages in records of their own; an application message is written at once & Validated messages fit one record (302 and 222 bytes; 10.9 and 3.6\,KiB in the SWIFT-sized test); \cref{app:records} & Messages of at most 16\,384 bytes & Above that size OpenSSL writes record by record (\texttt{app\_records}, off in every result); this explains part of the 9\,000-byte miss, and the SLH-DSA entries with messages above 16\,KiB are unvalidated \\
+Segment size and headers & MSS from the MTU, a 60-byte IPv6 header (40 bytes for IPv4); no effect of segmentation offload & MTU 1\,280 and 1\,500 with IPv6; offload on changes the 24 core configurations by a median of 0.19\ms (Arm) and 0.52\ms (first machine) & IPv6, MTU of at most 1\,500 bytes & With IPv4 the predicted round trip appeared in 4 of 8 flip cells on every machine, and the model with a 40-byte header has an MAE of 10.6 to 12.8\ms on the 14 cells (\cref{app:prereg}) \\
+Receive window & Unlimited & Plain TCP at 9\,000 bytes: 7 of 20 flight sizes follow the rule with the default buffer, 16 of 20 with 1\,MiB; full handshakes at 9\,000 bytes fail their criterion (\cref{app:prereg}) & MTU of at most 1\,500 bytes & Where the advertised window (about 63\,000 bytes) is below the flight, predictions of flights above it are unvalidated \\
+Rate and initial window & 10 to 1\,000\Mbits; initial window of 10 or 32 segments & 82 core and 144 off-grid configurations; MAE 0.96 and 2.04\ms & As tested & MAE is higher at an initial window of 32 (2.35\ms against 1.32\ms) \\
+Link & Fixed round-trip time, no loss, no queue, no competing traffic & Random loss of 0 to 2\% (\cref{app:loss}): median and mean follow the model, the tail does not; no cross traffic measured & One machine, two suites, depth~3 & Queueing and competing flows add delay that the model does not have; bursty loss is not covered here \\
+Server and tickets & Server processing as the measured primitive costs; full handshakes without session tickets & Server CPU per handshake is 1.2 to 1.3 times the primitives (post-quantum, RSA) and 1.9 to 2.8 times (ECDSA); a ticket made 6 of 40 transactions half a round trip slower & OpenSSL 3.5.4 server, one event-driven configuration & Latencies may be up to half a round trip too low where servers issue tickets; the transport-bound share is that of the modelled operations \\
+Middlebox & No size-dependent delay ($\pi=0$) & One HAProxy, sub-millisecond added delay & One intermediary & Nonzero delays are an assumption of the sensitivity analysis, not a measurement \\
+\end{longtable}
+\end{footnotesize}
+
+
+\FloatBarrier
+\section{Sensitivity to the write pattern of the TLS library}
+\label{app:writes}
+The validated model writes handshake data through a 4\,096-byte buffer, as OpenSSL~3.5.4 does. A different library may buffer differently, and a reader who uses it needs to know how much of the article depends on the 4\,096 bytes. We replaced the write pattern in the simulator by others, with nothing fitted and no new measurement (\texttt{Simulation/write\_pattern\_sensitivity.py}). The patterns are buffers of 2\,048, 8\,192 and 16\,384 bytes, one write per flight (a buffer larger than any flight), and ideal segmentation, in which segments follow bytes divided by the MSS and write boundaries have no effect. All variants keep Linux window validation. \Cref{tab:writes} gives three results: the error against the 226 validation configurations, the number of those configurations whose predicted excess latency moves by more than 0.4\,RTT against the validated model, and the modelled SWIFT~MX depth effect (depth 1 to 4 at both endpoints, 100\Mbits, MTU of 1\,500 bytes).
+
+\begin{center}\begin{minipage}{\textwidth}\small\captionsetup{justification=raggedright,singlelinecheck=off}
+\captionof{table}{Effect of the write pattern. The first row is the validated model. MAE and ``Errors'' are against the 226 validation configurations (``Errors'': configurations above 0.4\,RTT); ``Changed'' is the number of those configurations whose prediction differs from the validated model by more than 0.4\,RTT. The last three columns are the increase of the SWIFT~MX transaction time (ms) when the chain depth of both endpoints goes from 1 to 4.}\label{tab:writes}
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Write pattern & \shortstack[r]{MAE\\(ms)} & \shortstack[r]{Errors\\$>0.4$ RTT} & \shortstack[r]{Changed\\$>0.4$ RTT} & \shortstack[r]{ML-DSA-65\\30\ms} & \shortstack[r]{ML-DSA-65\\100\ms} & \shortstack[r]{ECDSA-P256\\30\ms} \\
+\midrule
+buffer 4096 (validated) & 1.65 & 4 & 0 & 60.0 & 200.0 & 29.6 \\
+buffer 2048 & 2.85 & 7 & 3 & 60.1 & 200.1 & 29.6 \\
+buffer 8192 & 2.51 & 8 & 4 & 60.1 & 200.1 & 29.6 \\
+buffer 16384 & 3.34 & 12 & 10 & 60.1 & 200.1 & 29.6 \\
+one write per flight & 3.34 & 12 & 10 & 60.1 & 200.1 & 29.6 \\
+ideal segmentation & 3.34 & 12 & 10 & 60.2 & 200.2 & 29.5 \\
+\bottomrule
+\end{tabular}}
+\end{minipage}\end{center}
+
+Two things follow. First, the validated grid does depend on the write pattern: another buffer moves the prediction of 3 to 10 of the 226 configurations by more than 0.4\,RTT, and the error against the measurements rises from 1.65\ms to between 2.5 and 3.3\ms. This is the expected sign, because the measurements follow a 4\,096-byte buffer; it also means that the identification of the write pattern in \cref{M-sec:mech} matters, and that on a library with another pattern the flights that cross the window will not be the same ones. A buffer of 16\,384 bytes, one write per flight and ideal segmentation give the same error and the same changed configurations on the grid, which therefore cannot tell them apart. Second, the headline depth effect does not depend on the pattern: the 60.0\ms of ML-DSA-65 at a 30\ms RTT moves by at most 0.12\ms, the 200\ms at 100\ms by the same amount, and the ECDSA-P256 baseline of 29.6\ms by at most 0.1\ms. Locating the flight that crosses the window changes with the library; the size of the cost of a deeper chain, which is a sum over many flights, does not. These are assumption-based model outputs; no other library was measured.
+
+
+\FloatBarrier
+\section{Reproducing the numbers}
+\label{app:repro}
+The code, the raw testbed measurements, the analysis scripts and the manuscript sources are in the public repository named in the Data availability section, and the Zenodo archive holds the same files. \Cref{tab:repro} gives, for each group of headline numbers, the script that computes it and the file that holds its output. The file \texttt{manuscript/data/claim\_checks.csv} of the repository records, for each of 50 numbers of the article, its value, its source file and a note on how to read it (for example, that an error is the mean of errors over configurations and not over transactions); 1.65, 4.70, 60.0 and 75.6 are among them. The script \texttt{reproduce.sh} at the root of the archive regenerates the model outputs, the tables and the figures from the sources; the testbed analyses run on the raw files with the scripts of \cref{tab:repro}, and the measurements themselves can be repeated only on a Linux host with the testbed of \texttt{Measurements/testbed} (root privileges for the network namespaces). The experiments whose criteria were not met (\cref{app:prereg}) are kept in the repository with their analyses. The private keys of the test certificate chains are not distributed, and \texttt{certs.sh} regenerates them.
+
+\begin{footnotesize}\sloppy
+\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.1}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\caption{Where the headline numbers of the article come from. Scripts are in \texttt{Measurements/testbed} unless a directory is given; outputs are in \texttt{Measurements/testbed/results} unless a path is given.}\label{tab:repro}\\
+\toprule
+Number in the article & Value & Script & Output file \\
+\midrule\endfirsthead
+\toprule
+Number in the article & Value & Script & Output file \\
+\midrule\endhead
+\bottomrule\endlastfoot
+Stack and idealised MAE; configurations above 0.4\,RTT; simpler rules & 1.65 and 4.70\ms; 4 and 21; 3.34 and 4.55\ms & \texttt{Measurements/\allowbreak testbed/\allowbreak analyze\_\allowbreak baselines.py} & \texttt{results/\allowbreak baselines\_\allowbreak 20261115.txt} \\
+MAE of the 144 off-grid configurations; MAE by group & 2.04\ms; \cref{tab:residuals} & \texttt{residual\_\allowbreak analysis.py} & \texttt{results/\allowbreak residual\_\allowbreak groups.csv} \\
+Configurations inside the bootstrap interval of the measurement & 46 of 226 & \texttt{analyze\_\allowbreak testbed.py} (column \texttt{stack\_\allowbreak in\_\allowbreak ci}) & \texttt{paper1/\allowbreak Latex/\allowbreak data/\allowbreak testbed\_\allowbreak configurations.csv} \\
+Contribution of the stack mechanisms & \cref{tab:ablation} & \texttt{ablation\_\allowbreak stack.py} & \texttt{results/\allowbreak ablation\_\allowbreak stack.csv} \\
+Replication on other machines and kernels & \cref{M-tab:repl}; \cref{tab:prereg_repl} & \texttt{analyze\_\allowbreak replication.py} & \texttt{results/\allowbreak replication\_\allowbreak summary.csv} \\
+Full handshakes at 9\,000 bytes & 2 of 24 and 15 of 24 cells within 2\ms & \texttt{analyze\_\allowbreak g3b.py}, \texttt{analyze\_\allowbreak g3b\_\allowbreak records.py} & \texttt{results/\allowbreak g3b\_\allowbreak gx10\_\allowbreak i9\_\allowbreak analysis\_\allowbreak 20261115.txt}, \texttt{results/\allowbreak g3b\_\allowbreak app\_\allowbreak records\_\allowbreak 20261115.txt} \\
+IPv4, offload, response-size sweep, record test & \cref{tab:prereg_ipv4,tab:prereg_sweep} & \texttt{analyze\_\allowbreak ipv4\_\allowbreak offload.py}, \texttt{analyze\_\allowbreak mldsa\_\allowbreak sweep.py}, \texttt{analyze\_\allowbreak records\_\allowbreak test.py} & \texttt{results/\allowbreak *\_\allowbreak analysis\_\allowbreak 20261115.txt} \\
+Packet loss & \cref{tab:loss} & \texttt{analyze\_\allowbreak loss.py}, \texttt{loss\_\allowbreak table.py} & \texttt{results/\allowbreak wp6\_\allowbreak loss\_\allowbreak full\_\allowbreak summary.csv} \\
+SWIFT~MX depth effect (60.0\ms), slow-start share, transport-bound share (75.6\%), 175\,500 sweep rows & 60.05\ms; 56.5\ms; 75.6\% & \texttt{Simulation/\allowbreak pqc\_\allowbreak sim.py} through \texttt{run\_\allowbreak all.sh} & \texttt{Simulation/\allowbreak results/\allowbreak results.csv} \\
+Primitive costs of OpenSSL~4.1.0 (83.3\% and 59.7\ms) & 83.3\%; 59.7\ms & \texttt{Simulation/\allowbreak ossl41\_\allowbreak shares.py} & \texttt{results/\allowbreak ossl41\_\allowbreak shares\_\allowbreak 20261115.txt} \\
+Effect of the write pattern & \cref{tab:writes} & \texttt{Simulation/\allowbreak write\_\allowbreak pattern\_\allowbreak sensitivity.py} & \texttt{Simulation/\allowbreak results/\allowbreak write\_\allowbreak pattern\_\allowbreak sensitivity.csv} \\
+\end{longtable}
+\end{footnotesize}
 
 \begin{thebibliography}{1}
 \bibitem{tlsmlkem}

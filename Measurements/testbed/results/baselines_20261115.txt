@@ -1,0 +1,20 @@
+original validation: 226 configurations
+  stack      MAE  1.65 ms   off by more than 0.4 RTT:   4   max |error|    5.4 ms
+  idealized  MAE  4.70 ms   off by more than 0.4 RTT:  21   max |error|   97.1 ms
+  stateless  MAE  3.34 ms   off by more than 0.4 RTT:  12   max |error|   95.4 ms
+  threshold  MAE  4.55 ms   off by more than 0.4 RTT:  26   max |error|   94.3 ms
+gx10_7.0.0-1019-nvidia_ossl3.5.4: 226 configurations
+  stack      MAE  2.35 ms   off by more than 0.4 RTT:   0   max |error|    5.7 ms
+  idealized  MAE  5.90 ms   off by more than 0.4 RTT:  21   max |error|  102.2 ms
+  stateless  MAE  4.37 ms   off by more than 0.4 RTT:  11   max |error|  101.0 ms
+  threshold  MAE  4.81 ms   off by more than 0.4 RTT:  22   max |error|   99.9 ms
+i9-10900_7.0.0-42-generic_ossl3.5.4: 226 configurations
+  stack      MAE  0.93 ms   off by more than 0.4 RTT:   0   max |error|    4.2 ms
+  idealized  MAE  4.35 ms   off by more than 0.4 RTT:  21   max |error|   98.6 ms
+  stateless  MAE  2.85 ms   off by more than 0.4 RTT:  11   max |error|   98.0 ms
+  threshold  MAE  3.79 ms   off by more than 0.4 RTT:  24   max |error|   96.9 ms
+x250_7.0.0-42-generic_ossl3.5.4: 226 configurations
+  stack      MAE  1.25 ms   off by more than 0.4 RTT:   2   max |error|    4.8 ms
+  idealized  MAE  4.36 ms   off by more than 0.4 RTT:  20   max |error|   97.3 ms
+  stateless  MAE  2.98 ms   off by more than 0.4 RTT:  10   max |error|   95.9 ms
+  threshold  MAE  4.13 ms   off by more than 0.4 RTT:  24   max |error|   94.9 ms

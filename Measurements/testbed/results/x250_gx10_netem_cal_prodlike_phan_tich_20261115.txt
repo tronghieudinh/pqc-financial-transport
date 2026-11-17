@@ -1,0 +1,15 @@
+Phân tích 15/11/2026 (chiều): đo RTT thật của testbed (netem_calibrate.py, ICMP) trên X250 và GX10, và cấu hình giống sản xuất trên X250. Dữ liệu thô: ~/incoming_x250/ (prodlike_x250_20261115.csv, 7 tệp netem_cal_x250_*.json); netem_cal_*.json nhỏ nằm trong results/. Chưa đẩy prodlike lên PQC-data-repo.
+
+1. Độ vượt RTT của netem (median - ping không định hình - RTT danh định, ms)
+   X250 (7.0.0-42, 7 lần, từ 09:35 đến 16:10): 5 ms: 0,25-0,32; 30 ms: 0,323-0,326. RẤT ỔN ĐỊNH (dao động 0,003 ms ở 30 ms).
+   GX10 (7.0.0-1019, 3 lần cách nhau vài giây, 16:19-16:20): 5 ms: 0,39-0,43; 30 ms: 0,85, 1,08, 1,31. KHÔNG ỔN ĐỊNH (dao động 0,46 ms).
+   Áp vào mô hình stack của G1 (226 cấu hình, analyze_rtt_calibration.py): X250 lặp 1,25 -> 1,48 ms (xấu đi, chệch +0,31 -> +1,44); GX10 7.0 (MAE gốc 2,35, chệch -2,08): với giá trị lần 2 -> 1,05 ms; lần 3 -> 1,58; lần 1 -> 2,29 (chệch +2,26). Kết luận: độ vượt RTT tồn tại, đo được và ổn định ở X250 nhưng không giải thích phần dư x86; ở Arm nó dao động đến mức hiệu chỉnh bằng một con số đo ở thời điểm khác không đáng tin. Không đưa "hiệu chỉnh RTT" vào P1 như một kết quả.
+
+2. Cấu hình giống sản xuất trên X250 (CUBIC + ACK trễ + timestamp cùng lúc; 24 cấu hình của lưới lõi: 6 suite x độ sâu 1-4, RTT 30 ms, 100 Mbit/s, MTU 1500, icw 10, mTLS; n = 30; chưa gồm IPv4 và offload)
+   Sai số excess của mô hình (header 72 byte vì có timestamp; header 60 cho kết quả gần như nhau):
+     stack      MAE 2,48 ms, chệch -2,15 ms, 0/24 cấu hình lệch hơn 0,4 RTT, lớn nhất 4,0 ms
+     lý tưởng   MAE 5,88 ms, 3/24, lớn nhất 30,4 ms
+     stateless  MAE 3,50 ms, 1/24, lớn nhất 26,7 ms
+     kích thước so với cửa sổ MAE 3,33 ms, 1/24, lớn nhất 25,6 ms
+   Excess đo được cao hơn lần chạy X250 chuẩn (quickack, Reno, không timestamp) cùng cấu hình: trung vị +2,15 ms (+0,5 đến +3,5 ms; chỉ 2/24 trong 1 ms): ACK trễ và timestamp thêm khoảng 2 ms mà mô hình không có.
+   Kết luận: các bước RTT nguyên vẫn được định vị đúng (0/24 lệch hơn 0,4 RTT) khi bật CUBIC, ACK trễ và timestamp cùng lúc; độ chính xác tuyệt đối giảm (MAE 1,25 -> 2,48 ms) do độ lệch +2 ms. Mẫu nhỏ (24 cấu hình, một RTT, một tốc độ): các đường cơ sở đơn giản ít lệch RTT hơn so với trên 226 cấu hình vì lưới này ít cấu hình sát ranh giới cửa sổ; kết quả không so sánh được trực tiếp với Bảng đường cơ sở của P1.

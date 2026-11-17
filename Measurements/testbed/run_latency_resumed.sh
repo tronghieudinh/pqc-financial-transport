@@ -34,6 +34,6 @@ as_user bash -c "$PY capacity_latency.py --out $OUT --resume 1 ${SERVER_CPUS:+--
 errs=$(awk -F, 'NR>1{e+=$11} END{print e+0}' "$OUT" 2>/dev/null); log "errors in $OUT (sum of the err column): $errs"
 chown -R "$U" results
 as_user git -C "$ROOT" add -A -- "$HERE/results" "$HERE/run_latency_resumed.sh" "$HERE/tls_load_open.c" "$HERE/capacity_latency.py" 2>>"$LOG"
-as_user git -C "$ROOT" commit -q -m "Resumed latency under load with one ticket per connection: results (automatic)" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" >>"$LOG" 2>&1 && log committed || log "nothing to commit"
+as_user git -C "$ROOT" commit -q -m "Resumed latency under load with one ticket per connection: results (automatic)" >>"$LOG" 2>&1 && log committed || log "nothing to commit"
 for i in 1 2 3; do as_user git -C "$ROOT" pull --rebase --autostash -q >>"$LOG" 2>&1; as_user git -C "$ROOT" push -q >>"$LOG" 2>&1 && { log pushed; break; } || sleep 20; done
 log "DONE"

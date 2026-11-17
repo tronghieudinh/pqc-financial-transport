@@ -1,0 +1,28 @@
+Server payload segments per connection (published) against the model: 4096-byte writes, MSS = MTU - 52 (IPv4 + timestamps), tickets 1 + 1 and alert 1 segment
+  X25519 + RSA             flight   1305 B  published (4, 4, 5)  write pattern (4, 4, 5) match  ceil(bytes/MSS) (4, 4, 5) match
+  X25519MLKEM768 + RSA     flight   2393 B  published (5, 5, 5)  write pattern (5, 5, 5) match  ceil(bytes/MSS) (5, 5, 5) match
+  ML-KEM-768 + RSA         flight   2361 B  published (5, 5, 5)  write pattern (5, 5, 5) match  ceil(bytes/MSS) (5, 5, 5) match
+  X25519 + ML-DSA-65       flight   9087 B  published (10, 12, 12)  write pattern (10, 12, 12) match  ceil(bytes/MSS) (10, 10, 11) DIFFERS
+  ML-KEM-768 + ML-DSA-65   flight  10143 B  published (11, 13, 13)  write pattern (11, 13, 13) match  ceil(bytes/MSS) (11, 11, 12) DIFFERS
+cells matched: write pattern 15 of 15; ceil(bytes/MSS) 11 of 15
+
+Sensitivity: scenarios (of 5) that match at all three MTUs
+  header bytes           4096-byte writes   one write per flight
+  IPv4                          5 of 5             3 of 5
+  IPv4 + timestamps             5 of 5             3 of 5
+  IPv6                          5 of 5             3 of 5
+  IPv6 + timestamps             5 of 5             3 of 5
+
+  segments taken by the two tickets and the alert (MSS = MTU - 52, 4096-byte writes): scenarios matching at all three MTUs
+  0 none (merged into the flight)                    0 of 5
+  1 one segment                                      0 of 5
+  2 two segments                                     0 of 5
+  3 three segments (each message leaves on its own)  5 of 5
+  4 four segments                                    0 of 5
+
+First server flight alone (no tickets, no alert), segments against the initial window of 10: model at MTU 1500 / 1400 / 1280
+  X25519 + RSA             (1, 1, 2)
+  X25519MLKEM768 + RSA     (2, 2, 2)
+  ML-KEM-768 + RSA         (2, 2, 2)
+  X25519 + ML-DSA-65       (7, 9, 9)
+  ML-KEM-768 + ML-DSA-65   (8, 10, 10)

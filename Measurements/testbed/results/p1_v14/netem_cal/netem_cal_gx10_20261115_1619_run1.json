@@ -1,0 +1,26 @@
+{
+ "host": "gx10",
+ "kernel": "7.0.0-1019-nvidia",
+ "machine": "aarch64",
+ "time": "2026-11-15T16:19:21+07:00",
+ "count": 30,
+ "cells": {
+  "5": {
+   "n": 30,
+   "median_ms": 5.48,
+   "p10_ms": 5.18,
+   "p90_ms": 5.59,
+   "nominal_ms": 5.0,
+   "over_ms": 0.392
+  },
+  "30": {
+   "n": 30,
+   "median_ms": 31.4,
+   "p10_ms": 30.9,
+   "p90_ms": 31.4,
+   "nominal_ms": 30.0,
+   "over_ms": 1.312
+  }
+ },
+ "base_rtt0_ms": 0.088
+}

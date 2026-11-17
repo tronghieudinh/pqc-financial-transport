@@ -1,0 +1,38 @@
+configurations compared: 226 (direct, loss 0: 226)
+[v4 rule: cwnd += every flight] bias -5.68 ms, MAE 5.90 ms, max |error| 102.2 ms, configurations off by more than 0.4 RTT: 21
+[Linux cwnd rule (grow only if the flight used > half of it)] bias -4.16 ms, MAE 4.37 ms, max |error| 101.0 ms, configurations off by more than 0.4 RTT: 11
+[Linux cwnd rule + OpenSSL write pattern (stack model)] bias -2.08 ms, MAE 2.35 ms, max |error| 5.7 ms, configurations off by more than 0.4 RTT: 0
+[all] bias (model - measured) -5.68 ms, MAE 5.90 ms, median |rel. error| 2.7 %, Spearman 0.949, mean size ratio 1.013
+[direct, loss 0] bias (model - measured) -5.68 ms, MAE 5.90 ms, median |rel. error| 2.7 %, Spearman 0.949, mean size ratio 1.013
+
+per suite (direct, loss 0): n, bias ms, MAE ms, median |rel err| %
+  ECDSA-P256|X25519                  63    -3.24    3.24     3.0
+  ECDSA-P256|X25519MLKEM768          15    -4.26    4.26     2.8
+  ML-DSA-44|ML-KEM-768               12    -2.02    2.02     1.7
+  ML-DSA-65|ML-KEM-768               62    -7.46    7.88     2.2
+  ML-DSA-87|ML-KEM-1024              62    -8.18    8.54     2.6
+  RSA-2048|ECDHE-P256                12    -1.85    1.85     1.9
+
+largest deviations (direct, loss 0):
+  ML-DSA-65|ML-KEM-768         d2 rtt=100 rate=100 mtu=1500 icw=10: measured 504.0, model 401.8 ms, max flight 12 segments
+  ML-DSA-87|ML-KEM-1024        d1 rtt=100 rate=100 mtu=1500 icw=10: measured 502.5, model 401.4 ms, max flight 11 segments
+  ML-DSA-65|ML-KEM-768         d1 rtt=30 rate=1000 mtu=1280 icw=10: measured 152.7, model 90.2 ms, max flight 9 segments
+  ML-DSA-65|ML-KEM-768         d1 rtt=30 rate=100 mtu=1280 icw=10: measured 152.5, model 91.9 ms, max flight 9 segments
+  ML-DSA-87|ML-KEM-1024        d4 rtt=30 rate=1000 mtu=1280 icw=32: measured 151.2, model 90.6 ms, max flight 32 segments
+  ML-DSA-65|ML-KEM-768         d1 rtt=30 rate=10 mtu=1280 icw=10: measured 158.3, model 109.1 ms, max flight 9 segments
+  ML-DSA-65|ML-KEM-768         d2 rtt=30 rate=1000 mtu=1500 icw=10: measured 153.1, model 120.2 ms, max flight 12 segments
+  ML-DSA-87|ML-KEM-1024        d4 rtt=30 rate=1000 mtu=1280 icw=10: measured 213.2, model 180.2 ms, max flight 32 segments
+
+data segments (kernel counters) vs model: 222 of 226 configurations use more segments than the model; mean difference client +1.20, server +1.51 segments
+  ML-DSA-87|ML-KEM-1024        d3 client 30 vs model 26, server 30 vs model 26; error -2.7 ms
+  ML-DSA-87|ML-KEM-1024        d3 client 30 vs model 26, server 29 vs model 26; error +0.8 ms
+  ML-DSA-87|ML-KEM-1024        d2 client 20 vs model 17, server 20 vs model 17; error -2.1 ms
+  ML-DSA-87|ML-KEM-1024        d2 client 7 vs model 4, server 7 vs model 4; error -2.6 ms
+  ML-DSA-65|ML-KEM-768         d3 client 7 vs model 4, server 7 vs model 4; error -1.2 ms
+  ML-DSA-87|ML-KEM-1024        d1 client 6 vs model 3, server 6 vs model 3; error -2.1 ms
+
+stack model inside the 95 % bootstrap CI of the measured excess: 15 of 226 configurations; within 1 ms: 30; within 0.1 RTT: 161
+
+configurations whose TCP MSS / initial cwnd differ from the request: 0
+
+middlebox penalty fit (stack model) on the direct path (no middlebox present): RMSE with pi=0 is 2.60 ms; best theta=1 gives pi=0.851 ms, RMSE 1.647 ms. A fitted pi near 0 means the lower bound pi=0 is supported by the kernel path.

@@ -71,7 +71,7 @@ git_commit_push() {   # message, paths...
   for p in "$@"; do [ -e "$p" ] && paths+=("$p"); done
   [ ${#paths[@]} -gt 0 ] && as_user git -C "$ROOT" add -A -- "${paths[@]}" 2>>"$LOG"
   if as_user git -C "$ROOT" diff --cached --quiet; then log "nothing new to commit"; else
-    as_user git -C "$ROOT" commit -q -m "$msg" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" >>"$LOG" 2>&1 && log "committed: $msg" || log "commit FAILED"
+    as_user git -C "$ROOT" commit -q -m "$msg" >>"$LOG" 2>&1 && log "committed: $msg" || log "commit FAILED"
   fi
   [ $PUSH = 1 ] || return 0
   for i in 1 2 3; do

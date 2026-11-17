@@ -41,7 +41,7 @@ git_commit_push() {
   local paths=() p; for p in "$@"; do [ -e "$p" ] && paths+=("$p"); done
   [ ${#paths[@]} -gt 0 ] && as_user git -C "$ROOT" add -A -- "${paths[@]}" 2>>"$LOG"
   if as_user git -C "$ROOT" diff --cached --quiet; then log "nothing new to commit"; else
-    as_user git -C "$ROOT" commit -q -m "$msg" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" >>"$LOG" 2>&1 && log "committed: $msg" || log "commit FAILED"; fi
+    as_user git -C "$ROOT" commit -q -m "$msg" >>"$LOG" 2>&1 && log "committed: $msg" || log "commit FAILED"; fi
   [ $PUSH = 1 ] || return 0
   for i in 1 2 3; do as_user git -C "$ROOT" pull --rebase --autostash -q >>"$LOG" 2>&1; as_user git -C "$ROOT" push -q >>"$LOG" 2>&1 && { log pushed; return 0; }; log "push failed ($i), retry in 20 s"; sleep 20; done; return 1
 }

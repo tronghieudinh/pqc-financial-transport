@@ -19,6 +19,7 @@ The run is resumable: finished configurations (>= n rows) are skipped when the o
 from __future__ import annotations
 
 import argparse
+import csvhdr  # noqa: F401  (skips the "#" header lines of pqcm data files)
 import csv
 import itertools
 import json
@@ -58,7 +59,7 @@ PROFILES = {
 
 COLS = ["cfg_id", "topology", "suite", "cert_alg", "group", "depth", "mtls", "req", "resp", "rtt_ms", "rate_mbps",
         "loss_pct", "mtu", "icw", "cc", "tcp_ts", "quickack", "resume", "net_id", "iter", "t_tcp_ms", "t_hs_ms", "t_total_ms", "bytes_w", "bytes_r",
-        "snd_mss", "snd_cwnd0", "retrans", "rtt_us", "data_segs_out", "data_segs_in", "err", "reused", "prime_ms", "ts_utc"]
+        "snd_mss", "snd_cwnd0", "retrans", "rtt_us", "data_segs_out", "data_segs_in", "err", "reused", "prime_ms", "ts_utc", "ip_ver", "offload"]
 
 
 def cfg_id(c):
@@ -68,6 +69,17 @@ def cfg_id(c):
 
 
 def detect_cpus():
+    """CPUs for client, server, proxy. Default: auto (_detect_cpus_auto). Override with PQC_CLIENT_CPU / PQC_SERVER_CPU / PQC_PROXY_CPU
+    (one logical CPU each; set by pqcm.sh --cpus). Without these variables the behavior is unchanged (all earlier data)."""
+    c, s, p = _detect_cpus_auto()
+    ec, es, ep = (os.environ.get(k, "") for k in ("PQC_CLIENT_CPU", "PQC_SERVER_CPU", "PQC_PROXY_CPU"))
+    for name, v in (("PQC_CLIENT_CPU", ec), ("PQC_SERVER_CPU", es), ("PQC_PROXY_CPU", ep)):
+        if v and not v.isdigit():
+            sys.exit(f"{name}={v!r}: expected one logical CPU number")
+    return (int(ec) if ec else c), (int(es) if es else s), (int(ep) if ep else p)
+
+
+def _detect_cpus_auto():
     """Logical CPUs on distinct physical cores for client, server, proxy (e.g. i7-5600U: 2 cores, 4 threads)."""
     try:
         out = subprocess.run(["lscpu", "-p=CPU,CORE"], capture_output=True, text=True, check=True).stdout
@@ -114,7 +126,7 @@ def write_env(path, args, cpus, openssl):
 
 def ensure_chain(alg, depth, work):
     """Concatenate leaf + intermediates (what a server sends) for server and client."""
-    d = os.path.join(MEAS, "certs", alg, f"d{depth}")
+    d = os.path.join(os.environ.get("PQC_CERTS", os.path.join(MEAS, "certs")), alg, f"d{depth}")   # PQC_CERTS: certificates + keys generated elsewhere (certs.sh in another directory)
     for need_f in ("server.pem", "server.key", "client.key", "root.pem"):
         if not os.path.exists(os.path.join(d, need_f)):
             sys.exit(f"missing {need_f} in {d}: private keys are not in the repository, run ../certs.sh "
@@ -192,7 +204,13 @@ def run_config(c, tb, probe, cpus, work, loopback):
         print("  server:", " ".join(srv_cmd))
         print("  client:", " ".join(cli_cmd))
         return [], "", {}
-    srv = subprocess.Popen(srv_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    senv = None
+    if os.environ.get("PQC_SRV_HSM_US"):        # HSM emulation (hsm_shim.so): only the server process signs with a service time of PQC_SRV_HSM_US microseconds
+        senv = dict(os.environ, LD_PRELOAD=os.path.join(HERE, "hsm_shim.so"), PQC_HSM_US=os.environ["PQC_SRV_HSM_US"], PQC_HSM_SLOTS="64", PQC_HSM_NAME="lat")
+        for f in ("/dev/shm/sem.pqc_hsm_lat", "/dev/shm/pqc_hsm_stats_lat"):
+            if os.path.exists(f):
+                os.unlink(f)
+    srv = subprocess.Popen(srv_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=senv)
     rows, cerr, out_s, serr = [], "", "", ""
     try:
         if srv.stdout.readline().strip() != "READY":
@@ -214,7 +232,27 @@ def run_config(c, tb, probe, cpus, work, loopback):
     return rows, srvinfo, dict(client_stderr=cerr, server_stderr=(serr or "").strip())
 
 
+def configs_from_csv(a, path):
+    """The configurations of a table (one row per shaped configuration, e.g. paper1/Latex/data/testbed_configurations.csv): the same suite, depth,
+    mutual-TLS mode, request and response sizes, RTT, rate, MTU, loss and initial window; one unshaped base run for every group of suite, depth, mode and sizes."""
+    base, shaped, seen = [], [], set()
+    n = a.n or 30
+    for r in csv.DictReader(open(path)):
+        common = dict(topology=a.topology, suite=r["suite"], depth=int(r["depth"]), mtls=int(r["mtls"]), req=int(r["req"]), resp=int(r["resp"]), cc=r.get("cc") or a.cc, n=n,
+                      tcp_ts=int(a.timestamps), quickack=int(not a.delack), resume=int(a.resume), warmup=a.warmup,
+                      ip_ver=4 if tbnet.IPV4 else 6, offload=int(tbnet.OFFLOAD))
+        key = tuple(common[k] for k in ("suite", "depth", "mtls", "req", "resp"))
+        if key not in seen:
+            seen.add(key)
+            base.append(dict(common, rtt_ms=0, rate_mbps=0, loss_pct=0, mtu=1500, icw=10, net_id="base"))
+        shaped.append(dict(common, rtt_ms=float(r["rtt_ms"]), rate_mbps=float(r["rate_mbps"]), loss_pct=float(r.get("loss_pct") or 0), mtu=int(r["mtu"]), icw=int(r["icw"]), net_id="shaped"))
+    random.Random(a.seed).shuffle(shaped)
+    return base + shaped
+
+
 def build_configs(a, p):
+    if a.configs_from:
+        return configs_from_csv(a, a.configs_from)
     suites = a.suites.split(",") if a.suites else p["suites"]
     ints = lambda s, d: [int(x) for x in s.split(",")] if s else d
     flts = lambda s, d: [float(x) for x in s.split(",")] if s else d
@@ -227,7 +265,7 @@ def build_configs(a, p):
     for su, d, m in itertools.product(suites, depths, mtls):
         common = dict(topology=a.topology, suite=su, depth=d, mtls=m, req=a.req, resp=a.resp, cc=a.cc, n=n,
                       tcp_ts=int(a.timestamps), quickack=int(not a.delack), resume=int(a.resume),
-                      warmup=a.warmup)
+                      warmup=a.warmup, ip_ver=4 if tbnet.IPV4 else 6, offload=int(tbnet.OFFLOAD))
         if a.client_alg:
             common["client_alg"] = a.client_alg
         base.append(dict(common, rtt_ms=0, rate_mbps=0, loss_pct=0, mtu=1500, icw=10, net_id="base"))
@@ -255,6 +293,7 @@ def main():
     ap.add_argument("--delack", action="store_true", help="no quickack on the routes: Linux delayed acknowledgements (default: quickack)")
     ap.add_argument("--timestamps", action="store_true", help="TCP timestamps on (12 option bytes, MSS = MTU - 72); default off")
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--configs-from", default="", help="run exactly the configurations of this CSV (columns suite, depth, mtls, req, resp, rtt_ms, rate_mbps, mtu, icw, loss_pct, cc), e.g. ../../paper1/Latex/data/testbed_configurations.csv (replication runs)")
     ap.add_argument("--client-alg", default="", help="certificate algorithm of the CLIENT (e.g. ECDSA-P256) when it differs from the server's; adds a client_alg column")
     for k in ("suites", "depths", "mtls", "rtts", "rates", "mtus", "losses", "icws"):
         ap.add_argument(f"--{k}", default="", help="comma list overriding the profile")
@@ -370,7 +409,7 @@ def main():
                 continue
             fails = 0
             mss, cw0 = int(ok[0]["snd_mss"]), int(ok[0]["snd_cwnd0"])
-            want_mss = c["mtu"] - 60 - (12 if c["tcp_ts"] else 0)
+            want_mss = c["mtu"] - (40 if tbnet.IPV4 else 60) - (12 if c["tcp_ts"] else 0)
             if not loopback and (mss != want_mss or cw0 != c["icw"]) and c["net_id"] == "shaped":
                 print(f"   WARNING: client mss={mss} (want {want_mss}), cwnd0={cw0} (want {c['icw']})", flush=True)
             ts = datetime.now(timezone.utc).isoformat(timespec="seconds")

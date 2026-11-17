@@ -1,0 +1,35 @@
+== /home/dinhtronghieu/PQC-data-repo/gx10/scenarios/G3b/20261114-145109-gx10-b66c
+  request   302 B, raised rmem : 24 cells; within 2 ms 2 (8 %); MAE 15.14 ms; >0.5 RTT: 3 (12 %), all above the model: True
+      cells >50 ms off: response sizes ['88700']; the other 21: offset (median error) +3.44 ms, within 2 ms raw 2, after removing the offset 19
+  request   302 B, default rmem: 24 cells; within 2 ms 2 (8 %); MAE 14.74 ms; >0.5 RTT: 3 (12 %), all above the model: True
+      cells >50 ms off: response sizes ['88700']; the other 21: offset (median error) +2.82 ms, within 2 ms raw 2, after removing the offset 20
+  request 19460 B, raised rmem : 24 cells; within 2 ms 3 (12 %); MAE 14.53 ms; >0.5 RTT: 3 (12 %), all above the model: True
+      cells >50 ms off: response sizes ['88700']; the other 21: offset (median error) +2.80 ms, within 2 ms raw 3, after removing the offset 21
+  request 19460 B, default rmem: 24 cells; within 2 ms 3 (12 %); MAE 14.53 ms; >0.5 RTT: 3 (12 %), all above the model: True
+      cells >50 ms off: response sizes ['88700']; the other 21: offset (median error) +2.78 ms, within 2 ms raw 3, after removing the offset 19
+  P3 default request 302: advertised window 62592 B; cells with response above it 24 of 24; deviating cells 3; deviating cells inside the predicted set 3; predicted but not deviating 21
+      88700 B ECDSA-P256|X25519: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-44|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-65|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+  P3 large   request 302: advertised window 518528 B; cells with response above it 0 of 24; deviating cells 3; deviating cells inside the predicted set 0; predicted but not deviating 0
+      88700 B ECDSA-P256|X25519: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-44|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-65|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+== /home/dinhtronghieu/PQC-data-repo/i9-10900/scenarios/G3b/20261113-164054-icnlab-Pro-E500-G6-WS720T
+  request   302 B, raised rmem : 24 cells; within 2 ms 15 (62 %); MAE 13.28 ms; >0.5 RTT: 3 (12 %), all above the model: True
+      cells >50 ms off: response sizes ['88700']; the other 21: offset (median error) +1.35 ms, within 2 ms raw 15, after removing the offset 21
+  request   302 B, default rmem: 24 cells; within 2 ms 14 (58 %); MAE 17.42 ms; >0.5 RTT: 4 (17 %), all above the model: True
+      cells >50 ms off: response sizes ['79760', '88700']; the other 20: offset (median error) +1.44 ms, within 2 ms raw 14, after removing the offset 19
+  request 19460 B, raised rmem : 24 cells; within 2 ms 21 (88 %); MAE 12.78 ms; >0.5 RTT: 3 (12 %), all above the model: True
+      cells >50 ms off: response sizes ['88700']; the other 21: offset (median error) +1.06 ms, within 2 ms raw 21, after removing the offset 20
+  request 19460 B, default rmem: 24 cells; within 2 ms 14 (58 %); MAE 16.90 ms; >0.5 RTT: 4 (17 %), all above the model: True
+      cells >50 ms off: response sizes ['79760', '88700']; the other 20: offset (median error) +0.89 ms, within 2 ms raw 14, after removing the offset 19
+  P3 default request 302: advertised window 63488 B; cells with response above it 24 of 24; deviating cells 4; deviating cells inside the predicted set 4; predicted but not deviating 20
+      79760 B ECDSA-P256|X25519: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ECDSA-P256|X25519: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-44|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-65|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+  P3 large   request 302: advertised window 518528 B; cells with response above it 0 of 24; deviating cells 3; deviating cells inside the predicted set 0; predicted but not deviating 0
+      88700 B ECDSA-P256|X25519: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-44|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)
+      88700 B ML-DSA-65|ML-KEM-768: 20/20 repetitions more than 50 ms above the model (total latency, so the base is a few ms)

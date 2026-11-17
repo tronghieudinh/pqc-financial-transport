@@ -1,0 +1,26 @@
+{
+ "host": "X250",
+ "kernel": "7.0.0-42-generic",
+ "machine": "x86_64",
+ "time": "2026-11-15T13:23:08+07:00",
+ "count": 30,
+ "cells": {
+  "5": {
+   "n": 30,
+   "median_ms": 5.39,
+   "p10_ms": 5.25,
+   "p90_ms": 5.4,
+   "nominal_ms": 5.0,
+   "over_ms": 0.316
+  },
+  "30": {
+   "n": 30,
+   "median_ms": 30.4,
+   "p10_ms": 30.3,
+   "p90_ms": 30.4,
+   "nominal_ms": 30.0,
+   "over_ms": 0.326
+  }
+ },
+ "base_rtt0_ms": 0.074
+}

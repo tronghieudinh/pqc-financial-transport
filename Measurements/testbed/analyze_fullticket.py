@@ -11,6 +11,7 @@ ticket of the size used for resumed flows: joined with the first response (nst_e
 client's Finished arrives (nst_early on). Nothing is fitted. A mode that explains the effect would predict +0.5 RTT in the six
 slow configurations; the script reports what each mode predicts.
 """
+import csvhdr  # noqa: F401  (skips the "#" header lines of pqcm data files)
 import argparse, csv, dataclasses, os, statistics as st, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "..", "..", "Simulation"))

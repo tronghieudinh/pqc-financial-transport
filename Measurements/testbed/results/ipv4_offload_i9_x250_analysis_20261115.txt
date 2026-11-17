@@ -1,0 +1,54 @@
+# IPv4 flip (14 cells) on i9 and X250 and offload on X250; analyze_ipv4_offload.py; data: incoming_i9/, incoming_x250/ (15/11/2026)
+
+=========== i9
+== Experiment A (IPv4 against IPv6), 14 cells: 8 flip, 6 controls
+  F1 flip cells with IPv4 - IPv6 in [-35, -22] ms: 4 of 8 (need >= 7 of 8) -> NOT MET
+  F2 controls with |IPv4 - IPv6| <= 3 ms: 6 of 6 (need >= 5 of 6) -> MET
+  F3 stack model, IPv4, header 40: MAE 10.64 ms, bias -10.64, cells above 0.4 RTT 5 -> NOT MET
+  F3 stack model, IPv6, header 60: MAE 2.67 ms, bias -2.67, cells above 0.4 RTT 1 (reference)
+  per cell (req resp suite depth | model v6 v4 | measured v6 v4 | measured diff | predicted diff):
+   ECDSA- d2   302 14000 |    91.6    91.6 |    92.3    92.4 |    +0.1 |   -0.0
+   ECDSA- d2   302 14400 |   120.5    91.6 |   122.0    92.4 |   -29.6 |  -28.9
+   ECDSA- d2   302 14500 |   120.5    91.6 |   122.0    92.3 |   -29.8 |  -28.9
+   ECDSA- d2   302 15000 |   120.6   120.6 |   122.1   122.0 |    -0.1 |   -0.0
+   ECDSA- d2 11000   222 |    91.3    91.3 |    91.4    91.5 |    +0.1 |   -0.0
+   ECDSA- d2 11500   222 |   120.4    91.3 |   121.3    91.4 |   -29.9 |  -29.0
+   ECDSA- d2 11600   222 |   120.4    91.4 |   121.3    91.5 |   -29.8 |  -29.0
+   ECDSA- d2 12000   222 |   120.4   120.4 |   121.2   121.3 |    +0.0 |   -0.0
+   ML-DSA d1   302 22500 |    93.8    93.7 |   122.3   122.5 |    +0.2 |   -0.1
+   ML-DSA d1   302 23000 |   122.0    93.7 |   122.1   122.2 |    +0.1 |  -28.3
+   ML-DSA d1   302 23100 |   122.0    93.7 |   122.2   122.5 |    +0.2 |  -28.3
+   ML-DSA d1   302 23200 |   122.0    93.8 |   122.1   122.8 |    +0.6 |  -28.3
+   ML-DSA d1   302 23300 |   122.0    93.8 |   122.5   122.5 |    -0.0 |  -28.3
+   ML-DSA d1   302 24000 |   122.1   122.0 |   122.1   122.2 |    +0.1 |   -0.1
+
+=========== x250
+== Experiment A (IPv4 against IPv6), 14 cells: 8 flip, 6 controls
+  F1 flip cells with IPv4 - IPv6 in [-35, -22] ms: 4 of 8 (need >= 7 of 8) -> NOT MET
+  F2 controls with |IPv4 - IPv6| <= 3 ms: 6 of 6 (need >= 5 of 6) -> MET
+  F3 stack model, IPv4, header 40: MAE 12.84 ms, bias -12.84, cells above 0.4 RTT 5 -> NOT MET
+  F3 stack model, IPv6, header 60: MAE 4.80 ms, bias -4.80, cells above 0.4 RTT 1 (reference)
+  per cell (req resp suite depth | model v6 v4 | measured v6 v4 | measured diff | predicted diff):
+   ECDSA- d2   302 14000 |    91.6    91.6 |    94.6    95.1 |    +0.5 |   -0.0
+   ECDSA- d2   302 14400 |   120.5    91.6 |   124.6    94.7 |   -29.9 |  -28.9
+   ECDSA- d2   302 14500 |   120.5    91.6 |   124.9    95.2 |   -29.7 |  -28.9
+   ECDSA- d2   302 15000 |   120.6   120.6 |   123.9   123.7 |    -0.2 |   -0.0
+   ECDSA- d2 11000   222 |    91.3    91.3 |    94.3    94.1 |    -0.2 |   -0.0
+   ECDSA- d2 11500   222 |   120.4    91.3 |   123.3    94.0 |   -29.3 |  -29.0
+   ECDSA- d2 11600   222 |   120.4    91.4 |   123.2    93.4 |   -29.8 |  -29.0
+   ECDSA- d2 12000   222 |   120.4   120.4 |   123.4   123.2 |    -0.2 |   -0.0
+   ML-DSA d1   302 22500 |    93.8    93.7 |   124.0   124.4 |    +0.4 |   -0.1
+   ML-DSA d1   302 23000 |   122.0    93.7 |   124.5   124.7 |    +0.2 |  -28.3
+   ML-DSA d1   302 23100 |   122.0    93.7 |   123.4   124.8 |    +1.4 |  -28.3
+   ML-DSA d1   302 23200 |   122.0    93.8 |   124.2   124.3 |    +0.1 |  -28.3
+   ML-DSA d1   302 23300 |   122.0    93.8 |   124.1   124.3 |    +0.3 |  -28.3
+   ML-DSA d1   302 24000 |   122.1   122.0 |   124.1   124.2 |    +0.0 |   -0.1
+== Experiment B (offload on, IPv6), 24 cells against the standard run: median |difference| 2.67 ms (signed median +2.67, max |d| 4.3) -> OFF-1 NOT MET
+   model against offload data: MAE 2.87 ms, bias -2.51, cells above 0.4 RTT 0 -> OFF-2 MET
+
+NOTE: on X250 the non-offload IPv6 run of the same session shows the same +3 ms offset against the model (ECDSA 14000: 94.6 vs 91.6; 11000: 94.3 vs 91.3), so OFF-1 (+2.67 ms) cannot be attributed to offload without a same-session control.
+
+=========== X250 offload control in the same session (offload_off_x250.csv, offload=0, same 24 configurations, n=30; copied 17:40)
+offload on - offload off, excess over base, 24 cells: median +0.22 ms, median |d| 0.52 ms, max |d| 1.88 ms  -> OFF-1 criterion (median |d| <= 1 ms) MET against a same-session control.
+Against the standard run of another day the same comparison gave +2.67 ms: that was a session offset (R2), not an offload effect. Both files: 1440 rows, 0 errors, ip_ver=6, offload column 1 / 0.
+Offload activation (that the veth pair merged segments) is still not verified.
